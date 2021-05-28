@@ -1,0 +1,19 @@
+[Heating Rate (RSB/BSB/Bkgd)]
+$python -m artiq_stylus.applets.plot_xy_ntrace_white
+heating_rate.bsb.stats.mean
+--x1 heating_rate.bsb.stats.points
+--error1 heating_rate.bsb.stats.error
+heating_rate.rsb.stats.mean
+--x2 heating_rate.rsb.stats.points
+--error2 heating_rate.rsb.stats.error
+heating_rate.bkgd.stats.mean
+--x3 heating_rate.bkgd.stats.points
+--error3 heating_rate.bkgd.stats.error
+--title "RSB, BSB, Bkgd vs Wait Time"
+
+[nbar vs Wait Time]
+$python -m scan_framework.applets.plot_xy
+heating_rate.nbar.stats.mean
+--x heating_rate.nbar.stats.points
+--error heating_rate.nbar.stats.error
+--fit heating_rate.nbar.fits.fitline

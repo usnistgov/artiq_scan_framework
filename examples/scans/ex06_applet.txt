@@ -1,0 +1,11 @@
+# Add this applet to the `Applets` tab in the console before running example 5
+$python -m scan_framework.applets.plot_xy_ntrace_white
+    example_6.m1.stats.mean
+    --x1 example_6.m1.stats.points
+    --error1 example_6.m1.stats.error
+    example_6.m2.stats.mean
+    --x2 example_6.m2.stats.points
+    --error2 example_6.m2.stats.error
+    example_6.m2.stats.mean
+    --x3 example_6.m2.stats.points
+    --error3 example_6.m2.stats.error

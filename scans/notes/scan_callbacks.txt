@@ -1,0 +1,29 @@
+Scan Callbacks Listed in Order of Execution
+
+Initialization:
+----------------------------
+prepare_scan        (host)
+before_scan         (host)
+
+Scan Loop:
+----------------------------
+--> core device
+initialize_devices  (kernel)
+before_pass         (kernel)
+offset_point        (kernel)
+set_scan_point      (kernel)
+before_measure      (kernel)
+measure             (kernel)
+before_calculate    (host - RPC)
+after_scan_point    (kernel)
+_after_scan_point   (kernel)
+cleanup             (kernel)
+after_scan_core     (kernel)
+<-- back to host
+after_scan          (host)
+
+Analysis:
+----------------------------
+before_fit          (host)
+after_fit           (host)
+lab_after_scan      (host)

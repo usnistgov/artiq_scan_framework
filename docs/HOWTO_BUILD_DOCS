@@ -1,0 +1,13 @@
+To build docs:
+Install sphinx RTD theme and argparse packages
+    conda install sphinx_rtd_theme
+    conda install sphinx-argparse
+In the docs folder run
+    make html
+To remove existing docs and start with a fresh build environment run
+    make clean
+    Then
+    make html
+
+The generated html pages will be in docs/_build/html.  Open docs/_build/html/index.html with a browser to view
+the documentation.

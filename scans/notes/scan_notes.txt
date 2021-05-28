@@ -1,0 +1,78 @@
+Order of execution of callbacks
+[initialization]
+prepare_scan
+before_scan
+initialize_devices
+_before_loop
+
+[loop]
+before_pass
+set_scan_point
+before_measure
+measure
+mutate_datasets
+before_calculate
+calculate_all
+after_scan_point
+
+[finalization]
+cleanup callback
+_yield
+<-- terminated
+after_scan_core
+_after_scan
+after_scan
+before_fit
+fit_data
+after_fit
+lab_after_scan
+
+Order of execution of user callbacks
+[initialization]
+prepare_scan
+    - runs on host
+    - run once
+before_scan
+    - runs on host
+    - always run
+initialize_devices
+    - runs on host or core
+
+[loop]
+before_pass
+    - runs on host or core
+set_scan_point
+    - runs on host or core
+before_measure
+    - runs on host or core
+after_scan_point
+    - runs on host or core
+    - runs after datasets have been mutated, calculations have run, and data has been analyzed
+
+[finalization]
+cleanup
+    - runs on host or core
+    - called after scan loop has completed
+    - will be called before yielding to higher priority experiment
+after_scan_core
+    - runs on core
+    - runs before data is fit
+    - will not be called before yielding to higher priority experiment
+    - will not be called if scan is terminated
+after_scan & _after_scan
+    - runs on host
+    - runs before data is fit
+    - will not be called before yielding to higher priority experiment
+    - will not be called if scan is terminated
+before_fit
+    - runs on host
+    - return False to prevent the fit from being performed
+after_fit
+    - runs on host
+    - method is passed the fitresults and boolean indicating if fit was saved
+    - will not run if fit's are not performed for any reason
+lab_after_scan
+    - runs on host
+    - runs after data is fit
+    - will not be called before yielding to higher priority experiment
+    - will not be called if scan is terminated
