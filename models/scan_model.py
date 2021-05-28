@@ -99,8 +99,8 @@ class ScanModel(Model):
     :type broadcast: bool, optional
     :param persist: If True all datasets besides the main fit dataset are persisted, defaults to False
     :type persist: bool, optional
-    :param archive: If True all datasets besides the main fit dataset are archived to the hdf5 file, defaults to True
-    :type archive: bool, optional
+    :param save: If True all datasets besides the main fit dataset are archived to the hdf5 file, defaults to True
+    :type save: bool, optional
     :param mirror: If False datasets will not be mirrored to the mirror_namespace, default to True
     :type mirror: bool, optional
 
@@ -147,7 +147,7 @@ class ScanModel(Model):
     :type fit_valid_soft: bool
     :param fit_valid_strong: Set to True by the Scan class if the fit passed strong-validation, False if it falied, None if strong-validation has not yet been performed.  Defaults to None
     :type fit_valid_strong: bool
-    :param _fit_saved: Set to True by the Scan class after the main fit has been broadcast, archived, and persisted to the datasets.  Defaults to None
+    :param _fit_saved: Set to True by the Scan class after the main fit has been broadcast, saved, and persisted to the datasets.  Defaults to None
     :type _fit_saved: bool
     :param fits_set: Dictionary of fit params that were set to the datasets during fitting -- keys specify the full dataset key and the corresponding value is set to the fitted parameter value, defaults to {}
     :type fits_set: dict
@@ -187,7 +187,7 @@ class ScanModel(Model):
     mirror_namespace = 'current_scan'  #: Dataset key under which all datasets are mirrored -- datasets under this key are plotted by the current scan applet
     broadcast = False                  #: If True all datasets besides the main fit dataset are broadcast when created
     persist = False                    #: If True all datasets besides the main fit dataset are persisted
-    archive = True                     #: If True all datasets besides the main fit dataset are archived to the hdf5 file
+    save = True                        #: If True all datasets besides the main fit dataset are save to the hdf5 file
 
     # settings
     mirror = True                #: If False datasets will not be mirrored to the mirror_namespace
@@ -225,13 +225,13 @@ class ScanModel(Model):
 
     # state variables
     fits_set = {}            #: Set to true by the Scan class if fit's have been performed
-    fits_saved = {}          #: Set to True by the Scan class after the main fit has been broadcast, archived, and persisted to the datasets.
+    fits_saved = {}          #: Set to True by the Scan class after the fit params have saved to the datasets.
     fit_performed = None     #: Set to true by the Scan class if fit's have been performed
     fit_valid = None         #: Set to True by the Scan class if the fit passed validations, False if it failed any validations, None if validations haven't been performed.
     fit_valid_pre = None     #: Set to True by the Scan class if the fit passed pre-validation, False if it falied, None if pre-validation has not yet been performed.
     fit_valid_soft = None    #: Set to True by the Scan class if the fit passed soft-validation, False if it falied, None if soft-validation has not yet been performed.
     fit_valid_strong = None  #: Set to True by the Scan class if the fit passed strong-validation, False if it falied, None if strong-validation has not yet been performed.
-    _fit_saved = None        #: Set to True by the Scan class after the main fit has been broadcast, archived, and persisted to the datasets.
+    _fit_saved = None        #: Set to True by the Scan class after the main fit has been broadcast, saved, and persisted to the datasets.
 
     def report(self):
         """Generate a report string that displays the values of the stat datasets."""

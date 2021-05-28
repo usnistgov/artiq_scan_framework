@@ -56,7 +56,7 @@ class Example5Model(ScanModel):
     namespace = "example_5.%mmnt_name"
     broadcast = True
     persist = True
-    archive = True
+    save = True
     fit_function = fitting.Power
 
     # 2b. Use @property to dynamically determine an attribute

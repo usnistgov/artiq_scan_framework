@@ -257,7 +257,7 @@ class Loading(Lib):
                 print(self.elapsed)
 
                 # 8/13/20 save time it took to load so it can be plotted in Graphana
-                self.set_dataset('loading.last_elapsed', self.elapsed, broadcast=True, persist=True, archive=True)
+                self.set_dataset('loading.last_elapsed', self.elapsed, broadcast=True, persist=True, savee=True)
             else:
                 # increment attempts
                 self.model.increment_attempts()
