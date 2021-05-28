@@ -57,24 +57,24 @@ class HistModel(Model):
                 self.aggregate_bins[i] = 0
                 self.mirror_aggregate_bins[i] = 0
 
-    def init_datasets(self, broadcast=None, persist=None, save=None):
+    def init_datasets(self, broadcast=None, persist=None, archive=None):
         """Initialize all datasets"""
-        self.set('bin_boundaries', self.bin_boundaries, broadcast=broadcast, persist=persist, save=save, which='both',
+        self.set('bin_boundaries', self.bin_boundaries, broadcast=broadcast, persist=persist, archive=archive, which='both',
                  mirror=True)
-        self.set('x_units', self.x_units, broadcast=broadcast, persist=persist, save=save)
-        self.set('x_label', self.x_label, broadcast=broadcast, persist=persist, save=save)
-        self.set('y_label', self.y_label, broadcast=broadcast, persist=persist, save=save)
-        self.set('plot_title', self.plot_title, broadcast=broadcast, persist=persist, save=save)
-        self.set('bins', self.bins, broadcast=broadcast, persist=persist, save=save)
+        self.set('x_units', self.x_units, broadcast=broadcast, persist=persist, archive=archive)
+        self.set('x_label', self.x_label, broadcast=broadcast, persist=persist, archive=archive)
+        self.set('y_label', self.y_label, broadcast=broadcast, persist=persist, archive=archive)
+        self.set('plot_title', self.plot_title, broadcast=broadcast, persist=persist, archive=archive)
+        self.set('bins', self.bins, broadcast=broadcast, persist=persist, archive=archive)
 
         if self.aggregate:
             self.set('aggregate_bin_boundaries', self.bin_boundaries, which='mirror', mirror=True)
-            self.set('aggregate_bin_boundaries', self.bin_boundaries, broadcast=broadcast, persist=persist, save=save,
+            self.set('aggregate_bin_boundaries', self.bin_boundaries, broadcast=broadcast, persist=persist, archive=archive,
                      which='main', mirror=False)
             self.set('aggregate_bins', self.mirror_aggregate_bins, which='mirror', mirror=True)
-            self.set('aggregate_bins', self.aggregate_bins, broadcast=broadcast, persist=persist, save=save, which='main', mirror=False)
+            self.set('aggregate_bins', self.aggregate_bins, broadcast=broadcast, persist=persist, archive=archive, which='main', mirror=False)
 
-    def mutate(self, values, broadcast=False, persist=False, save=True):
+    def mutate(self, values, broadcast=False, persist=False, archive=True):
         """Bin each value and mutate the bins dataset"""
         if self.aggregate:
             self.mirror_aggregate_bins = self.get('aggregate_bins', mirror=True)
@@ -84,14 +84,14 @@ class HistModel(Model):
                 self.bin_value(val)
         else:
             self.bin_value(values)
-        self.set_bins(broadcast=broadcast, persist=persist, save=save)
+        self.set_bins(broadcast=broadcast, persist=persist, archive=archive)
 
     @portable
-    def set_bins(self, broadcast=False, persist=False, save=True):
-        self.set('bins', self.bins, broadcast=broadcast, persist=persist, save=save)
+    def set_bins(self, broadcast=False, persist=False, archive=True):
+        self.set('bins', self.bins, broadcast=broadcast, persist=persist, archive=archive)
         if self.aggregate:
-            self.set('aggregate_bins', self.aggregate_bins, broadcast=broadcast, persist=persist, save=save, which='main')
-            self.set('aggregate_bins', self.mirror_aggregate_bins, broadcast=broadcast, persist=persist, save=save, which='mirror', mirror=True)
+            self.set('aggregate_bins', self.aggregate_bins, broadcast=broadcast, persist=persist, archive=archive, which='main')
+            self.set('aggregate_bins', self.mirror_aggregate_bins, broadcast=broadcast, persist=persist, archive=archive, which='mirror', mirror=True)
 
     @portable
     def bin_value(self, value):

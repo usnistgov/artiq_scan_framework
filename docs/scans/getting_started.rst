@@ -107,10 +107,10 @@ A very basic scan model might look something like:
 Here, the :code:`fit_function` property specifies what fit function to use during fitting and the :code:`main_fit`
 property specifies the name of the fitted param of interest that is to be saved for later use (e.g. a transition
 frequency or a pi time).  If 'Fit and Save' is selected in the GUI, and a fit was successful, the fit param named
-by :code:`main_fit` will be broadcast, persisted, and saved/archived to the datasets.
+by :code:`main_fit` will be broadcast, persisted, and archived to the datasets.
 
 .. note::
-    By default, all dataset except the :code:`main_fit` dataset are created with :code:`broadcast=False, persist=False, save=True` as to
+    By default, all dataset except the :code:`main_fit` dataset are created with :code:`broadcast=False, persist=False, archive=True` as to
     not clutter up the datasets in the dashboard but still be available in the hdf5 file for post-processing.  See
     the :ref:`models` section for more details.
 

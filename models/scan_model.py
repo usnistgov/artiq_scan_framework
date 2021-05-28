@@ -99,8 +99,8 @@ class ScanModel(Model):
     :type broadcast: bool, optional
     :param persist: If True all datasets besides the main fit dataset are persisted, defaults to False
     :type persist: bool, optional
-    :param save: If True all datasets besides the main fit dataset are archived to the hdf5 file, defaults to True
-    :type save: bool, optional
+    :param archive: If True all datasets besides the main fit dataset are archived to the hdf5 file, defaults to True
+    :type archive: bool, optional
     :param mirror: If False datasets will not be mirrored to the mirror_namespace, default to True
     :type mirror: bool, optional
 
@@ -187,7 +187,7 @@ class ScanModel(Model):
     mirror_namespace = 'current_scan'  #: Dataset key under which all datasets are mirrored -- datasets under this key are plotted by the current scan applet
     broadcast = False                  #: If True all datasets besides the main fit dataset are broadcast when created
     persist = False                    #: If True all datasets besides the main fit dataset are persisted
-    save = True                        #: If True all datasets besides the main fit dataset are archived to the hdf5 file
+    archive = True                     #: If True all datasets besides the main fit dataset are archived to the hdf5 file
 
     # settings
     mirror = True                #: If False datasets will not be mirrored to the mirror_namespace
