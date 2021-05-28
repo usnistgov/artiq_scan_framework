@@ -319,8 +319,8 @@ class ScanModel(Model):
         self.defaults_model.bind()
 
     def attach(self, scan):
-        """ Attach model to a scan.  Gather's information needed about the scan such as scan.nrepeats, scan.npasses,
-        etc. """
+        """ Attach a scan to the model.  Gather's parameters of the scan -- such as scan.nrepeats, scan.npasses,
+        etc. --  and sets these as attributes of the model.  """
         self._scan = scan
         self.nrepeats = self.stat_model.nrepeats = scan.nrepeats
         self.nbins = self.stat_model.nbins = scan.nbins
@@ -330,14 +330,15 @@ class ScanModel(Model):
             self.hist_model.init_bins(bin_start=0, bin_end=self.nbins-1, nbins=self.nbins)
 
     def load(self):
-        """Load local variables from datasets"""
+        """Fetches the 'x', 'means', 'errors', and 'counts' datasets and sets their values to attributes of the model."""
         self.load_xs()
         self.load_means()
         self.load_errors()
         self.load_counts()
 
     def init_datasets(self, shape, plot_shape, points, dimension=0):
-        """Initialize all datasets.  This method is called by the scan during the initialization stage."""
+        """Initializes all datasets pertaining to scans.  This method is called by the scan during the initialization
+        stage."""
         self.shape = shape
         self.plot_shape = plot_shape
 
@@ -424,7 +425,7 @@ class ScanModel(Model):
             self.set('plots.dim1.y_units', self.y_units)
 
     def write_datasets(self, dimension):
-        """Write all internal values to their datasets.  This method is called by the scan when it is resuming from a
+        """Writes all internal values to their datasets.  This method is called by the scan when it is resuming from a
          pause to restore previous scan values to their datasets."""
 
         # don't draw plots while writing
@@ -591,16 +592,24 @@ class ScanModel(Model):
         errors = self.get('plots.error', mirror=mirror)
         return x_data, y_data, errors
 
-    def mutate_datasets_calc(self, i_point, point):
-        """Mutates the statistics datasets at a specified scan point using a calculated value (i.e. calc models)"""
-        value, error = self.calculate(i_point)
+    def mutate_datasets_calc(self, i_point, point, calculation):
+        """Mutates the statistics datasets at a specified scan point using a calculated value
+        :param i_point: index of the current scan point
+        :param point: value of the current scan point
+        :param calculation: name of the calculation to perform
+        :type calculation: string
+        """
+        value, error = self.calculate(i_point, calculation)
         self.mutate_points(i_point, point)
         self.mutate_means(i_point, value)
         self.mutate_errors(i_point, error)
         return value
 
     def mutate_points(self, i_point, point):
-        """Mutate the 'points' dataset"""
+        """Mutate the 'points' dataset with the value of a scan point
+        :param i_point: index of the scan point
+        :param point: value of the scan point
+        """
         dim = self._scan._dim
         if dim == 1:
             i = i_point
@@ -612,7 +621,10 @@ class ScanModel(Model):
             self.stat_model.points[i_point[0], i_point[1]] = point
 
     def mutate_means(self, i_point, mean):
-        """Mutate the 'means' dataset"""
+        """"Mutate the 'means' dataset with a mean value calculated at the specified scan point
+        :param i_point: index of the scan point
+        :param mean: mean of the measured value at the given scan point
+        """
         dim = self._scan._dim
         if dim == 1:
             # mutate the stats.mean dataset
@@ -629,7 +641,10 @@ class ScanModel(Model):
             self.stat_model.means[i_point[0], i_point[1]] = mean
 
     def mutate_errors(self, i_point, error):
-        """Mutate the 'errors' dataset"""
+        """"Mutate the 'error' dataset with the error in the mean value calculated at the specified scan point
+        :param i_point: index of the scan point
+        :param error: error in the mean measured value at the given scan point
+        """
         dim = self._scan._dim
         if dim == 1:
             # mutate the stats.error dataset
@@ -654,46 +669,48 @@ class ScanModel(Model):
     #        self.stat_model.xs[i_point] = np.nan
 
     def get_means(self, default=NoDefault, mirror=False):
-        """Return the 'means' dataset"""
+        """Fetches from the datasets and returns the mean values measured at each scan point.  i.e. the
+        'means' dataset """
         return self.stat_model.get('mean', default, mirror)
 
     def get_means_key(self, mirror=False):
-        """Return the dataset key of the mean dataset"""
+        """Returns the dataset key of the 'means' dataset"""
         return self.stat_model.key('mean', mirror)
 
     @property
     def errors(self):
-        """Return the internal value of the errors dataset"""
+        """Return the internal value of the 'errors' dataset"""
         return self.stat_model.errors
 
     @property
     def xs(self):
-        """Return the internal value of the x dataset"""
+        """Return the internal value of the 'x' dataset"""
         return self.xs
 
     def get_xs(self, default=NoDefault, mirror=False):
-        """Return the x dataset"""
+        """Fetches from the datasets and returns the list of scan points.  i.e. the
+        'x' dataset """
         return self.get('x', default, mirror)
 
     def get_xs_key(self, default=NoDefault, mirror=False):
-        """Return the dataset key of the x dataset"""
+        """Return the dataset key of the 'x' dataset"""
         return self.key('x', mirror)
 
     # [loaders]
     def load_counts(self):
-        """Load internal counts variable from it's dataset"""
+        """Loads the internal counts variable from its dataset"""
         self.stat_model.load('counts')
 
     def load_xs(self):
-        """Load the x dataset"""
+        """Loads the internal xs variable from its dataset"""
         self.stat_model.load('x', 'xs')
 
     def load_errors(self):
-        """Load the error dataset"""
+        """Loads the internal errors variable from its dataset"""
         self.stat_model.load('error', 'errors')
 
     def load_means(self):
-        """Load the mean dataset"""
+        """Loads the internal means variable from its dataset"""
         self.stat_model.load('mean', 'means')
 
     # [calculators]
@@ -721,7 +738,7 @@ class ScanModel(Model):
         return stats.sem(counts, ddof=0, nan_policy='omit')
 
     def calc_amplitude(self, use_current_scan=False):
-        """Calculate the amplitude of the means"""
+        """Calculate the 'amplitude' of the means, i.e. the maximum mean value minus the minimum mean value"""
         y_data = self.get_means(mirror=use_current_scan)
         return max(y_data) - min(y_data)
 
@@ -749,8 +766,9 @@ class ScanModel(Model):
             return p
 
     def get_main_fit(self, use_fit_result=False, i=None, archive=False) -> TFloat:
-        """Fetch the value of the main fit from it's dataset or from the fitresults.
-        :param use_fit_result: Setting to True will return the fitted value from the fitresults instead of the dataset
+        """Helper method. Fetches the value of the main fit from its dataset or from the fitresults.
+        :param use_fit_result: If True, the fit param value in the models fit object is returned. Otherwise
+                               the fir param value will be fetched from the datasets.
         value.
         """
         if use_fit_result:
@@ -763,10 +781,22 @@ class ScanModel(Model):
             return self.get(self.main_fit_ds, default=default, archive=archive)
 
     def set_main_fit(self, value):
+        """Helper method.  Broadcasts, persists, and saves to the datasets the main fit param specified
+        by the model's main_fit attribute.
+        :param value: value of the main fit that will be saved.
+        """
         self.set(self.main_fit_ds, value, which='main', broadcast=True, persist=True, save=True)
 
     def get_fit(self, name, use_fit_result=False, i=None):
-        """Fetch a saved fit param from it's dataset"""
+        """Helper method.  Fetches the value of fit param that was found during the last fit performed.
+        The fit param returned will either be read from the datasets or from the model's fit object
+        attribvute.
+        :param name: Name of the fit param
+        :type name: string
+        :param use_fit_result: If True, the fit param is fetched from the models' fit object (self.fit) instead
+                               of from the datasets.
+        :type use_fit_result: bool
+        """
         if use_fit_result:
             return self.fit.fitresults[name]
         else:
@@ -778,16 +808,34 @@ class ScanModel(Model):
             return self.fit_model.get("params."+key, default=default)
 
     def get_fit_data(self, use_mirror):
+        """Helper method.  Returns the experimental data to use for fitting."""
         x_data = self.stat_model.get('points', mirror=use_mirror)
         y_data = self.stat_model.get('mean', mirror=use_mirror)
         return x_data, y_data
 
     def get_guess(self, x_data, y_data):
+        """Helper method.  Returns the fit guesses to use for fitting."""
         return self.guess or {}
 
     def fit_data(self, x_data, y_data, errors, fit_function, guess=None, i=None, validate=True, set=True, save=False,
                  man_bounds={}, man_scale={}):
-        """Perform a fit on stat data using self.fit_function"""
+        """Perform a fit of the x values, y values, and errors to the specified fit function.
+
+        :param x_data: X values of the experimental data
+        :param y_data: Y values of the experimental data
+        :param errors: Error in each corresponding Y value of the experimental data
+        :param fit_function: The function being fit to the data points and errors given by x_data, y_data, and errors.
+        :param guess: Dictionary containing the initial guess for each fit param.  Keys specify fit param names and values
+                      the initial guess of that fit param.
+        :type guess: dict
+        :param validate: If True, fit validations will be performed
+        :param set: If True, all generated data pertaining to the fit will be saved to the datasets under the model's namespace
+        :param save: If True, the main fit will be saved to the datasets, as long as any defined strong validations pass.
+        :param man_bounds: Dictionary containing the allowed bounds for each fit param.  Keys specify fit param names and values
+                           are set to a list to specify the bounds of that fit param.
+        :param man_scale: Dictionary containing the scale of each fit param.  Keys specify fit param names and values
+                          are set to floats that specify the scale of that fit param.
+        """
         x_sorted = sorted(x_data)
         fit_performed = False
         saved = False
@@ -911,7 +959,15 @@ class ScanModel(Model):
         return True, ""
 
     def save_fit(self, fitparam, dskey, broadcast=False, persist=False, save=True):
-        """ Save the main fit """
+        """Helper method.  Saves the specified fit param to the datasets under the model's namespace.
+
+        :param fitparam: Name of the fit param to save
+        :type fitparam: string
+        :param dskey: Datset key to save the fit param value to
+        :param broadcast: Indicates if the dataset should be broadcast, defaults to False
+        :param persist: Indicates if the dataset should be persisted, defaults to False
+        :param save: Indicates if the dataset should be saved to the hdf5 file, defaults to True
+        """
         # get the fitted param
         fitval = self.fit.fitresults[fitparam]
 
@@ -923,7 +979,8 @@ class ScanModel(Model):
             self.fits_saved[self.key(dskey)] = fitval
 
     def set_fits(self, i=None):
-        """Set's the fitted values to datasets"""
+        """Helper method.  Set's all data generated during fitting to datasets under the model's namespace.
+        """
 
         # fitted params
         for key, value in zip(self.fit.params._fields, self.fit.params):
@@ -970,7 +1027,7 @@ class ScanModel(Model):
         self.fit_model.set(key, self.fit.reg_err)
 
     def report_fit(self):
-        """Prints fit results to the console"""
+        """Helper method.  Prints fit results to the console"""
         self._scan.logger.info('')
 
         # display fitted parameters

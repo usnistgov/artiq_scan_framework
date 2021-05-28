@@ -200,7 +200,7 @@ class NbarModel(TimeModel):
         self.rsb_model.load()
         self.bkgd_model.load()
 
-    def calculate(self, i_point):
+    def calculate(self, i_point, calculation):
         """Calculate nbar and the error in nbar at the given scan point index 'i'"""
         bsb = self.bsb_model.means[i_point]
         bsb_error = self.bsb_model.errors[i_point]
