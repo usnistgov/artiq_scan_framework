@@ -7,7 +7,7 @@
 from scan_framework.models.scan_model import *
 
 
-class TimeFrequencyModel(ScanModel):
+class TimeFreqModel(ScanModel):
     @property
     def x_scale(self):
         if self.type == 'frequency':

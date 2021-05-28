@@ -10,11 +10,11 @@ taken care of automatically by inheriting from :code:`scan_framework.scans.exten
 fitted frequencies.
 
 
-Time/Frequency scans and Frequency Scans can track the last fitted value of a frequency it is scanning.  These scans
+Time/frequency scans and frequency scans can track the last fitted value of a frequency it is scanning.  These scans
 can then scan over a range of frequencies centered on the last fit value.
 To use auto tracking first enable auto tracking in the scan::
 
-    class MyScan(Scan1D, FrequencyScan, EnvExperiment):
+    class MyScan(Scan1D, FreqScan, EnvExperiment):
         enable_auto_tracking = True
         ...
 
@@ -27,11 +27,11 @@ The last fitted frequency will be fetched from the auto tracking model and the s
 frequency automatically.
 
 .. note::
-    Auto tracking can be disabled entirely in either a :code:`FrequencyScan` or a :code:`TimeFreqScan` by setting
+    Auto tracking can be disabled entirely in either a :code:`FreqScan` or a :code:`TimeFreqScan` by setting
     :code:`self.enable_auto_tracking = False` in the scan.
 
 
-In a time/frequency scan (:code:`TimeFreqScan`), or in a frequency scan (:code:`FrequencyScan`), tracking of the fitted
+In a time/frequency scan (:code:`TimeFreqScan`), or in a frequency scan (:code:`FreqScan`), tracking of the fitted
 frequency can be accomplished by enabling auto tracking and then specifying an auto tracking model:
 
 .. code-block:: python

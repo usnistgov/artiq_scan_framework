@@ -6,7 +6,7 @@
 from scan_framework.models.scan_model import *
 
 
-class FrequencyModel(ScanModel):
+class FreqModel(ScanModel):
     @property
     def x_scale(self):
         return MHz

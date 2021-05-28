@@ -43,16 +43,9 @@ class RsbModel(TimeModel):
     @property
     def x_units(self):
         if self.to_scan == 'wait_time':
-            return 'us'
+            return 's'
         if self.to_scan == 'rf_amplitude':
             return ''
-
-    @property
-    def x_scale(self):
-        if self.to_scan == 'wait_time':
-            return 1*us
-        if self.to_scan == 'rf_amplitude':
-            return 1
 
     @property
     def plot_title(self):
@@ -60,6 +53,7 @@ class RsbModel(TimeModel):
             return 'rsb vs wait time'
         if self.to_scan == 'rf_amplitude':
             return 'rsb vs rf amplitude'
+
 
 class BsbModel(TimeModel):
     """ Heating Rate BSB Data Model """
@@ -104,16 +98,9 @@ class BsbModel(TimeModel):
     @property
     def x_units(self):
         if self.to_scan == 'wait_time':
-            return 'us'
+            return 's'
         if self.to_scan == 'rf_amplitude':
             return ''
-
-    @property
-    def x_scale(self):
-        if self.to_scan == 'wait_time':
-            return 1 * us
-        if self.to_scan == 'rf_amplitude':
-            return 1
 
     @property
     def plot_title(self):
@@ -121,6 +108,7 @@ class BsbModel(TimeModel):
             return 'bsb'
         if self.to_scan == 'rf_amplitude':
             return 'bsb vs rf amplitude'
+
 
 class BkgdModel(TimeModel):
     """ Heating Rate BSB Data Model """
@@ -144,8 +132,7 @@ class BkgdModel(TimeModel):
     }
 
     # plots
-    x_units = 'us'
-    x_scale = 1*us
+    x_units = 's'
     plot_title = 'bkgd'
 
 class NbarModel(TimeModel):
@@ -185,20 +172,11 @@ class NbarModel(TimeModel):
     @property
     def x_units(self):
         if self.to_scan == 'wait_time':
-            return 'us'
+            return 's'
         if self.to_scan == 'rf_amplitude':
             return ''
         if self.to_scan == 'frequency':
-            return 'MHz'
-
-    @property
-    def x_scale(self):
-        if self.to_scan == 'wait_time':
-            return 1 * us
-        if self.to_scan == 'rf_amplitude':
-            return 1
-        if self.to_scan == 'frequency':
-            return 1 * MHz
+            return 'Hz'
 
     @property
     def plot_title(self):

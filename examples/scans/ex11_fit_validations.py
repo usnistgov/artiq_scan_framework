@@ -11,7 +11,7 @@ import random
 from math import pi
 
 
-class Example2Scan(Scan1D, FrequencyScan, EnvExperiment):
+class Example2Scan(Scan1D, FreqScan, EnvExperiment):
     run_on_core = False
 
     def build(self):
@@ -53,7 +53,7 @@ class Example2Scan(Scan1D, FrequencyScan, EnvExperiment):
         return pmt_counts
 
 
-class Example11Model(TimeFrequencyModel):
+class Example11Model(TimeFreqModel):
 
     x_label = 'Frequency'
     x_scale = GHz

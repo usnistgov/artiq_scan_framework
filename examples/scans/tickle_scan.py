@@ -7,7 +7,7 @@ from lib.microwaves import *
 from lib.shims import *
 
 
-class TickleScan(Scan1D, FrequencyScan, EnvExperiment):
+class TickleScan(Scan1D, FreqScan, EnvExperiment):
     """Tickle Scan
     Scans the tickle frequency.
     """

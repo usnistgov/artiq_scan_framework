@@ -430,7 +430,7 @@ class ScanModel(Model):
         # don't draw plots while writing
         self.set('plots.trigger', 0)
 
-        if dimension is 0:
+        if dimension == 0:
 
             # write scan points
             self.stat_model.write('points')
@@ -555,7 +555,7 @@ class ScanModel(Model):
             which = 'mirror'
 
         # --- Mutate Dimension 0 Plot ---
-        if dim is None or dim is 0:
+        if dim is None or dim == 0:
 
             # --- 1D Scans ---
             if self._scan._dim == 1:

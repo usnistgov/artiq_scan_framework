@@ -13,7 +13,8 @@ class TickleModel(Model):
         self.create('mode_1.defaults.frequency', 500 * MHz)
         self.create('mode_2.defaults.frequency', 500 * MHz)
 
-class TickleScanModel(TickleModel, FrequencyModel):
+
+class TickleScanModel(TickleModel, FreqModel):
     """Models ion interaction with the trap tickle."""
     fit_function = fit_functions.SincInv
     main_fit = 'frequency'

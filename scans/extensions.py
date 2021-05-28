@@ -39,7 +39,7 @@ class TimeScan(Scan):
     def get_scan_points(self):
         return self.times
 
-class FrequencyScan(Scan):
+class FreqScan(Scan):
     """Scan class for scanning over frequency values."""
     frequency_center = None  # default must be None so it can be overriden in the scan
     enable_auto_tracking = False

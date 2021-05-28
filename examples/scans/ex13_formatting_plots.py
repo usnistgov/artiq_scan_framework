@@ -5,7 +5,7 @@ from artiq.experiment import *
 from scan_framework import *
 
 
-class Example13Scan(Scan1D, FrequencyScan, EnvExperiment):
+class Example13Scan(Scan1D, FreqScan, EnvExperiment):
 
     def build(self):
         super().build()

@@ -13,7 +13,7 @@ class ShimModel(Model):
 
 
 class ShimScanModel(ShimModel, ScanModel):
-    x_units = 'volts'
+    x_units = 'V'
     fit_function = fitting.Gauss
     main_fit = 'voltage'
     fit_map = {
