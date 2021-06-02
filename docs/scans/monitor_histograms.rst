@@ -1,4 +1,4 @@
-Monitor Histograms
+Monitor histograms
 ============================
 
 All model's automatically generate a histogram for a datapoint each time the model datasets are mutated and save the

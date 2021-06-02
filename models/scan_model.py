@@ -38,14 +38,14 @@ class ScanModel(Model):
 
     - **<namespace>**  All data is stored under this location which is specified in the child class.
         - **<namespace>.stats** Contains statistical data, raw data from the scan, and the list of scan points.
-            - **<namespace>.stats.points** List of scan points.
-            - **<namespace>.stats.counts** Raw counts recorded at each scan point and repetition.
-            - **<namespace>.stats.mean** Mean count values calculated at each scan point.
-            - **<namespace>.stats.error** Standard deviation of each mean value in the <namespace>.stats.mean array.
-            - **<namespace>.stats.hist** Binned mean values at each scan point.  Each entry is the histogram at the
+            - **<namespace>.points** List of scan points.
+            - **<namespace>.counts** Raw counts recorded at each scan point and repetition.
+            - **<namespace>.mean** Mean count values calculated at each scan point.
+            - **<namespace>.error** Standard deviation of each mean value in the <namespace>.mean array.
+            - **<namespace>.hist** Binned mean values at each scan point.  Each entry is the histogram at the
               corresponding scan point.
-            - **<namespace>.stats.bins** Defines the bin boundaries for histograms.
-            - **<namespace>.stats.nbins** The number of bins to use for histograms.
+            - **<namespace>.bins** Defines the bin boundaries for histograms.
+            - **<namespace>.nbins** The number of bins to use for histograms.
         - **<namespace>.fits:** Contains all fit data
             - **<namespace>.fits.params** The value of each fitted parameter.
             - **<namespace>.fits.guesses** The guess that was used for each fitted parameter.
@@ -378,7 +378,8 @@ class ScanModel(Model):
 
     def init_plots(self, dimension):
         """Initialize the plot datasets.
-        :param dimension 0 for initializing dimension 0 plots, 1 for initializing dimension 1 plots"""
+
+        :param dimension: 0 for initializing dimension 0 plots, 1 for initializing dimension 1 plots"""
 
         # --- 1D Scans ---
         if self._scan._dim == 1:
@@ -480,11 +481,16 @@ class ScanModel(Model):
         self.set('plots.trigger', 1)
 
     def mutate_datasets(self, i_point, point, counts):
-        """Mutates the statistics datasets at a specified scan point
-        :param p pass index
-        :param i scan point index
-        :param x value of scan point
-        :param counts_array array of counts for each repetition
+        """Generates the mean and standard error of the mean for the measured value at the specified scan point
+        and mutates the corresponding datasets.  The `points` and `counts` datasets are also mutated with the
+        specified scan point value and raw values measured at the specified scan point.  If histograms are enabled,
+        each measured value in `counts` will also be binned and the histogram datasets will be mutated with the
+        binned values to updated the histogram plots.
+
+        :param i_point: scan point index
+        :param point: value of scan point
+        :param counts: array containing all values returned by the scan's measure() method during the specified
+                       scan point
         """
         dim = self._scan._dim
 
@@ -492,14 +498,14 @@ class ScanModel(Model):
         self.mutate_points(i_point, point)
         # mutate the dataset containing the array of counts measured at each repetition of the scan point
         if dim == 1:
-            # mutate the stats.counts dataset
+            # mutate the counts dataset
             i = ((i_point, i_point + 1), (0, len(counts)))
             self.stat_model.mutate('counts', i, counts, update_local=False)
 
             # mutate the local counts array (so it can be written when a scan resumes)
             self.stat_model.counts[i_point, 0:len(counts)] = counts
         else:
-            # mutate the stats.counts dataset with counts
+            # mutate the counts dataset with counts
             i = ((i_point[0], i_point[0] + 1), (i_point[1], i_point[1] + 1), (0, len(counts)))
             self.stat_model.mutate('counts', i, counts, update_local=False)
 
@@ -527,13 +533,13 @@ class ScanModel(Model):
 
             # mutate the time series histograms
             if dim == 1:
-                # mutate the stats.hist dataset
+                # mutate the hist dataset
                 self.stat_model.mutate('hist', i_point, self.hist_model.bins, update_local=False)
 
                 # mutate the local hist array
                 self.stat_model.hist[i_point] = self.hist_model.bins
             else:
-                # mutate the stats.hist dataset
+                # mutate the hist dataset
                 i = ((i_point[0], i_point[0]+1), (i_point[1], i_point[1] + 1))
                 self.stat_model.mutate('hist', i, self.hist_model.bins, update_local=False)
 
@@ -545,11 +551,12 @@ class ScanModel(Model):
     def mutate_plot(self, i_point, x, y, error=None, dim=None):
         """Mutate the plots.x and plots.y datasets.  This method is called by the scan to update the plot as the scan
         runs.
-        :param i Scan point index.  Plot datasets are mutated at this index.
-        :param x X value to plot
-        :param y Y value to plot
-        :param dim Which dimension is being plotted.  0 for normal 1D plots.  For 2D plots, dim=1 updates the dimension
-        1 plot, dim=0 updates the final dimension 0 plot.
+
+        :param i: Scan point index.  Plot datasets are mutated at this index.
+        :param x: X value to plot
+        :param y: Y value to plot
+        :param dim: Which dimension is being plotted.  0 for normal 1D plots.  For 2D plots, dim=1 updates the dimension
+                    1 plot, dim=0 updates the final dimension 0 plot.
         """
         which = 'both'
         if self.broadcast is False:
@@ -586,7 +593,8 @@ class ScanModel(Model):
 
     def get_plot_data(self, mirror):
         """Returns the plots.x and plots.y datasets (always dimension 0)
-        :param mirror True to pull from the current_scan namespace, False to pull from the actual namespace."""
+
+        :param mirror: True to pull from the current_scan namespace, False to pull from the actual namespace."""
         x_data = self.get('plots.x', mirror=mirror)
         y_data = self.get('plots.y', mirror=mirror)
         errors = self.get('plots.error', mirror=mirror)
@@ -594,6 +602,7 @@ class ScanModel(Model):
 
     def mutate_datasets_calc(self, i_point, point, calculation):
         """Mutates the statistics datasets at a specified scan point using a calculated value
+
         :param i_point: index of the current scan point
         :param point: value of the current scan point
         :param calculation: name of the calculation to perform
@@ -607,6 +616,7 @@ class ScanModel(Model):
 
     def mutate_points(self, i_point, point):
         """Mutate the 'points' dataset with the value of a scan point
+
         :param i_point: index of the scan point
         :param point: value of the scan point
         """
@@ -622,18 +632,19 @@ class ScanModel(Model):
 
     def mutate_means(self, i_point, mean):
         """"Mutate the 'means' dataset with a mean value calculated at the specified scan point
+
         :param i_point: index of the scan point
         :param mean: mean of the measured value at the given scan point
         """
         dim = self._scan._dim
         if dim == 1:
-            # mutate the stats.mean dataset
+            # mutate the mean dataset
             self.stat_model.mutate('mean', i_point, mean, update_local=False)
 
             # mutate local means array
             self.stat_model.means[i_point] = mean
         else:
-            # mutate the stats.mean dataset
+            # mutate the mean dataset
             i = ((i_point[0], i_point[0] + 1), (i_point[1], i_point[1] + 1))
             self.stat_model.mutate('mean', i, mean, update_local=False)
 
@@ -642,19 +653,20 @@ class ScanModel(Model):
 
     def mutate_errors(self, i_point, error):
         """"Mutate the 'error' dataset with the error in the mean value calculated at the specified scan point
+
         :param i_point: index of the scan point
         :param error: error in the mean measured value at the given scan point
         """
         dim = self._scan._dim
         if dim == 1:
-            # mutate the stats.error dataset
+            # mutate the error dataset
             i = i_point
             self.stat_model.mutate('error', i, error, update_local=False)
 
             # mutate the local errors array
             self.stat_model.errors[i_point] = error
         else:
-            # mutate the stats.error dataset
+            # mutate the error dataset
             i = ((i_point[0], i_point[0] + 1), (i_point[1], i_point[1] + 1))
             self.stat_model.mutate('error', i, error, update_local=False)
 
@@ -716,7 +728,9 @@ class ScanModel(Model):
     # [calculators]
     def calc_hist(self, counts):
         """Return a histogram of counts
-        :param counts Array of counts to be binned"""
+
+        :param counts: Array of counts to be binned"""
+
         #hist, bin_edges = np.histogram(counts, **self.hist_args)
         hist = [0]*self.nbins
         for c in counts:
@@ -729,12 +743,14 @@ class ScanModel(Model):
 
     def calc_mean(self, counts):
         """Calculate mean value of counts.
-        :param counts Array of counts"""
+
+        :param counts: Array of counts"""
         return np.nanmean(counts)
 
     def calc_error(self, counts):
         """Calculate the standard deviation of the mean
-        :param counts Array of counts"""
+
+        :param counts: Array of counts"""
         return stats.sem(counts, ddof=0, nan_policy='omit')
 
     def calc_amplitude(self, use_current_scan=False):
@@ -767,6 +783,7 @@ class ScanModel(Model):
 
     def get_main_fit(self, use_fit_result=False, i=None, archive=False) -> TFloat:
         """Helper method. Fetches the value of the main fit from its dataset or from the fitresults.
+
         :param use_fit_result: If True, the fit param value in the models fit object is returned. Otherwise
                                the fir param value will be fetched from the datasets.
         value.
@@ -783,6 +800,7 @@ class ScanModel(Model):
     def set_main_fit(self, value):
         """Helper method.  Broadcasts, persists, and saves to the datasets the main fit param specified
         by the model's main_fit attribute.
+
         :param value: value of the main fit that will be saved.
         """
         self.set(self.main_fit_ds, value, which='main', broadcast=True, persist=True, save=True)
@@ -791,6 +809,7 @@ class ScanModel(Model):
         """Helper method.  Fetches the value of fit param that was found during the last fit performed.
         The fit param returned will either be read from the datasets or from the model's fit object
         attribvute.
+
         :param name: Name of the fit param
         :type name: string
         :param use_fit_result: If True, the fit param is fetched from the models' fit object (self.fit) instead
@@ -1061,6 +1080,7 @@ class ScanModel(Model):
     # --- validation helpers
     def validate_in_scan_range(self, field, value, padding_left=None, padding_right=None):
         """Return False if the value is outside the range of scan points and add a validation error for the field.
+
         :param field: name of the field who's value will be checked
         :param padding_left: increase the allowable range by this amount below the scan point with the smallest value.
         Defaults to self._scan.tick which is the difference between adjacent scan points.

@@ -6,23 +6,16 @@ Creating scan experiments
 
    scans/getting_started
    scans/statistics
-   scans/pausing
-   scans/warmup_points
-   scans/multiple_measurements
-   scans/calculations
+   scans/core_features
    scans/time_freq_scans
    scans/auto_tracking
+   scans/multiple_measurements
+   scans/calculations
+   scans/warmup_points
    scans/lost_ion
-   scans/features
-   scans/callbacks
-   scans/methods
-   scans/configuration
    scans/monitor_histograms
-   scans/applets
    scans/2d_scans
    scans/lost_ion
-   scans/datasets
-   scans/api
 
 
 

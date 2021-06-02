@@ -8,6 +8,8 @@ NIST Scan Framework Documentation
    installing
    scans
    models
+   scans_ref
+   models_ref
    analysis
    applets
 

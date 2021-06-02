@@ -19,7 +19,7 @@ Datset configurations
 .. autoattribute:: scan_framework.models.scan_model.ScanModel.mirror_namespace
 .. autoattribute:: scan_framework.models.scan_model.ScanModel.broadcast
 .. autoattribute:: scan_framework.models.scan_model.ScanModel.persist
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.archive
+.. autoattribute:: scan_framework.models.scan_model.ScanModel.save
 .. autoattribute:: scan_framework.models.scan_model.ScanModel.mirror
 
 Fitting configurations

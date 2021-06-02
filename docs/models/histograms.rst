@@ -41,7 +41,7 @@ To bin multiple values and set the :code:`bins` dataset all in one go, use the :
 
 .. code-block:: python
 
-    model.mutate([42, 42, 42, 42, 42, 41, 43], broadcast=True, persist=False, archive=False)
+    model.mutate([42, 42, 42, 42, 42, 41, 43], broadcast=True, persist=False, save=False)
 
 Binning Continuous Values
 -------------------------

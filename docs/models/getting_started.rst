@@ -39,7 +39,7 @@ will print **"microwaves.1"** (the first namespace), followed by **microwaves.1.
 
 Broadcast, Persist, & Save
 ----------------------------
-Default values for the broadcast, persist, and archive arguments of set_dataset() can be tailored to the model when it's behavior is known.  For example:
+Default values for the broadcast, persist, and save arguments of set_dataset() can be tailored to the model when it's behavior is known.  For example:
 
 .. code-block:: python
 
@@ -48,7 +48,7 @@ Default values for the broadcast, persist, and archive arguments of set_dataset(
         namespace = 'heating_rate.rsb'
         persist = True
         broadcast = True
-        archive = False
+        save = False
 
     class MyExperiment(EnvExperiment):
         def build(self):
@@ -59,17 +59,17 @@ Is equivalent to
 
 .. code-block:: python
 
-    self.set_dataset('heating_rate.rsb.ds_value', 12345, broadcast=True, persist=True, archive=False)
+    self.set_dataset('heating_rate.rsb.ds_value', 12345, broadcast=True, persist=True, save=False)
 
-Having to specify broadcast, persist, and archive is then not necessary when you know the behavior of broadcast, persist,
-and archive for all datasets that will be set by the model.
+Having to specify broadcast, persist, and save is then not necessary when you know the behavior of broadcast, persist,
+and save for all datasets that will be set by the model.
 
 For datasets that don't conform to the model assumptions, defaults can still be overridden as usual by specifying the
 argument.  e.g.
 
 .. code-block:: python
 
-    self.model.set('ds_value', 12345, persist=False, archive=True)
+    self.model.set('ds_value', 12345, persist=False, save=True)
 
 Dataset Mirroring
 ------------------

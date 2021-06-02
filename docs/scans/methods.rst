@@ -1,7 +1,8 @@
 Methods Available to a Scan
+===========================
 
 User Interface Methods
-----------------------------
+----------------------
 The following interface methods may be implemented by a scan class to control the execution of a scan.
 
 Listed in order of execution
@@ -27,7 +28,7 @@ Listed in order of execution
 =============================================================================== ======================  ==============  ===============  =========== ===========================
 
 User Helper Methods
------------------------
+-------------------
 
 =============================================================================== ======================  ==============  ==============  =========== ===========================
 | Method                                                                        | Has Default           | Runs On       | Scan Stage    | Required? | Runs When
@@ -43,7 +44,7 @@ User Helper Methods
 =============================================================================== ======================  ==============  ==============  =========== ===========================
 
 Extension Interface Methods
---------------------------------
+---------------------------
 The following interface methods may be implemented by a scan framework extension classes to control the
 execution of a scan.  These methods should not be implemented by user scan classes and are listed here for
 reference.

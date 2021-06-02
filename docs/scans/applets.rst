@@ -1,3 +1,5 @@
+.. _applets:
+
 Applets
 =====================
 
@@ -7,7 +9,7 @@ these applet classes.
 
 .. _current-scan-applet:
 
-Current Scan
+Current scan applet
 ----------------------------------------------
 The current scan applet plots the mean values calculated as the scan runs.  Mean values will
 be added as data points to the plot after each scan point.  The line of best fit is also
@@ -40,7 +42,7 @@ See the :ref:`Current Scan Datasets<current-scan-datasets>` section for details 
 
 .. _count-monitor-applet:
 
-Count Monitor Applet
+Count monitor applet
 ----------------------------------------------
 The count monitor applet displays the mean of all values returned by the :code:`measure()` method during
 a single  scan point
@@ -53,7 +55,7 @@ Add the following command to the applets panel in the dashboard to create the co
 
 .. _current-hist-applet:
 
-Current Histogram
+Current histogram applet
 ----------------------------------------------
 The current histogram applet displays a histogram of counts at each scan point as the scan runs.  The histogram will
 be updated when a scan point completes.  This is used for realtime monitoring of distributions as the scan runs.
@@ -72,7 +74,7 @@ All datasets needed to plot histograms are automatically created and updated by 
 
 .. _current-aggregate-hist-applet:
 
-Current Aggregate Histogram
+Current aggregate histogram applet
 ----------------------------------------------
 The current aggregate histogram applet displays a histogram of counts over all scan points of a scan.
 The histogram will be updated when a scan point completes.
@@ -92,7 +94,7 @@ All datasets needed to plot aggregate histograms are automatically created and u
 
 .. _current-scan-browser-applet:
 
-Current Scan for the ARTIQ Browser
+Current scan applet for the ARTIQ browser
 ----------------------------------------------
 A separate current scan applet is necessary when browsing experiment runs in the ARTIQ browser.
 It is identical to the current scan applet above with the :code:`--trigger` argument set to 1.
@@ -115,7 +117,7 @@ Add the following command to the applets panel in the browser to create the brow
 
 .. _current-sub-scan-applet:
 
-Current Sub-Scan (For 2D Scans)
+Current sub-scan applet (for 2D scans)
 ----------------------------------------------
 As a two dimensional scans runs, a fit is performed on each sub-scan when it completes.  Fitted parameter values from
 each of these sub-fits are then plotted in the current scan applet.  The current sub-scan applet plot's the mean values
@@ -138,8 +140,8 @@ Add the following command to the applets panel in the dashboard to create the cu
         --rid current_scan.rid
         --i_plot current_scan.plots.subplot.i_plot
 
-Current Sub-Scan (For 2D Scans, No Fits)
-----------------------------------------------
+Current sub-scan applet (For 2D scans, no fits)
+-----------------------------------------------
 If rendering of the current sub-scan applet is slow, a sub-scan plot with no fits can help speed things up:
 
 .. code-block:: console

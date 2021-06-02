@@ -160,6 +160,7 @@ class Model(HasEnvironment):
         :param varname: The name of the model attribute.  Defaults to the value of the key argument.
         :param default: Default value to use if the datset doesn't exist.
         :param mirror: Set to True to load the value of the datset stored under the mirror namespace instead.
+        :param archive: Set to True to archive the dataset value to the hdf5 file for the current experiment.
         """
         if varname is None:
             varname = key

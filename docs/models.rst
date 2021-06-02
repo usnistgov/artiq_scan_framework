@@ -11,7 +11,4 @@ Using models for data processing
    models/validators
    models/plots
    models/accessing_scan
-   models/statevars
-   models/settings
    models/histograms
-   models/api

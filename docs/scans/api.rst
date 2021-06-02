@@ -1,3 +1,5 @@
+.. _scans_api:
+
 Full API documentation for scans
 ================================
 

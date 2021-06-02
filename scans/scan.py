@@ -581,7 +581,7 @@ class Scan(HasEnvironment):
         """Rewind the cursor from the current pass and point indices by the specified number of points.  The cursor can
           be rewound into a previous pass.  The cursor cannot be rewound past the first point of the first pass.
 
-          :param num_points The current cursor will be moved to this number of scan points before its current value.
+          :param num_points: The current cursor will be moved to this number of scan points before its current value.
         """
 
         # get new i_point, i_pass indices
@@ -1657,9 +1657,9 @@ class Scan(HasEnvironment):
             - executes after all data has been collected, datasets have been mutated, calculations have been performed,
               and data has been analyzed.
 
-        :param i_point point index (integer for 1D scans, a list of two inetegers for 2D scans)
-        :param point the scan point (float for 1D scans, a list of two integers for 2D scans)
-        :param mean the mean number of counts collected at the scan point over all measurements.
+        :param i_point: point index (integer for 1D scans, a list of two inetegers for 2D scans)
+        :param point: the scan point (float for 1D scans, a list of two integers for 2D scans)
+        :param mean: the mean number of counts collected at the scan point over all measurements.
         """
         pass
 
