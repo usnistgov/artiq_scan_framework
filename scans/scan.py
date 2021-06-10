@@ -61,7 +61,7 @@ class Scan(HasEnvironment):
 
     # Feature: count monitoring
     enable_count_monitor = True   #: Update the '/counts' dataset with the average of all values returned by 'measure()' during a single scan point.
-    counts_prec = -1              #: Set to a value >= 0 to round the '/counts' dataset to the specified number of digits.
+    counts_perc = -1              #: Set to a value >= 0 to round the '/counts' dataset to the specified number of digits.
 
     # Feature: reporting
     enable_reporting = True       #: Print useful information to the Log window before a scan starts (i.e. number of passes, etc.) and when a fit is performed (fitted values, etc.)
@@ -448,9 +448,6 @@ class Scan(HasEnvironment):
         if self.enable_count_monitor:
             # cost: 2.7 ms
             self._set_counts(mean)
-            # if self.mean_prec >= 0:
-            #     mean = round(mean, self.mean_prec)
-            # self.set_dataset('counts', mean, broadcast=True, persist=True)
 
     # private: for scan.py
     def map_arguments(self):
@@ -540,7 +537,7 @@ class Scan(HasEnvironment):
                         return model.fit.fitresults[model.main_fit]
                     # use dataset value
                     else:
-                        return model.get_main_fit()
+                        return model.get_main_fit(archive=False)
         return self._x_offset
 
     # private: for scan.py
@@ -669,6 +666,9 @@ class Scan(HasEnvironment):
             # perform fits
             self._logger.debug("executing _analyze")
             self._analyze()
+
+            self.after_analyze()
+            self.lab_after_analyze()
 
             # callback
             self._logger.debug("executing lab_after_scan callback")
@@ -847,8 +847,8 @@ class Scan(HasEnvironment):
         Notes
             - Does not run if :code:`self.enable_count_monitor == False`
         """
-        if self.counts_prec >= 0:
-            counts = round(counts, self.counts_prec)
+        if self.counts_perc >= 0:
+            counts = round(counts, self.counts_perc)
         self.set_dataset('counts', counts, broadcast=True, persist=True)
 
     # interface: for child class (optional)
@@ -1563,6 +1563,38 @@ class Scan(HasEnvironment):
         """
         pass
 
+    def after_analyze(self):
+        """User callback
+
+        Runs on the host after the scan and any higher priority experiments have completed and after analysis
+        (e.g. fitting) has been completed.
+
+        Notes
+            - always runs on the host
+            - runs after data is fit
+            - runs regardless of if the fit was successful
+            - this callback will not be called before yielding to higher priority experiment
+            - this callback will not be called if scan is terminated
+        """
+        pass
+
+    def lab_after_analyze(self):
+        """User callback
+
+        Runs on the host after the scan and any higher priority experiments have completed and after analysis
+        (e.g. fitting) has been completed.
+
+        Meant to be implemented in a base class from which all of a lab's scans inherit.
+
+        Notes
+            - always runs on the host
+            - runs after data is fit
+            - runs regardless of if the fit was successful
+            - this callback will not be called before yielding to higher priority experiment
+            - this callback will not be called if scan is terminated
+        """
+        pass
+
     # callback: for child class
     def before_fit(self, model):
         """User callback
@@ -1862,7 +1894,7 @@ class Scan2D(Scan):
                                                                               dimension=1,
                                                                               i=i_point[0])
 
-                # handle cases when fit fails to converge so the scan doesn't just hault entirely with an
+                # handle cases when fit fails to converge so the scan doesn't just halt entirely with an
                 # unhandeled error
                 except RuntimeError:
                     fit_performed = False

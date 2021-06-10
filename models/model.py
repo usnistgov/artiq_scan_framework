@@ -6,11 +6,11 @@
 from artiq.language.environment import NoDefault
 from artiq.language import *
 import numpy as np
+import logging
 
 
-#TODO:  Several methods need doc comments
 class Model(HasEnvironment):
-    """Class for encapsulating datsaet handling"""
+    """Class for dataset handling"""
     namespace = ""
     mirror_namespace = "current"
     mirror = False              #: Set to True to enable dataset mirroring or False to disable dataset mirroring.
@@ -35,6 +35,9 @@ class Model(HasEnvironment):
                        be disabled by setting model.mirror = False after model is built.
         """
         self.__dict__.update(kwargs)
+        if not hasattr(self, 'logger'):
+            self.logger = logging.getLogger('Model')
+
         self._namespace = self.namespace
         self._mirror_namespace = self.mirror_namespace
         self.validation_errors = {}
@@ -67,7 +70,8 @@ class Model(HasEnvironment):
                 key = key.replace("%", "")
                 if hasattr(self, key):
                     val = getattr(self, key)
-                    _namespace.append(str(val))
+                    if val is not None:
+                        _namespace.append(str(val))
             else:
                 _namespace.append(key)
 
@@ -240,7 +244,7 @@ class Model(HasEnvironment):
         :param key: Key of the dataset whose default dataset will be returned."""
         return self.get_dataset(self.default_key(key), archive=archive)
 
-    def get(self, key, default=NoDefault, mirror=False, default_fallback=None, archive=True):
+    def get(self, key, default=NoDefault, mirror=False, default_fallback=None, archive=True, warn=False):
         """Get the value of a dataset that is stored under the model namespace or the mirror namespace.
         :param key: The dataset key.  The key is automatically prefixed with either the model or mirror namespace.
         :param default: The default value to return if the dataset does not exist.
@@ -259,7 +263,18 @@ class Model(HasEnvironment):
                 default = self.get_default(key)
             except KeyError:
                 default = NoDefault
-        return self.get_dataset(self.key(key, mirror), default=default, archive=archive)
+        val = None
+
+        try:
+            val = self.get_dataset(self.key(key, mirror), default=default, archive=archive)
+        except KeyError as err:
+            # display warning when dataset does not exist as opposed to halting execution
+            if warn is True:
+                val = None
+                self.logger.warning('Dataset {} does not exist.  Returning None for dataset.'.format(err))
+            elif warn != 'silent':
+                raise
+        return val
 
     def mutate(self, key, i, value, which='both', varname=None, update_local=True):
         """Prefix key with the namespace and call self.mutate_dataset() using the prefixed key.

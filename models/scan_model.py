@@ -956,10 +956,8 @@ class ScanModel(Model):
             self.logger.warning("SKIP FIT. {}".format(errormsg))
         if self.fit_valid_soft is False:
             self.logger.warning("INVALID FIT. {}".format(errormsg))
-            self.logger.warning(errormsg)
         if self.fit_valid_strong is False:
             self.logger.error("INVALID FIT. {}".format(errormsg))
-            self.logger.error(errormsg)
 
         return fit_performed, self.fit_valid, saved, errormsg
 

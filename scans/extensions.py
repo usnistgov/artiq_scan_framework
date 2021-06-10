@@ -103,7 +103,7 @@ class FreqScan(Scan):
                                               "set to {0}".format(self.frequency_center))
                         # load the frequency center from saved dataset value
                         else:
-                            self.frequency_center = model.get_main_fit()
+                            self.frequency_center = model.get_main_fit(archive=False)
                             self.logger.debug("frequency_center loaded from datasets and set to {0}".format(
                                 self.frequency_center))
 
@@ -112,21 +112,18 @@ class TimeFreqScan(Scan):
     """Allows a scan experiment to scan over either a set of time values or a set of frequency values."""
     frequency_center = None  # default must be None so it can be overriden in the scan
     pulse_time = None  # default must be None so it can be overriden in the scan
-    frequency_center_default = 100 * MHz
-    pulse_time_default = 100 * us
     enable_auto_tracking = False
-    freq_unit = 'MHz'
-    freq_scale = MHz
-    freq_start = -.1 * MHz
-    freq_stop = .1 * MHz
 
-    def scan_arguments(self, times={}, frequencies={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
+    def scan_arguments(self, times={}, frequencies={}, frequency_center={}, pulse_time={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
         # assign default values for scan GUI arguments
         for k,v in {'start': 0, 'stop': 10 * us, 'npoints': 50, 'unit': 'us', 'scale': 1 * us, 'global_step': 10 * us, 'ndecimals':3}.items():
             times.setdefault(k, v)
         for k, v in {'start': -5*MHz, 'stop': 5*MHz, 'npoints': 50, 'unit': 'MHz', 'scale': 1 * MHz, 'ndecimals':4}.items():
             frequencies.setdefault(k, v)
-
+        for k, v in {'unit': 'MHz', 'scale': MHz, 'default': 100 * MHz, 'ndecimals': 4}.items():
+            frequency_center.setdefault(k, v)
+        for k, v in {'unit': 'us', 'scale': us, 'default': 100 * us, 'ndecimals': 4}.items():
+            pulse_time.setdefault(k, v)
 
         # create GUI argument to select if scan is a time or a frequency scan
         self.setattr_argument('scan', EnumerationValue(['frequency', 'time'], default='frequency'))
@@ -135,34 +132,28 @@ class TimeFreqScan(Scan):
         super().scan_arguments(npasses=npasses, nrepeats=nrepeats, nbins=nbins, fit_options=fit_options, guesses=guesses)
 
         # create remaining scan arguments for time and frequency scans
-        self.setattr_argument('frequencies', Scannable(
-            default=RangeScan(
-                start=frequencies['start'],
-                stop=frequencies['stop'],
-                npoints=frequencies['npoints']
-            ),
-            unit=frequencies['unit'],
-            scale=frequencies['scale'],
-            ndecimals=frequencies['ndecimals']
-        ), group='Scan Range')
+        if frequencies is not False:
+            self.setattr_argument('frequencies', Scannable(
+                default=RangeScan(
+                    start=frequencies['start'],
+                    stop=frequencies['stop'],
+                    npoints=frequencies['npoints']
+                ),
+                unit=frequencies['unit'],
+                scale=frequencies['scale'],
+                ndecimals=frequencies['ndecimals']
+            ), group='Scan Range')
 
         # auto tracking is disabled...
         # ask user for the frequency center
         if not self.enable_auto_tracking:
             if self.frequency_center is None:
-                self.setattr_argument('frequency_center', NumberValue(
-                    unit=self.freq_unit,
-                    scale=self.freq_scale,
-                    default=self.frequency_center_default,
-                    ndecimals=4
-                ), group='Scan Range')
+                if frequency_center != False:
+                    self.setattr_argument('frequency_center', NumberValue(**frequency_center), group='Scan Range')
+
             if self.pulse_time is None:
-                self.setattr_argument('pulse_time', NumberValue(
-                    unit='us',
-                    scale=1 * us,
-                    default=self.pulse_time_default,
-                    ndecimals=4
-                ), group='Scan Range')
+                if pulse_time != False:
+                    self.setattr_argument('pulse_time', NumberValue(**pulse_time), group='Scan Range')
         self.setattr_argument('times', Scannable(
             default=RangeScan(
                 start=times['start'],
@@ -239,12 +230,12 @@ class TimeFreqScan(Scan):
         # get the last fitted frequency
         model.type = 'frequency'
         model.bind()
-        freq = model.get_main_fit()
+        freq = model.get_main_fit(archive=False)
 
         # get the last fitted time
         model.type = 'time'
         model.bind()
-        time = model.get_main_fit()
+        time = model.get_main_fit(archive=False)
 
         # rebind the model to it's original namespace
         model.type = restore

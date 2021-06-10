@@ -252,11 +252,10 @@ class XYPlot(parent.Plot):
                 # See https://github.com/pyqtgraph/pyqtgraph/issues/211
                 if hasattr(error, "__len__") and not isinstance(error, np.ndarray):
                     error = np.array(error)
-                errbars = pyqtgraph.ErrorBarItem(
-                    x=np.array(x), y=np.array(y), height=2*error)
-                self.addItem(errbars)
-
-
+                if len(error) == len(x):
+                    errbars = pyqtgraph.ErrorBarItem(
+                        x = np.array(x), y = np.array(y), height = 2 * error)
+                    self.addItem(errbars)
 
 def main():
     applet = SimpleApplet(XYPlot)

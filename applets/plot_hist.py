@@ -1,13 +1,7 @@
 #!/usr/bin/env python3.5
-# -*- coding: utf8 -*-
-#
-# Author: Philip Kent / NIST Ion Storage & NIST Quantum Processing
-# 2016-2021
-#
-# Histogram plotting applet for the NIST scan framework
+
 import PyQt5  # make sure pyqtgraph imports Qt5
 import pyqtgraph
-import numpy as np
 
 from artiq.applets.simple import TitleApplet
 
@@ -21,6 +15,7 @@ class HistogramPlot(pyqtgraph.PlotWidget):
         pyqtgraph.PlotWidget.__init__(self)
         self.args = args
 
+
     def data_changed(self, data, mods, title):
         if title is None:
             try:
@@ -29,11 +24,12 @@ class HistogramPlot(pyqtgraph.PlotWidget):
                 title = ""
         try:
             y = data[self.args.y][1]
+            fit = data.get(self.args.fit, (False, None))[1] or [1 for _ in range(10)]
             if self.args.x is None:
                 x = None
             else:
                 x = data[self.args.x][1]
-            fit = data.get(self.args.fit, (False, None))[1]
+
             x_units = data.get(self.args.x_units, (False, None))[1] or 1
             x_label = data.get(self.args.x_label, (False, None))[1] or ""
             y_label = data.get(self.args.y_label, (False, None))[1] or ""
@@ -53,16 +49,16 @@ class HistogramPlot(pyqtgraph.PlotWidget):
             self.setLabel('bottom', x_label, **self.labelStyle)
             self.setLabel('left', y_label, **self.labelStyle)
             self.setTitle(title)
-            # draw fit
-            if fit is not None:
-                # style
-                pen = pyqtgraph.mkPen(color='r', width=4)
-                self.plot(np.linspace((x[1] + x[0]) / 2, (x[-1] + x[-2]) / 2, len(y)), fit, pen=pen)
+
+        # draw fit
+        if fit is not None:
+            # style
+            pen = self.get_style('fit.pen')
+            self.plot(x, fit, pen=None)
+
         else:
             print("Plot Hist: x and y dimensions don't agree")
 
-
-# ======= plot_hist.py =====
 
 def main():
     applet = TitleApplet(HistogramPlot)
