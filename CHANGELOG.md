@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - All existing files for the scan framework currently used at NIST.
-Changes from previous in-house version of the scan framework
+
+Changes from previous in-house version of the scan framework:
 - TimeFrequency renamed to ScanTimeFreqScan
 - FrequencyScan renamed to FreqScan
 - Removed analysis function in lib/functions.py
