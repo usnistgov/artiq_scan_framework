@@ -50,12 +50,11 @@ class HistogramPlot(pyqtgraph.PlotWidget):
             self.setLabel('left', y_label, **self.labelStyle)
             self.setTitle(title)
 
-        # draw fit
-        if fit is not None:
-            # style
-            pen = self.get_style('fit.pen')
-            self.plot(x, fit, pen=None)
-
+            # draw fit
+            if fit is not None:
+                # style
+                pen = self.get_style('fit.pen')
+                self.plot(x, fit, pen=None)
         else:
             print("Plot Hist: x and y dimensions don't agree")
 
