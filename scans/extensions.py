@@ -306,8 +306,8 @@ class ReloadingScan(Scan):
     def _scan_arguments(self):
         if self.enable_reloading:
             self.setattr_argument("check_for_ion", BooleanValue(default=False), 'Reloading')
-        if self.enable_simulations:
-            self.setattr_argument('lose_ion_at', NumberValue(default=-1, ndecimals=0, step=1), group='Simulation')
+        #if self.enable_simulations:
+        #    self.setattr_argument('lose_ion_at', NumberValue(default=-1, ndecimals=0, step=1), group='Simulation')
 
     def _map_arguments(self):
         """Map coarse grained attributes to fine grained options."""

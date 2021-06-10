@@ -72,12 +72,8 @@ class Scan(HasEnvironment):
     # Feature: auto tracking
     enable_auto_tracking = False  #: Auto center the scan range around the last fitted value.
 
-    # Feature: Scan simulating
-    simulate_scan = False         #: Set to true to disable certain callbacks that run on the core device.  This is used when simulating a scan without a core device, i.e. for debugging/testing purposes.
-    enable_simulations = False    #: Turn on GUI arguments for simulating scans.
-
     # Feature: host scans
-    run_on_core = None            #: Set to False to run scans entirely on the host and not on the core device.
+    run_on_core = True            #: Set to False to run scans entirely on the host and not on the core device.
 
     # Feature: profiling/timing
     enable_profiling = False  #: Profile the execution of the scan to find bottlenecks.
@@ -178,6 +174,11 @@ class Scan(HasEnvironment):
             self._load_points()
             self._logger.debug('loaded points')
 
+        # this expects that self.npoints is available
+        self.prepare_scan()
+        self.lab_prepare_scan()
+
+        if not resume:
             # display scan info
             if self.enable_reporting:
                 self.report(location='top')
@@ -185,10 +186,6 @@ class Scan(HasEnvironment):
             # display scan info
             if self.enable_reporting:
                 self.report()
-
-        # this expects that self.npoints is available
-        self.prepare_scan()
-        self.lab_prepare_scan()
 
         if not resume:
 
@@ -297,9 +294,8 @@ class Scan(HasEnvironment):
         try:
             # callback
             self._before_loop(resume)
-            if not self.simulate_scan:
-                # callback
-                self.initialize_devices()
+            # callback
+            self.initialize_devices()
 
             # iterate of passes
             while self._i_pass < npasses:
@@ -334,8 +330,7 @@ class Scan(HasEnvironment):
         except Paused:
             self._paused = True
         finally:
-            if not self.simulate_scan:
-                self.cleanup()
+            self.cleanup()
 
     # private: for scan.py
     @portable
@@ -452,8 +447,6 @@ class Scan(HasEnvironment):
     # private: for scan.py
     def map_arguments(self):
         """Map coarse grained attributes to fine grained options."""
-        if self.run_on_core is None:
-            self.run_on_core = not self.simulate_scan
 
         if self.enable_fitting:
             # defaults
@@ -1083,13 +1076,6 @@ class Scan(HasEnvironment):
                                                        param_index=None))
         self._scan_arguments()
 
-        if self.enable_simulations:
-            group = 'Simulation'
-            self.setattr_argument('simulate_scan', BooleanValue(default=False), group=group)
-            self.setattr_argument('noise_level', NumberValue(default=1, ndecimals=2, step=0.1), group=group)
-            self._scan_arguments()
-            self.setattr_argument('debug', NumberValue(default=0, ndecimals=0, scale=1, step=1), group)
-
     # helper: for child class
     def register_model(self, model_instance, measurement=None, fit=None, calculation=None,
                        init_datasets=True, **kwargs):
@@ -1330,7 +1316,6 @@ class Scan(HasEnvironment):
             - runs anytime _run_scan_core() or _run_scan_host() is called
             - runs on the host or the core device
             - called after the 'before_scan' callback
-            - does not run if self.simulate_scan == True
         """
         pass
 
