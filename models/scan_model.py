@@ -211,6 +211,10 @@ class ScanModel(Model):
     strong_validators = None        #: Dictionary containing validation rules of all strong fit validations that will be performed.
     pre_validators = None           #: Dictionary containing validation rules of all all pre-fit validations validations that will be performed
 
+    # histogram configuration
+    bin_start = 0
+    bin_end = 'auto'
+
     # plot format configuration
     x_label = ''    #: Label of the x-axis for the current scan plot.
     y_label = ''    #: Label of the y-axis for the current scan plot.
@@ -327,7 +331,11 @@ class ScanModel(Model):
         self.npasses = self.stat_model.npasses = scan.npasses
         self.bins = self.stat_model.bins = np.linspace(-0.5, self.nbins - 0.5, self.nbins + 1)
         if self.enable_histograms:
-            self.hist_model.init_bins(bin_start=0, bin_end=self.nbins-1, nbins=self.nbins)
+            if self.bin_end == 'auto' or self.bin_end == None:
+                bin_end = self.nbins - 1
+            else:
+                bin_end = self.bin_end
+            self.hist_model.init_bins(bin_start=self.bin_start, bin_end=bin_end, nbins=self.nbins)
 
     def load(self):
         """Fetches the 'x', 'means', 'errors', and 'counts' datasets and sets their values to attributes of the model."""
@@ -371,7 +379,7 @@ class ScanModel(Model):
             self.stat_model.write('nbins')
             self.stat_model.write('bins')
             self.stat_model.init('hist', shape=shape + [self.nbins], varname='hist', fill_value=0, dtype=np.int32)
-            self.hist_model.init_datasets()
+            self.hist_model.init_datasets(broadcast=self.broadcast, persist=self.persist, save=self.save)
 
         # initialize fits
         self.fit_model.init('fitline', plot_shape)
