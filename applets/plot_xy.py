@@ -1,10 +1,4 @@
 #!/usr/bin/env python3.5
-# -*- coding: utf8 -*-
-#
-# Author: Philip Kent / NIST Ion Storage & NIST Quantum Processing
-# 2016-2021
-#
-# Main plotting applet for the NIST scan framework
 import scan_framework.applets.plot as parent
 import pyqtgraph
 import PyQt5

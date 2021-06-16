@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-#
-# Author: Philip Kent / NIST Ion Storage & NIST Quantum Processing
-# 2016-2021
-#
 from scan_framework.models.model import *
 import numpy as np
 from artiq.language.core import *

@@ -1,9 +1,3 @@
-# -*- coding: utf8 -*-
-#
-# Author: Philip Kent / NIST Ion Storage & NIST Quantum Processing
-# 2016-2021
-#
-
 from artiq.experiment import *
 from scan_framework.models.model import *
 from scan_framework.models.hist_model import *
@@ -183,7 +177,7 @@ class ScanModel(Model):
     subspace = {}               # apparently no longer used, MARKED FOR REMOVAL
 
     # datasets
-    namespace = None                   #: Dataset key under which all datasets are created
+    namespace = ""                     #: Dataset key under which all datasets are created
     mirror_namespace = 'current_scan'  #: Dataset key under which all datasets are mirrored -- datasets under this key are plotted by the current scan applet
     broadcast = False                  #: If True all datasets besides the main fit dataset are broadcast when created
     persist = False                    #: If True all datasets besides the main fit dataset are persisted
@@ -236,6 +230,8 @@ class ScanModel(Model):
     fit_valid_soft = None    #: Set to True by the Scan class if the fit passed soft-validation, False if it falied, None if soft-validation has not yet been performed.
     fit_valid_strong = None  #: Set to True by the Scan class if the fit passed strong-validation, False if it falied, None if strong-validation has not yet been performed.
     _fit_saved = None        #: Set to True by the Scan class after the main fit has been broadcast, saved, and persisted to the datasets.
+
+    type = None              #: Set by the TimeFreqScan class to either 'time' or 'frequency' to indiciate to the model if it will be processing data from a time scan or from a frequency scan.
 
     def report(self):
         """Generate a report string that displays the values of the stat datasets."""
@@ -796,9 +792,15 @@ class ScanModel(Model):
                                the fir param value will be fetched from the datasets.
         value.
         """
+
         if use_fit_result:
+            if self.main_fit_param is None:
+                raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
             return self.fit.fitresults[self.main_fit_param]
         else:
+            if self.main_fit_ds is None:
+                raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
+
             if self.fit_model.default_fallback:
                 default = self.defaults_model.get(self.main_fit_ds, archive=archive)
             else:
@@ -882,9 +884,7 @@ class ScanModel(Model):
         # - pre-validate data
         if validate:
             try:
-                valid_pre = FitModel.pre_validate(self,
-                                      series={'x_data': x_data, 'y_data': y_data},
-                                      validators=self.pre_validators)
+                valid_pre = self.validate_fit('pre', x_data, y_data)
             except CantFit as msg:
                 valid_pre, errormsg = False, msg
             self.fit_valid_pre = valid_pre
@@ -908,6 +908,8 @@ class ScanModel(Model):
             self.fit.fitresults['x_dataset'] = self.get_xs_key()
             self.fit.fitresults['y_dataset'] = self.get_means_key()
 
+            self.before_validate(self.fit)
+
             # - set all fitted params to datasets
             if set:
                 self.set_fits(i)
@@ -919,7 +921,7 @@ class ScanModel(Model):
                 try:
                     valid_strong = True
                     errormsg = ""
-                    FitModel.validate(self, self.strong_validators)
+                    self.validate_fit('strong')
                 except BadFit as msg:
                     valid_strong = False
                     errormsg = msg
@@ -932,7 +934,7 @@ class ScanModel(Model):
                     try:
                         valid_soft = True
                         errormsg = ""
-                        FitModel.validate(self, self.validators)
+                        self.validate_fit('soft')
                     except BadFit as msg:
                         valid_soft = False
                         errormsg = msg
@@ -969,19 +971,29 @@ class ScanModel(Model):
 
         return fit_performed, self.fit_valid, saved, errormsg
 
-    def validate_fit(self, validators, x_data=None, y_data=None):
+    def before_validate(self, fit):
+        """User callback (runs on host).
+
+        Executed after a fit was successfully performed by the scan model, but before
+        fits are validated or saved to the datasets.  This callback allows additional fit parameters
+        to be calculated from the parameters of the fit function.  e.g. calculating a pi time from
+        a transition rate.  Any calculated fit parameters will also be validated by any validation
+        rules that are defined for name of the calculated parameter.
+
+        :param fit: Fit object for the fit that was just performed
+        """
+        pass
+
+    def validate_fit(self, rule, x_data=None, y_data=None):
         # check pre-validation rules
         if rule == 'pre':
-            try:
-                FitModel.pre_validate(self,
-                                  series={'x_data': x_data,'y_data': y_data},
-                                  validators=self.validators)
-            except BadFit as msg:
-                return False, msg
-            except CantFit as msg:
-                return False, msg
-        # passed
-        return True, ""
+            return FitModel.pre_validate(self,
+                                         series={'x_data': x_data, 'y_data': y_data},
+                                         validators=self.pre_validators)
+        elif rule == 'strong':
+            FitModel.validate(self, self.strong_validators)
+        elif rule == 'soft':
+            FitModel.validate(self, self.validators)
 
     def save_fit(self, fitparam, dskey, broadcast=False, persist=False, save=True):
         """Helper method.  Saves the specified fit param to the datasets under the model's namespace.

@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-#
-# Author: Philip Kent / NIST Ion Storage & NIST Quantum Processing
-# 2016-2021
-#
 from scan_framework.models.model import *
 from scan_framework.analysis.curvefits import *
 import numpy as np

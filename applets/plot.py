@@ -1,9 +1,3 @@
-#!/usr/bin/env python3.5
-# -*- coding: utf8 -*-
-#
-# Author: Philip Kent / NIST Ion Storage & NIST Quantum Processing
-# 2016-2021
-#
 # Base class for plot applets used in the NIST scan framework
 import artiq.applets.simple as plot_xy_parent
 import pyqtgraph

@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-#
-# Author: Philip Kent / NIST Ion Storage & NIST Quantum Processing
-# 2016-2021
-#
 from artiq.language.environment import NoDefault
 from artiq.language import *
 import numpy as np
@@ -85,14 +80,11 @@ class Model(HasEnvironment):
             key = ".".join(key)
         if mirror:
             if self.mirror_namespace.strip():
-                return self.mirror_namespace + "." + key
-            else:
-                return key
+                key = self.mirror_namespace + "." + key
         else:
             if self.namespace.strip():
-                return self.namespace + "." + key
-            else:
-                return key
+                key = self.namespace + "." + key
+        return key
 
     def default_key(self, key):
         """Returns the dataset key where default values for the dataset identified by key are stored.

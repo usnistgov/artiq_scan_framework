@@ -1,9 +1,3 @@
-# -*- coding: utf8 -*-
-#
-# Author: Philip Kent / NIST Ion Storage & NIST Quantum Processing
-# 2016-2021
-#
-#
 from artiq.experiment import *
 import numpy as np
 from time import time, sleep
@@ -70,7 +64,7 @@ class Scan(HasEnvironment):
     nwarmup_points = 0            #: Number of warm-up points
 
     # Feature: auto tracking
-    enable_auto_tracking = False  #: Auto center the scan range around the last fitted value.
+    enable_auto_tracking = True   #: Auto center the scan range around the last fitted value.
 
     # Feature: host scans
     run_on_core = True            #: Set to False to run scans entirely on the host and not on the core device.
@@ -107,7 +101,7 @@ class Scan(HasEnvironment):
         self.nbins = None
         #self.nrepeats = 1  #: Number of repeats
         self.nrepeats = None
-        self._x_offset = np.float64(0.0)
+        self._x_offset = None
         self.debug = 0
 
         self.do_fit = False  #: Fits are performed after the scan completes.  Set automatically by scan framework from the 'Fit Options' argument
@@ -519,19 +513,24 @@ class Scan(HasEnvironment):
 
     # private: for scan.py
     def __get_x_offset(self):
-        if self._x_offset:
+        # offset has been manually set by the user:
+        if self._x_offset is not None:
             return self._x_offset
-        if self.enable_auto_tracking:
-            for entry in self._model_registry:
-                model = entry['model']
-                if 'auto_track' in entry and entry['auto_track']:
-                    # use the last performed fit
-                    if entry['auto_track'] == 'fitresults' and hasattr(model, 'fit'):
-                        return model.fit.fitresults[model.main_fit]
-                    # use dataset value
-                    else:
-                        return model.get_main_fit(archive=False)
-        return self._x_offset
+        # automatic determination of x_offset:
+        else:
+            if self.enable_auto_tracking:
+                for entry in self._model_registry:
+                    model = entry['model']
+                    if 'auto_track' in entry and entry['auto_track']:
+                        # use the last performed fit
+                        if entry['auto_track'] == 'fitresults' and hasattr(model, 'fit'):
+                            return model.fit.fitresults[model.main_fit]
+                        # use dataset value
+                        elif entry['auto_track'] == 'fit' or entry['auto_track'] is True:
+                            return model.get_main_fit(archive=False)
+
+        # default to no offset if none of the above cases apply
+        return 0.0
 
     # private: for scan.py
     def _init_simulations(self):
@@ -1760,6 +1759,7 @@ class Scan1D(Scan):
 
         errors = model.stat_model.get('error', mirror=use_mirror)
         fit_function = model.fit_function
+
         guess = self._get_fit_guess(fit_function)
 
         return model.fit_data(
@@ -1776,8 +1776,9 @@ class Scan1D(Scan):
             )
 
     def _offset_points(self, x_offset):
-        self._points += x_offset
-        self._points_flat += x_offset
+        if x_offset is not None:
+            self._points += x_offset
+            self._points_flat += x_offset
 
     def _write_datasets(self, entry):
         entry['model'].write_datasets(dimension=0)

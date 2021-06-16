@@ -10,7 +10,7 @@ changes:
     4. The :code:`point` and :code:`i_point` parameters passed to callback methods will be lists with two entries containing the point and point index of each dimension.
 
 To create a 2D scan, inherit from the :code:`Scan2D` class, register two models, and return a list from
-:code:`get_scan_points()` with two entries containing the scan points for both dimensions.  The :code:`dimension` argument
+:meth:`get_scan_points()<scan_framework.scans.scan.Scan.get_scan_points>`  with two entries containing the scan points for both dimensions.  The :code:`dimension` argument
 passed to :code:`register_model()` specifies the dimension of the model.  Dimension 1 is the sub-scan, and dimension 0
 is the top level scan.
 

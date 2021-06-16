@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-#
-# Author: Philip Kent / NIST Ion Storage & NIST Quantum Processing
-# 2016-2021
-#
 # Extensions to the base scan class which provide commonly used features.
 
 from artiq.language.core import *
@@ -39,10 +34,10 @@ class TimeScan(Scan):
     def get_scan_points(self):
         return self.times
 
+
 class FreqScan(Scan):
     """Scan class for scanning over frequency values."""
-    frequency_center = None  # default must be None so it can be overriden in the scan
-    enable_auto_tracking = False
+    _freq_center_manual = None
 
     def scan_arguments(self, frequencies={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
         # assign default values for scan GUI arguments
@@ -50,7 +45,11 @@ class FreqScan(Scan):
             frequencies.setdefault(k, v)
 
         # crate core scan arguments
-        super().scan_arguments(npasses=npasses, nrepeats=nrepeats, nbins=nbins, fit_options=fit_options, guesses=guesses)
+        super().scan_arguments(npasses=npasses,
+                               nrepeats=nrepeats,
+                               nbins=nbins,
+                               fit_options=fit_options,
+                               guesses=guesses)
 
         # create scan arguments for frequency scans
         group = 'Scan Range'
@@ -68,51 +67,12 @@ class FreqScan(Scan):
     def get_scan_points(self):
         return self.frequencies
 
-    def report(self, location='both'):
-        super().report(location)
-        if self.enable_auto_tracking:
-            if location == 'bottom':
-                self.logger.info('Frequency Center: %f MHz' % (self.frequency_center / MHz))
-
-    def _attach_models(self):
-        self.__load_frequency_center()
-
-        # has a frequency center been specified (either auto or manually)?
-        if self.frequency_center is not None:
-            # offset scan points by the frequency center
-            self._x_offset = self.frequency_center
-            self._logger.debug("set _x_offset to frequency_center value of {0}".format(self.frequency_center))
-
-    def __load_frequency_center(self):
-        # frequency is manually set in the scan, state that in the debug logs.
-        if self.frequency_center is not None:
-            self.logger.debug("frequency_center manually set to {0}".format(self.frequency_center))
-
-        # the frequency center is auto loaded from the fits by this class...
-        if self.enable_auto_tracking:
-            for entry in self._model_registry:
-                model = entry['model']
-                if 'auto_track' in entry and entry['auto_track']:
-
-                    # hasn't been set yet, ok to auto load
-                    if self.frequency_center is None:
-                        # load the frequency center from fit just performed
-                        if entry['auto_track'] == 'fitresults':
-                            self.frequency_center = model.fit.fitresults[model.main_fit]
-                            self.logger.debug("frequency_center loaded from fit results and "
-                                              "set to {0}".format(self.frequency_center))
-                        # load the frequency center from saved dataset value
-                        else:
-                            self.frequency_center = model.get_main_fit(archive=False)
-                            self.logger.debug("frequency_center loaded from datasets and set to {0}".format(
-                                self.frequency_center))
-
 
 class TimeFreqScan(Scan):
     """Allows a scan experiment to scan over either a set of time values or a set of frequency values."""
     frequency_center = None  # default must be None so it can be overriden in the scan
     pulse_time = None  # default must be None so it can be overriden in the scan
-    enable_auto_tracking = False
+    enable_auto_tracking = True
 
     def scan_arguments(self, times={}, frequencies={}, frequency_center={}, pulse_time={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
         # assign default values for scan GUI arguments
@@ -168,7 +128,8 @@ class TimeFreqScan(Scan):
 
     def _attach_models(self):
         self.__bind_models()
-        self.__load_frequency_center()
+        if not self.fit_only:
+            self.__load_frequency_center()
 
         # tell scan to offset x values by the frequency_center
         # this is done even when not auto-tracking in case the user has manually set frequency_center
@@ -179,16 +140,13 @@ class TimeFreqScan(Scan):
     def __bind_models(self):
         # bind each registered model to the scan type (frequency or time)
         for entry in self._model_registry:
-            model = entry['model']
+            # tell the model if this a frequency or time scan
+            entry['model'].type = self.scan
 
             # bind model namespace to scan type
             if ('bind' in entry and entry['bind']) or (
                     self.enable_auto_tracking and 'auto_track' in entry and entry['auto_track']):
-                # tell the model if this a frequency or time scan
-                model.type = self.scan
-                model.bind()
-                self._logger.debug("set model.type to '{1}' and rebound namespace.  "
-                                   "namespace is now '{2}'".format(model._name, self.scan, model.namespace))
+                entry['model'].bind()
 
     def __load_frequency_center(self):
         # frequency or pulse time manually set in the scan, state that in the debug logs
@@ -273,6 +231,7 @@ class TimeFreqScan(Scan):
             if self.scan == 'time':
                 if self.frequency_center is not None:
                     self.logger.info('Frequency: %f MHz' % (self.frequency_center / MHz))
+
 
 class ReloadingScan(Scan):
     """Allows detection of lost ion, pausing scan, reloading ion, and resuming scan"""
@@ -410,8 +369,6 @@ class ReloadingScan(Scan):
     @kernel
     def _measure_ion_threshold(self):
         """Measure dark rate and  set self._ion_threshold to a percentage of the measured rate"""
-        # TODO- can we use debugs to show these print statements instead of always
-        # print("measuring dark rate")
         dark_rate = self.loading.measure_dark_rate()
         self.ion_threshold = (self.perc_of_dark / 100.0) * dark_rate
         self.ion_second_threshold = (self.perc_of_dark_second / 100.0) * dark_rate

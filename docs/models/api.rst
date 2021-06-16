@@ -47,18 +47,18 @@ Full API documentation for models
     :private-members:
     :undoc-members:
 
-:mod:`models.frequency_model` module
+:mod:`models.freq_model` module
 --------------------------------------------
 
-.. automodule:: scan_framework.models.frequency_model
+.. automodule:: scan_framework.models.freq_model
     :members:
     :special-members:
     :private-members:
     :undoc-members:
 
-:mod:`models.time_frequency_model` module
+:mod:`models.time_freq_model` module
 --------------------------------------------
-.. automodule:: scan_framework.models.time_frequency_model
+.. automodule:: scan_framework.models.time_freq_model
     :members:
     :special-members:
     :private-members:
