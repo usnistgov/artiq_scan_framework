@@ -1,7 +1,8 @@
 # -*- coding: utf8 -*-
 #
 # Author: Daniel Slichter / NIST Ion Storage
-# 2016-2017
+# 2016-2021
+# 
 #
 # Automated scientific curve fitting routines
 #
@@ -11,11 +12,14 @@ from scipy.fftpack import fft
 from scipy.interpolate import LSQUnivariateSpline
 from scipy.special import erfinv
 from collections import namedtuple
+from copy import deepcopy
 import numpy as np
+import logging
 
 __all__ = ["Fit", "ExpSine", "Exp2Sine", "Sine", "Sin4", "Poly", "Lor",
            "Gauss", "AtomLine", "Exp", "Power", "Spline"]
 
+logger = logging.getLogger(__name__)
 
 class Fit():
     """Class for fitting curves and storing/calculating results.
@@ -176,32 +180,33 @@ class Fit():
             larger than len(x)/2, it will be rounded down to len(x)/2.  This
             prevents undesirable "spikes" from appearing in the fitted spline.
 
-        The constructor stores x, y, and yerr (if given) as attributes of the
-        Fit() object.  Before doing so, it checks for and discards any data
-        points where x, y, and/or yerr (if given) is NaN or inf.  In addition,
-        it sorts all the data in order of increasing x before storing as
-        object attributes.
+        The constructor stores deep copies of x, y, and yerr (if given) as 
+        attributes of the Fit() object.  Before doing so, it checks for and 
+        discards any data points where x, y, and/or yerr (if given) is NaN or 
+        inf.  In addition, it sorts all the data in order of increasing x 
+        before storing as object attributes.
         """
 
-        x = np.asarray(x)
-        y = np.asarray(y)
+        xtemp = np.asarray(deepcopy(x))
+        ytemp = np.asarray(deepcopy(y))
         # order in ascending order of x for fitting, clean any nans and infs
         if yerr is None:
-            keep = np.isfinite(x) & np.isfinite(y)
-            x = x[keep]
-            y = y[keep]
-            self.y = y[np.argsort(x)]
-            self.x = x[np.argsort(x)]
+            keep = np.isfinite(xtemp) & np.isfinite(ytemp)
+            xtemp = xtemp[keep]
+            ytemp = ytemp[keep]
+            self.y = ytemp[np.argsort(xtemp)]
+            self.x = xtemp[np.argsort(xtemp)]
             self.yerr = None
         else:
-            yerr = np.asarray(yerr)
-            keep = np.isfinite(x) & np.isfinite(y) & np.isfinite(yerr)
-            x = x[keep]
-            y = y[keep]
-            yerr = yerr[keep]
-            self.y = y[np.argsort(x)]
-            self.yerr = yerr[np.argsort(x)]
-            self.x = x[np.argsort(x)]
+            yerrtemp = np.asarray(deepcopy(yerr))
+            keep = (np.isfinite(xtemp) & np.isfinite(ytemp) 
+                    & np.isfinite(yerrtemp))
+            xtemp = xtemp[keep]
+            ytemp = ytemp[keep]
+            yerrtemp = yerrtemp[keep]
+            self.y = ytemp[np.argsort(xtemp)]
+            self.yerr = yerrtemp[np.argsort(xtemp)]
+            self.x = xtemp[np.argsort(xtemp)]
 
         self.func = func
         self.polydeg = polydeg
@@ -228,8 +233,8 @@ class Fit():
             try:
                 splobj = self.splobj
             except AttributeError:
-                print("No available spline fit parameters!")
-                print("Call fit_data() to generate spline fit.")
+                logger.error("No available spline fit parameters!\n" + 
+                               "Call fit_data() to generate spline fit.")
                 raise
             else:
                 return splobj(x)
@@ -237,8 +242,8 @@ class Fit():
             try:
                 popt = self.popt
             except AttributeError:
-                print("No available polynomial fit parameters!")
-                print("Call fit_data() to generate fit.")
+                logger.error("No available polynomial fit parameters!\n" + 
+                               "Call fit_data() to generate polynomial fit.")
                 raise
             else:
                 return self.func.value(x, popt)
@@ -246,8 +251,8 @@ class Fit():
             try:
                 popt = self.popt
             except AttributeError:
-                print("No available fit parameters!")
-                print("Call fit_data() to generate fit.")
+                logger.error("No available polynomial fit parameters!\n" + 
+                               "Call fit_data() to generate fit.")
                 raise
             else:
                 return self.func.value(x, *popt)
@@ -365,23 +370,24 @@ class Fit():
                 try:
                     popt, pcov = np.polyfit(x, y, polydeg, cov=True)
                 except:
-                    print("Polynomial fit failed!")
+                    logger.error("Polynomial fit failed!")
                     raise
             else:
                 if np.any(np.less_equal(yerr, [0])):
-                    print("Zero or negative \'yerr\' values provided!")
-                    print("Ignoring \'yerr\', performing unweighted fit.")
+                    logger.warning("Zero or negative \'yerr\' values " +
+                                   "provided!\nIgnoring \'yerr\', performing "+
+                                   "unweighted fit.")
                     try:
                         popt, pcov = np.polyfit(x, y, polydeg, cov=True)
                     except:
-                        print("Polynomial fit failed!")
+                        logger.error("Polynomial fit failed!")
                         raise
                 else:
                     try:
                         popt, pcov = np.polyfit(x, y, polydeg, w=1/yerr,
                                                 cov=True)
                     except:
-                        print("Polynomial fit failed!")
+                        logger.error("Polynomial fit failed!")
                         raise
 
             fitline = np.polyval(popt, x)
@@ -394,12 +400,21 @@ class Fit():
             extrema = extrema[np.logical_and(extrema <= np.amax(x),
                                              extrema >= np.amin(x))]
             extrema_vals = np.polyval(popt, extrema)
-            self.fitresults['max'] = np.amax(extrema_vals)
-            self.fitresults['min'] = np.amin(extrema_vals)
-            self.fitresults['maxloc'] = extrema[np.argmax(extrema_vals)]
-            self.fitresults['minloc'] = extrema[np.argmin(extrema_vals)]
-            self.fitresults['extrema_locs'] = extrema
-            self.fitresults['extrema_vals'] = extrema_vals
+            # check to see if we have extrema, if not then manually set to None
+            if extrema.size > 0:        
+                self.fitresults['max'] = np.amax(extrema_vals)
+                self.fitresults['min'] = np.amin(extrema_vals)
+                self.fitresults['maxloc'] = extrema[np.argmax(extrema_vals)]
+                self.fitresults['minloc'] = extrema[np.argmin(extrema_vals)]
+                self.fitresults['extrema_locs'] = extrema
+                self.fitresults['extrema_vals'] = extrema_vals
+            else:
+                self.fitresults['max'] = None
+                self.fitresults['min'] = None
+                self.fitresults['maxloc'] = None
+                self.fitresults['minloc'] = None
+                self.fitresults['extrema_locs'] = extrema
+                self.fitresults['extrema_vals'] = extrema_vals
             for k in ['max', 'min', 'maxloc', 'minloc', 'extrema_locs',
                       'extrema_vals']:
                 setattr(self, k, self.fitresults[k])
@@ -435,11 +450,18 @@ class Fit():
 
             # explicit spline knots may not include endpoints
             t = np.linspace(x[0], x[-1], knots)[1:-1]
-
+            
+            if yerr is not None:
+                if np.any(np.less_equal(yerr, [0])):
+                    logger.warning("Zero or negative \'yerr\' values " +
+                                   "provided!\nIgnoring \'yerr\', performing "+
+                                   "unweighted fit.")
+                    yerr = None
+                    
             try:
                 splresult = LSQUnivariateSpline(x, y, t, w=yerr, k=4)
             except:
-                print("Spline fit failed!")
+                logger.error("Spline fit failed!")
                 raise
 
             fitline = splresult(x)
@@ -499,24 +521,24 @@ class Fit():
             # now we fit the curve, weighted by yerr.  if there are no
             # weights provided by the user, or if the weights are invalid (zero
             # or negative) yerr is None and curve_fit() does an unweighted fit.
-
+            if yerr is not None:
+                if np.any(np.less_equal(yerr, [0])):
+                    logger.warning("Zero or negative \'yerr\' values " +
+                                   "provided!\nIgnoring \'yerr\', performing "+
+                                   "unweighted fit.")
+                    yerr = None
             # The x_scale parameter is important for producing robust fits,
             # because the values of the fit parameters can vary widely.  The
             # use of x_scale is only available to us if curve_fit calls
             # least_squares() instead of leastsq(), so we fix the method
             # as 'trf' to enforce this.
-            if yerr is not None:
-                if np.any(np.less_equal(yerr, [0])):
-                    print("Zero or negative \'yerr\' values provided!")
-                    print("Ignoring \'yerr\', performing unweighted fit.")
-                    yerr = None
             try:
                 popt, pcov = curve_fit(_wrap_func, x, y, p0=guess, sigma=yerr,
                                        absolute_sigma=False, bounds=bounds,
                                        max_nfev=10000, x_scale=x_scale,
                                        method='trf')
             except:
-                print(func.__name__ + " fit failed!")
+                logger.error(func.__name__ + " fit failed!")
                 raise
 
             # rebuild popt and pcov so they include all parameters (including
@@ -609,11 +631,12 @@ class Fit():
                  confidence level.
         """
         # errors on fit line and parameters are not relevant for spline fits
-        if self.func.__name__ is 'Spline':
-            print("No confidence bands for smoothing splines!")
+        if self.func.__name__ == 'Spline':
+            logger.error("No confidence bands for smoothing splines!")
             return
         elif self.fit_good is False:
-            print("No valid fit parameters for calculating confidence bands!")
+            logger.error("No valid fit parameters for calculating confidence" + 
+                        " bands!")
             return
 
         # calculate partial derivatives wrt all fit parameters at locations x
@@ -648,8 +671,8 @@ class Fit():
         ylower_fine - same as lower for for fitline_fine
         """
         # errors on fit line and parameters are not relevant for spline fits
-        if self.func.__name__ is 'Spline':
-            print("No confidence bands for smoothing splines!")
+        if self.func.__name__ == 'Spline':
+            logger.error("No confidence bands for smoothing splines!")
             self.fitresults['ysigma'] = 0.*self.fitline
             self.fitresults['yupper'] = self.fitline
             self.fitresults['ylower'] = self.fitline
@@ -663,7 +686,8 @@ class Fit():
                     setattr(self, k, self.fitresults[k])
             return
         elif self.fit_good is False:
-            print("No valid fit parameters for calculating confidence bands!")
+            logger.error("No valid fit parameters for calculating confidence" +
+                         " bands!")
             return
 
         ysigma, yupper, ylower = self.conf_band(self.x, conf)
@@ -713,62 +737,65 @@ class FitFunction():
             for k, v in man_guess.items():
                 if k in names:
                     if k in hold.keys():
-                        print('\'' + k + '\' is being held, manual guess ' +
-                              'ignored!')
+                        logger.warning('\'' + k + '\' is being held, manual ' +
+                                       'guess ignored!')
                     else:
                         g[k] = v
                 else:
-                    print('\'' + k + '\' is not a valid parameter name for ' +
-                          'man_guess!')
+                    logger.warning('\'' + k + '\' is not a valid parameter ' +
+                                   'name for man_guess!')
 
         # if manual scales are provided, replace autoscale with manual
         if man_scale:
             for k, v in man_scale.items():
                 if k in names:
                     if k in hold.keys():
-                        print('\'' + k + '\' is being held, manual scale ' +
-                              'ignored!')
+                        logger.warning('\'' + k + '\' is being held, manual ' +
+                                       'scale ignored!')
                     else:
                         if v <= 0:
-                            print('Manual scale for \'' + k +
-                                  '\' must be greater than zero.')
-                            print('Ignoring manual scale for \'' + k + '\'.')
+                            logger.warning('Manual scale for \'' + k +
+                                           '\' must be greater than zero.\n' +
+                                    'Ignoring manual scale for \'' + k + '\'.')
                         elif np.isinf(v):
-                            print('Manual scale for \'' + k +
-                                  '\' cannot be infinite.')
-                            print('Ignoring manual scale for \'' + k + '\'.')
+                            logger.warning('Manual scale for \'' + k +
+                                  '\' cannot be infinite.\nIgnoring manual ' +
+                                  'scale for \'' + k + '\'.')
                         else:
                             xsc[k] = v
                 else:
-                    print('\'' + k + '\' is not a valid parameter name for ' +
-                          'man_scale!')
+                    logger.warning('\'' + k + '\' is not a valid parameter ' +
+                                   'name for man_scale!')
 
         # replace default bounds with any user-supplied manual bounds
         if man_bounds:
             for k, v in man_bounds.items():
                 if k in names:
                     if k in hold.keys():
-                        print('\'' + k + '\' is being held, manual bounds ' +
-                              'ignored!')
+                        logger.warning('\'' + k + '\' is being held, manual ' +
+                                       'scale ignored!')
                     elif len(v) != 2:
-                        print('Bounds for \'' + k + '\' must have exactly ' +
-                              'two elements [lower, upper].')
-                        print('Ignoring manual bounds for \'' + k + '\'.')
+                        logger.warning('Bounds for \'' + k + '\' must have ' +
+                                       'exactly two elements [lower, upper].' +
+                                       '\nIgnoring manual bounds for \'' + 
+                                       k + '\'.')
                     elif v[0] >= v[1]:
-                        print('Lower bound for \'' + k + '\' must be  ' +
-                              'strictly less than upper bound.')
-                        print('Ignoring manual bounds for \'' + k + '\'.')
+                        logger.warning('Lower bound for \'' + k + '\' must ' +
+                                       'be strictly less than upper bound.' +
+                                       '\nIgnoring manual bounds for \'' + 
+                                       k + '\'.')
                     elif g[k] <= v[0] or g[k] >= v[1]:
-                        print('Initial guess for \'' + k + '\' must be  ' +
-                              'between manual bounds.')
-                        print('Ignoring manual bounds for \'' + k + '\'.')
-                        print('Provide suitable manual guess between bounds.')
+                        logger.warning('Initial guess for \'' + k + '\' ' + 
+                                       'must be between manual bounds.' +
+                                       '\nIgnoring manual bounds for \'' + 
+                                       k + '\'.\nProvide suitable manual ' +
+                                       'guess between bounds.')
                     else:
                         bounds[0][names.index(k)] = v[0]
                         bounds[1][names.index(k)] = v[1]
                 else:
-                    print('\'' + k + '\' is not a valid parameter name for ' +
-                          'man_bounds!')
+                    logger.warning('\'' + k + '\' is not a valid parameter ' +
+                                   'name for man_bounds!')
         # construct guess and x_scale output arrays
         guess = np.zeros(np.shape(names))
         x_scale = np.zeros(np.shape(names))
@@ -1513,7 +1540,32 @@ class Power(FitFunction):
 def main():
 
     import matplotlib.pyplot as plt
-
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
+    
+    """Testing basic errors
+    """
+    logger.info("\n\n=====Calling value or conf without fit parameters====\n")
+    for func in [Spline, Poly, Lor]:
+        fitobj = Fit([0,1],[0,1], func)
+        try:
+            fitobj.value(1)
+        except:
+            pass
+        try:
+            fitobj.fitline_conf()
+        except:
+            pass
+        try:
+            fitobj.conf_band(1)
+        except:
+            pass
+    
+    logger.info("\n\n=====Testing example noisy data curve fits====\n")
+    
+    
     """Quick testing for curve fits - run on simulated noisy data for all
     curve fit types.  The main purpose is to check for breaking code if
     things are refactored or updated.
@@ -1523,7 +1575,7 @@ def main():
     f = np.linspace(2e6, 3e6, 30)
     f2 = np.linspace(6e5, 3e6, 40)
     x = np.linspace(-2e3, 2e3, 60)
-
+    
     # parameters and noise amplitudes
     expsinep0 = [0.6, 3e4, 26e-6, np.pi/2, 0.5]
     exp2sinep0 = [0.5, 5e4, 35e-6, 3*np.pi/2, 0.5]
@@ -1535,87 +1587,113 @@ def main():
     powerp0 = [2e-6, -0.35, 2.5e-10]
     namp = 0.1
     namppow = 1.3e-9
-
+    
+    rng = np.random.default_rng()
+    
     # create simulated data
-    expsine = ExpSine.value(t, *expsinep0) + namp*np.random.randn(t.shape[0])
+    expsine = ExpSine.value(t, *expsinep0) + namp*rng.normal(size=t.shape[0])
     exp2sine = (Exp2Sine.value(t, *exp2sinep0)
-                + namp*np.random.randn(t.shape[0]))
-    sine = Sine.value(t, *sinep0) + namp*np.random.randn(t.shape[0])
-    sin4 = Sin4.value(t, *sinep0) + namp*np.random.randn(t.shape[0])
-    gauss = Gauss.value(x, *gaussp0) + namp*np.random.randn(x.shape[0])
-    lor = Lor.value(x, *lorp0) + namp*np.random.randn(x.shape[0])
+                + namp*rng.normal(size=t.shape[0]))
+    sine = Sine.value(t, *sinep0) + namp*rng.normal(size=t.shape[0])
+    sin4 = Sin4.value(t, *sinep0) + namp*rng.normal(size=t.shape[0])
+    gauss = Gauss.value(x, *gaussp0) + namp*rng.normal(size=x.shape[0])
+    lor = Lor.value(x, *lorp0) + namp*rng.normal(size=x.shape[0])
     atomline = (AtomLine.value(f, *atomlinep0)
-                + namp*np.random.randn(f.shape[0]))
-    exp = Exp.value(t, *expp0) + namp*np.random.randn(t.shape[0])
-    power = Power.value(f2, *powerp0) + namppow*np.random.randn(f2.shape[0])
-
+                + namp*rng.normal(size=f.shape[0]))
+    exp = Exp.value(t, *expp0) + namp*rng.normal(size=t.shape[0])
+    power = Power.value(f2, *powerp0) + namppow*rng.normal(size=f2.shape[0])
+    
     # lists of different fit types to do to different data, with the
     # option of holding some parameters
-    funcs = [ExpSine, Exp2Sine, Sine, Gauss, Lor, AtomLine, Poly, Spline,
-             Spline, ExpSine, Exp, Sin4, Power, Spline, Poly]
-    xdata = [t, t, t, x, x, f, x, f, x, t, t, t, f2, x, x]
-    # note some holds have irrelevant/nonsense parameters to check that this
-    # doesn't trip up the fitting
-    holds = [{'A': 0.65}, {'f': 5e4, 'y0': 0.5}, {'tau': 0.2, 'f': 3e4},
-             {'sigma': 500}, {'x0': -460}, {'T': 10e-6, 'tau': np.inf}, {}, {},
-             {}, {'tau': 33e-6}, {'A': 0.8}, {'y0': 0.25}, {'y0': 6e-10}, {},
-             {}]
-    # same with man_guess
-    man_guess = [{'A': 0.65}, {'f': 5e4, 'y0': 0.5}, {'tau': 0.2, 'f': 3e4},
-                 {'sigma': 900}, {'x0': -460}, {'T': 5e-6, 'tau': np.inf}, {},
-                 {}, {}, {'tau': 33e-6}, {'A': 0.8}, {'y0': 0.25},
-                 {'y0': 6e-10}, {}, {}]
-    # same with man_scale
-    man_scale = [{'A': -2}, {'f': 5e4, 'y0': 0}, {'tau': 0.2, 'f': 3e4},
-                 {'sigma': 500}, {'x0': 1000}, {'T': 5e-6, 'tau': np.inf}, {},
-                 {}, {}, {'tau': 33e-6}, {'A': 0.8}, {'y0': 0.25},
-                 {'y0': 6e-10}, {}, {}]
-    # same with man_bounds
-    man_bnds = [{'A': [-10, 10]}, {'f': [5e4, 4e4], 'y0': (-np.inf, np.inf)},
-                {}, {'sigma': [800, 1000]}, {'x0': [-1000, 1100, 4],
-                'Gamma': [200, 400]}, {}, {}, {}, {}, {}, {'Ap': [0.8, 1.2]},
-                {}, {'y0': [-np.inf, 0]}, {}, {}]
-    ydata = [expsine, exp2sine, sine, gauss, lor, atomline, gauss, atomline,
-             gauss, sine, exp, sin4, power, lor, lor]
-    datanames = ['expsine', 'exp2sine', 'sine', 'gauss', 'lor', 'atomline',
-                 'gauss', 'atomline', 'gauss', 'sine', 'exp', 'sin4', 'power',
-                 'lor', 'lor']
-    actual = [expsinep0, exp2sinep0, sinep0, gaussp0, lorp0, atomlinep0,
-              gaussp0, atomlinep0, gaussp0, sinep0, expp0, sinep0, powerp0,
-              lorp0, lorp0]
+    
+    # build some sets of data and fitting options to test.
+    # tuples are:
+    # (x data, y data, function, holds, man_guess, man_scale, man_bounds,
+    # datanames, actual parameters, kwargs for fit)
+    # some tuples contain intentionally invalid values for some options
+    # to test error/warning messages
+    fitsets = [(t, expsine, ExpSine, {'A': 0.65}, {'A': 0.65}, {'A': -2}, 
+                {'A': [-10, 10]}, 'expsine', expsinep0, {}),
+               (t, exp2sine, Exp2Sine, {'f': 50000.0, 'y0': 0.5}, 
+                {'f': 50000.0, 'y0': 0.5}, {'f': 50000.0, 'y0': 0}, 
+                {'f': [50000.0, 40000.0], 'y0': (-np.inf,np.inf)}, 'exp2sine', 
+                exp2sinep0, {}),
+               (t, sine, Sine, {'tau': 0.2, 'f': 30000.0}, 
+                {'tau': 0.2, 'f': 30000.0}, {'tau': 0.2, 'f': 30000.0}, {},
+                'sine', sinep0, {}),
+               (x, gauss, Gauss, {'sigma': 500}, {'sigma': 900}, 
+                {'sigma': 500}, {'sigma': [800, 1000]}, 'gauss', gaussp0, {}),
+               (x, lor, Lor, {'x0': -460}, {'x0': -460}, {'x0': 1000}, 
+                {'x0': [-1000, 1100, 4], 'Gamma': [200, 400]}, 'lor', lorp0, 
+                {}),
+               (f, atomline, AtomLine, {'T': 1e-05, 'tau':np.inf}, 
+                {'T': 5e-06, 'tau':np.inf}, {'T': 5e-06, 'tau':np.inf}, {}, 
+                'atomline', atomlinep0, {}),
+               (x, gauss, Poly, {}, {}, {}, {}, 'gauss', gaussp0, {}),
+               (f, atomline, Spline, {}, {}, {}, {}, 'atomline', atomlinep0,
+                {}),
+               (x, gauss, Spline, {}, {}, {}, {}, 'gauss', gaussp0, {}),
+               (t, sine, ExpSine, {'tau': 3.3e-05}, {'tau': 3.3e-05}, 
+                {'tau': 3.3e-05}, {}, 'sine', sinep0, {}),
+               (t, exp, Exp, {'A': 0.8}, {'A': 0.8}, {'A': 0.8, 'f':np.inf}, 
+                {'Ap': [0.8, 1.2]}, 'exp', expp0, {}),
+               (t, sin4, Sin4, {'y0': 0.25}, {'y0': 0.25}, {'y0': 0.25}, {}, 
+                'sin4', sinep0, {}),
+               (f2, power, Power, {'y0': 6e-10}, {'y0': 6e-10}, {'y0': 6e-10}, 
+                {'y0': [-np.inf, 0]}, 'power', powerp0, {}),
+               (x, lor, Spline, {}, {}, {}, {}, 'lor', lorp0, {}),
+               (x, lor, Poly, {}, {}, {}, {}, 'lor', lorp0, {}),
+               (x, lor, Poly, {}, {}, {}, {}, 'lor', lorp0, {'polydeg':1}),
+               (x, lor, Spline, {}, {}, {}, {}, 'lor', lorp0, {'knots':4}),
+               (f, atomline, Spline, {}, {}, {}, {}, 'atomline', atomlinep0,
+                {'knots':24}),
+               (f, atomline, Lor, {}, {}, {}, {}, 'atomline', atomlinep0,
+                {}),
+               (x, gauss, Poly, {}, {}, {}, {}, 'gauss', gaussp0, 
+                {'polydeg':12})
+              ]
+    
     results = []
-
+    
     # fit each data/function combo, with holds, man guesses, etc.
-    for xi, yi, funci, hi, gi, sci, bi in zip(xdata, ydata, funcs, holds,
-                                              man_guess, man_scale, man_bnds):
-        res = Fit(xi, yi, funci, knots=13)
+    for fitset in fitsets:
+        xi, yi, funci, hi, gi, sci, bi, _, _, kwi = fitset
+        # normal
+        res = Fit(xi, yi, funci, **kwi)
         res.fit_data()
+        res.fitline_conf(fine=True)
         results.append(res)
-        res = Fit(xi, yi, funci, knots=13)
+        # repeat for manual guesses
+        res = Fit(xi, yi, funci, **kwi)
         res.fit_data(man_guess=gi)
+        res.fitline_conf(fine=True)
         results.append(res)
-        res = Fit(xi, yi, funci, knots=13)
+        # repeat for hold parameters
+        res = Fit(xi, yi, funci, **kwi)
         res.fit_data(hold=hi)
         res.fitline_conf(fine=True)
         results.append(res)
-        res = Fit(xi, yi, funci, knots=13)
+        # repeat for man scale, bounds, and guesses
+        res = Fit(xi, yi, funci, **kwi)
         res.fit_data(man_scale=sci, man_bounds=bi, man_guess=gi)
         res.fitline_conf(fine=True)
         results.append(res)
-
-    ncurv = len(xdata)
-
+    
+    ncurv = len(fitsets)
+    datanames = [fi[7] for fi in fitsets]
+    funcs = [fi[2] for fi in fitsets]
+    kws = [fi[9] for fi in fitsets]
+    
     for i in range(ncurv // 5):
         tempresults = results[20*i:]
         fig, ax = plt.subplots(5, 4, figsize=(14, 10))
-
+    
         for j in range(20):
             outs = tempresults[j]
             ax[j // 4, j % 4].plot(outs.x, outs.y, 'bo')
             if outs.fit_good:
                 ax[j // 4, j % 4].plot(outs.x_fine, outs.fitline_fine, 'r-')
-                if j % 4 == 2 or j % 4 == 3:
-                    ax[j//4, j % 4].fill_between(outs.x_fine, outs.yupper_fine,
+                ax[j//4, j % 4].fill_between(outs.x_fine, outs.yupper_fine,
                                                  outs.ylower_fine,
                                                  facecolor='green', alpha=0.8)
                 hi = np.max(outs.y)
@@ -1626,30 +1704,30 @@ def main():
                 ticks = ax[j // 4, j % 4].get_xticks().tolist()
                 ax[j // 4, j % 4].set_xticklabels(['{:3g}'.format(tick) for
                                                    tick in ticks])
-
-        cols = ['Auto fit', 'Manual guess', 'Hold + 95% conf',
-                'Man bnds + 95% conf']
-        rows = [fi.__name__ + ' Fit \n' + di + ' Data' for fi, di in
-                zip(funcs[5*i:], datanames[5*i:])]
-
+    
+        cols = ['Auto fit', 'Manual guess', 'Hold',
+                'Man bounds']
+        rows = [str(5*i+j) + '\n' + fi.__name__ + ' Fit \n' + di + ' Data \n' + str(ki)
+                for j, (fi, di, ki) in enumerate(zip(funcs[5*i:], datanames[5*i:], kws[5*i:]))]
+    
         pad = 5  # in points
-
+    
         for axi, col in zip(ax[0, :], cols):
             axi.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                          xycoords='axes fraction', textcoords='offset points',
                          size='large', ha='center', va='baseline')
-
+    
         for axi, row in zip(ax[:, 0], rows):
             axi.annotate(row, xy=(0, 0.5), xytext=(-axi.yaxis.labelpad-pad, 0),
                          xycoords=axi.yaxis.label, textcoords='offset points',
                          size='large', ha='right', va='center')
-
+    
         fig.tight_layout()
         fig.subplots_adjust(left=0.15, top=0.95)
         plt.draw()
-
+    
     plt.show()
-    return results, actual
+    return results, fitsets
 
 if __name__ == "__main__":
     main()
