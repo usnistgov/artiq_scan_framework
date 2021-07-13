@@ -323,7 +323,7 @@ See also the list of [contributors](https://github.com/usnistgov/scan_framework/
 this project.
  
 ## Copyright
-Also see the [LICENSE.md](https://github.com/usnistgov/scan_framework/LICENSE.md) and [LICENSES directory](LICENSES)
+Also see the [LICENSE.md](LICENSE.md) and [LICENSES directory](LICENSES)
 
 ### curvefits.py in the analysis subpackage
 This software was developed by employees of the National Institute of
