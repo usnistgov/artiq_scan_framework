@@ -213,7 +213,7 @@ to it automatically by the framework before the scan is executed.</p>
 fitted value for a scan.  This is useful because the center value of an absolute scan range may change
 over time, such as in the case of atomic transition frequencies.  Using auto-tracking allows the scan to naturally
 follow any drifts in the value being fit as it is periodically run.  To use auto-tracking in a scan, first create
-a scan model that has the <a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel.main_fit" title="scan_framework.models.scan_model.ScanModel.main_fit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">main_fit</span></code></a>
+a scan model that has the <a class="reference internal" href="../models/settings.html#scan_framework.models.scan_model.ScanModel.main_fit" title="scan_framework.models.scan_model.ScanModel.main_fit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">main_fit</span></code></a>
 attribute defined.  Then register the scan model with the <code class="code docutils literal notranslate"><span class="pre">auto_track</span></code> attribute set.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="c1"># Fetch the current dataset given by my_model.main_fit</span>
