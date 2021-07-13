@@ -178,10 +178,10 @@ Full documentation is available at https://stylus.ipages.nist.gov/scan_framework
 
 Detailed APIs are also available:
 TODO: Update Links
-1. [API for scans](http://nist.gov/pages/scan_framework/public/scans/api.html)
-2. [API for models](http://nist.gov/pages/scan_framework/public/models/api.html)
-3. [API for applets](http://nist.gov/pages/scan_framework/public/applets/api.html)
-4. [API for curve fitting](http://nist.gov/pages/scan_framework/public/analysis/api.html)
+1. [API for scans](https://stylus.ipages.nist.gov/scan_framework/scans/api.html)
+2. [API for models](https://stylus.ipages.nist.gov/scan_framework/models_ref.html)
+3. [API for applets](https://stylus.ipages.nist.gov/scan_framework/applets/api.html)
+4. [API for curve fitting](https://stylus.ipages.nist.gov/scan_framework/analysis/api.html)
 
 ### Scan framework settings
 Framework features can be enabled or disabled in the `build()` method of your scan class
