@@ -370,8 +370,8 @@ class Model(HasEnvironment):
         return True
 
     def validate_height(self, series_name, data, min_height, error_msg=None):
-        """Return False if the difference between the max value in data and the min value in data is greater or equal
-        to the specified minimum height and add a validation error for the field."""
+        """Return False if the difference between the max value in data and the min value in data is less than
+        the specified minimum height and add a validation error for the field."""
         """Validates height of y_max above y_min"""
         height = max(data) - min(data)
         if height >= min_height:

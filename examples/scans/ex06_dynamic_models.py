@@ -1,4 +1,4 @@
-# Example 5: Dynamic models
+# Example 6: Dynamic models
 #
 # Dynamically controlling how a model handles data.
 #   In this example, namespace tokens are used to define where data is stored
@@ -26,14 +26,14 @@ class Example5Scan(Scan1D, EnvExperiment):
 
     def prepare(self):
         # 1. Assign an attribute to the model
-        m1_model = Example5Model(self,
+        m1_model = Example6Model(self,
             # Note: All arguments of the constructor are assigned to attributes of the model.
             mmnt_name='m1'
         )
-        print('EXAMPLE 5: self.m1_model.mmnt_name = {}'.format(m1_model.mmnt_name))
+        print('EXAMPLE 6: self.m1_model.mmnt_name = {}'.format(m1_model.mmnt_name))
 
         self.register_model(m1_model, measurement='m1', fit=True)
-        self.register_model(Example5Model(self, mmnt_name='m2'), measurement='m2', fit=True)
+        self.register_model(Example6Model(self, mmnt_name='m2'), measurement='m2', fit=True)
 
     def get_scan_points(self):
         return self.frequencies
@@ -50,10 +50,10 @@ class Example5Scan(Scan1D, EnvExperiment):
 
 
 # Note: A single model can be used for both measurements
-class Example5Model(ScanModel):
+class Example6Model(ScanModel):
     # 2a. Reference the attribute using namespace tokens.
     #     `%mmnt_name` is a namespace token and will be replaced by the model's `mmnt_name` attribute.
-    namespace = "example_5.%mmnt_name"
+    namespace = "example_6.%mmnt_name"
     broadcast = True
     persist = True
     save = True

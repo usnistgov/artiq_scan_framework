@@ -1,6 +1,4 @@
-The NIST Scan Framework
-=======================
-
+# The NIST Scan Framework for ARTIQ
 The NIST scan framework is a framework that greatly simplifies the process of writing and maintaining
 scans of experimental parameters using the ARTIQ control system and language.  The framework adopts the 
 philosophy of convention over configuration where datasets are stored for analysis and plotting in a standard
@@ -13,22 +11,109 @@ scan experiments to make them fast to implement, easy to read, and easy to maint
 Please refer to [TODO: add link to documentation]() for the full scan framework documentation including many worked examples and a
 full API listing.  The following gives a broad overview of the most import aspects of the scan framework.
 
-## Getting started
-The best way to start using the scan framework is by looking through and running a few example 
-scans listed below.  
+## Project Status
+Active development
 
-To start using  the framework:
-1. Add the directory containing the 'scan_framework' folder to your 
+## Testing Summary
+The framework has been thoroughly tested through its use in lab experiments at NIST since 2017.  It is currently being 
+used by the ion storage group and quantum processing at NIST.   
+
+## Getting started
+
+
+### Prerequisites
+The following are required for running the scan framework.  Please see also [REQUIREMENTS.md](REQUIREMENTS.md) for 
+a list of these requirements.
+
+#### Hardware Requirements
+1. Experimental control hardware running ARTIQ version 3.7
+
+#### Software Requirements
+1. Version 3.7 of the [ARTIQ python package](https://m-labs.hk/experiment-control/artiq/).  Please see 
+[Installing ARTIQ](https://m-labs.hk/artiq/manual-release-3/installing.html) for instructions on installing ARTIQ.
+2. Python version 3.5  
+*Note: this is also a requirement for ARTIQ v3 and is covered by the first requirement.* 
+3. The [numpy](https://numpy.org/) python package compatible with Python version 3.5.  
+*Note: numpy is installed automatically when installing ARTIQ via the m-labs conda channel.*
+4. The [scipy](https://www.scipy.org/) python package compatible with Python version 3.5.  
+*Note: scipy is installed automatically when installing ARTIQ via the m-labs conda channel.*
+
+(Optional)
+1. The [matplotlib](https://matplotlib.org/) python package compatible with Python version 3.5.   
+*Note: The matplotlib package is required only by testing routines in the curvefits.py module of the analysis 
+subpackage.  It is not required for typical use of the scan framework.*
+        
+### Installing
+
+To install the framework, first [install git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) to your
+computer.
+
+Next, clone this repository to a location on your computer.  In Windows, for example, open a command prompt after 
+installing git and run
+
+```
+    mkdir C:\src
+    cd C:\src
+    git clone https://github.com/usnistgov/scan_framework
+    dir
+    rem you should see a folder name scan_framework which contains all source code for the framework
+```
+
+This will download all of the required source files for the framework to ```C:\src\scan_framework```.  You can also
+simply download the scan framework source directly from http://github.com/usnistgov/scan_framework and extract them to a folder of your choosing if you do 
+not wish to install git.  Installing git makes it easier to receive future updates and bug fixes and is recommended.
+
+Next, add the directory that contains the folder named ```scan_framework``` to your 
 [PYTHONPATH](https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH) environment variable.
-2. Add to the `Applets` tab in the dashboard the "current scan", "count monitor", "current histogram", and 
-   "current aggregate histogram", applets [listed below](#applets)
-3. View the source code for the example scans below and run them in the dashboard.  The first four examples 
-   provide everything that is needed for a large set of use cases.  Examples are ordered from basic to advanced 
-   and are meant to be followed in chronological order.
-   
+For the Windows example above, [add an environment variable](https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html#GUID-DD6F9982-60D5-48F6-8270-A27EC53807D0) 
+with a variable name of ```PYTHONPATH``` and set it's value field to ```C:\src;```
+
+To check that this was successful, close the current command prompt, open a new command prompt and type
+```
+    echo %PYTHONPATH%
+```
+
+If everything was successful, this will output ```C:\src;```.  Note, you will need to close the current command 
+prompt and open a new prompt for the ```PYTHONPATH``` variable to be updated.
+
+Next, install ARTIQ version 3 if it is not already installed on your computer.
+
+Next, start the ARTIQ master and ARTIQ dashboard programs, see [Installing ARTIQ](https://m-labs.hk/artiq/manual-release-3/installing.html) 
+for how to start ```artiq_master``` and ```artiq_dashboard```.  
+
+Finally, create the ```current_scan``` applet for the scan framework in the ARTIQ dashboard.  In the ARTIQ dashboard 
+navigate to the `Applets` tab, right click and select `New applet`.  Add the following source for the applet:
+
+```
+$python -m scan_framework.applets.plot_xy current_scan.plots.y
+    --x current_scan.plots.x
+    --fit current_scan.plots.fitline
+    --title current_scan.plots.plot_title
+    --x_scale current_scan.plots.x_scale
+    --x_units current_scan.plots.x_units
+    --y_scale current_scan.plots.y_scale
+    --x_label current_scan.plots.x_label
+    --y_units current_scan.plots.y_units
+    --y_label current_scan.plots.y_label
+    --rid current_scan.rid
+    --error current_scan.plots.error
+```
+
+For getting started only the ```current_scan``` applet above is needed.  Additional features of the scan framework 
+require additional applets [listed below](##-applets) in the Applets section.  To use those features you will 
+also need to create the additional applets to the dashboard. 
+
+### Examples
+The best way to start using the scan framework is by looking through a few of the example scans below and running them 
+in the ARTIQ dashboard.  A few examples do not require the ARTIQ hardware which allows testing the framework on a
+computer not connected to ARTIQ hardware.
+ 
+The first four examples below provide everything that is needed for a large set of use cases.  Examples are ordered from 
+basic to advanced and are meant to be followed in more or less chronological order.
+  
 **Scan examples/tutorials**
 - [Ex0: Minimal Scan](examples/scans/ex00_minimal_scan.py)
-- [Ex1: Scan Arguments](examples/scans/ex01_scan_arguments.py)
+- [Ex1: Scan Arguments](examples/scans/ex01_scan_arguments.py) -- doesn't require ARTIQ hardware
 - [Ex2: Calculating & Plotting Statistics](examples/scans/ex02_models.py)
 - [Ex3: Fitting](examples/scans/ex03_fitting.py)
 - [Ex4: Callbacks](examples/scans/ex04_callbacks.py) -- see the documentation for details on all available [callbacks]().
@@ -40,18 +125,53 @@ To start using  the framework:
 - [Ex8: Rename Main Fit](examples/scans/ex08_rename_main_fit_dataset.py)
 - [Ex9: After Measure Callback](examples/scans/ex09_after_measure.py)
 - [Ex10: Fit Guess Arguments](examples/scans/ex10_fit_guess_arguments.py)
-- [Ex11: Fit Validations](examples/scans/ex11_fit_validations.py)
-  
+- [Ex11: Fit Validations](examples/scans/ex11_fit_validations.py) -- doesn't require ARTIQ hardware
+- [Ex12: Time Scans](examples/scans/ex12_time_scans.py) -- doesn't require ARTIQ hardware
+- [Ex13: Formatting Plots](examples/scans/ex13_formatting_plots.py)
 ---
 
 **Note:**
-
-To run an example, right click the `Explorer` tab in the dashboard and choose `Open file outside repository`.  Then navigate to the `scan_framework/examples/scans` folder.
-
+To run an example, right click the `Explorer` tab in the dashboard and choose `Open file outside repository`.  
+Then navigate to the `directory containing scan framework source/scan_framework/examples/scans` folder and open and
+the example scan.
 ---
+Additional real world examples are provided in `scan_framework/examples/scans` and `scan_framework/examples/models` 
+that illustrate how the scan class is used in a real lab setup.
 
-Additional real world examples are provided in `scan_framework/examples/scans` and `scan_framework/examples/models` that illustrate 
-how the scan class is used in a real lab setup.
+
+###### Applet for Example 5
+```
+$python -m scan_framework.applets.plot_xy_ntrace_white
+    example_5.m1.stats.mean
+    --x1 example_5.m1.stats.points
+    --error1 example_5.m1.stats.error
+    --fit1 example_5.m1.fits.fitline
+    example_5.m2.stats.mean
+    --x2 example_5.m2.stats.points
+    --error2 example_5.m2.stats.error
+    --fit2 example_5.m2.fits.fitline
+    example_5.m2.stats.mean
+    --x3 example_5.m2.stats.points
+    --error3 example_5.m2.stats.error
+    --fit3 example_5.m2.fits.fitline
+```
+
+###### Applet for Example 6
+```
+$python -m scan_framework.applets.plot_xy_ntrace_white
+    example_6.m1.stats.mean
+    --x1 example_6.m1.stats.points
+    --error1 example_6.m1.stats.error
+    --fit1 example_6.m1.fits.fitline
+    example_6.m2.stats.mean
+    --x2 example_6.m2.stats.points
+    --error2 example_6.m2.stats.error
+    --fit2 example_6.m2.fits.fitline
+    example_6.m2.stats.mean
+    --x3 example_6.m2.stats.points
+    --error3 example_6.m2.stats.error
+    --fit3 example_6.m2.fits.fitline
+```
 
 ## Documentation
 Full documentation is available at TODO: add link to documentation (Documentation)[]
@@ -63,7 +183,7 @@ TODO: Update Links
 3. [API for applets](http://nist.gov/pages/scan_framework/public/applets/api.html)
 4. [API for curve fitting](http://nist.gov/pages/scan_framework/public/analysis/api.html)
 
-## Scan framework settings
+### Scan framework settings
 Framework features can be enabled or disabled in the `build()` method of your scan class
 by setting the associated class attribute listed below to either True or False:
 
@@ -95,8 +215,9 @@ by setting the associated class attribute listed below to either True or False:
 | `self.enable_profiling`     | Profile the execution of the scan to find bottlenecks                                                                        
 | `self.enable_timing`        | Enable automatic timing of certain events.  Currently only compilation time is timed
 
-## Applets
-Below are all the applet commands provided to view data generated by the scan framework.  These are also available in [applet_commands.txt](applet_commands.txt)
+### Applets
+Below are all the applet commands needed to view data generated by the scan framework.  These are also available in 
+[applet_commands.txt](applet_commands.txt)
 
 ##### Current scan applet
 ```
@@ -168,48 +289,15 @@ $python -m scan_framework.applets.plot_xy current_scan.plots.dim1.y
     --i_plot current_scan.plots.subplot.i_plot
 ```
 
-###### Applet for Example 4
-```
-$python -m scan_framework.applets.plot_xy_ntrace_white
-    example_4.m1.stats.mean
-    --x1 example_4.m1.stats.points
-    --error1 example_4.m1.stats.error
-    --fit1 example_4.m1.fits.fitline
-    example_4.m2.stats.mean
-    --x2 example_4.m2.stats.points
-    --error2 example_4.m2.stats.error
-    --fit2 example_4.m2.fits.fitline
-    example_4.m2.stats.mean
-    --x3 example_4.m2.stats.points
-    --error3 example_4.m2.stats.error
-    --fit3 example_4.m2.fits.fitline
-```
 
-###### Applet for Example 5
-```
-$python -m scan_framework.applets.plot_xy_ntrace_white
-    example_5.m1.stats.mean
-    --x1 example_5.m1.stats.points
-    --error1 example_5.m1.stats.error
-    --fit1 example_5.m1.fits.fitline
-    example_5.m2.stats.mean
-    --x2 example_5.m2.stats.points
-    --error2 example_5.m2.stats.error
-    --fit2 example_5.m2.fits.fitline
-    example_5.m2.stats.mean
-    --x3 example_5.m2.stats.points
-    --error3 example_5.m2.stats.error
-    --fit3 example_5.m2.fits.fitline
-```
-
-## Kernel invariants
+### Kernel invariants
 The following scan attributes are marked as kernel invariants by default:
 `self.npasses`, `self.nbins`, `self.nrepeats`, `self.npoints`, `self.nmeasurements`,
 `self.do_fit`, `self.save_fit`, `self.fit_only`
 
 The kernel invariants can be changed anywhere within the child scan class by manually setting `self.kernel_invariants` .
 
-## `save=True`, `broadcast=False`, `persist=False` 
+### `save=True`, `broadcast=False`, `persist=False` 
 
 The default behavior of the scan model is to save all data to the HDf5 file of the experiment, but to 
 not broadcast or persist datasets (i.e. `save=True`, `broadcast=False` and `persist=False` when 
@@ -222,7 +310,53 @@ datasets are created).
 If you wish to override this behavior, set the `save`, `broadcast`, or `persist` attributes in the build method
 of your scan model class
 
-## License
-The NIST scan framework is distributed under the GNU Lesser General Public License v3.0 or later.  
+## Contributing
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for 
+submitting pull requests to us.
 
+## Authors & Main Contributors
+1. Philip D. Kent, NIST and University of Colorado - Scan framework architecture and development.
+2. Kyle S. McKay, NIST and University of Colorado - Scan framework design and user specifications. 
+3. Daniel H. Slichter, NIST - Analysis subpackage and curve fitting routines.
+
+See also the list of [contributors](https://github.com/usnistgov/scan_framework/contributors) who participated in 
+this project.
+ 
+## Copyright
+Also see the [LICENSE.md](https://github.com/usnistgov/scan_framework/LICENSE.md) and [LICENSES directory](LICENSES)
+
+### curvefits.py in the analysis subpackage
+This software was developed by employees of the National Institute of
+Standards and Technology (NIST), an agency of the Federal Government and is
+being made available as a public service. Pursuant to title 17 United States
+Code Section 105, works of NIST employees are not subject to copyright
+protection in the United States.  This software may be subject to foreign
+copyright.  Permission in the United States and in foreign countries, to the
+extent that NIST may hold copyright, to use, copy, modify, create derivative
+works, and distribute this software and its documentation without fee is hereby
+granted on a non-exclusive basis, provided that this notice and disclaimer of
+warranty appears in all copies.
+
+THE SOFTWARE IS PROVIDED 'AS IS' WITHOUT ANY WARRANTY OF ANY KIND, EITHER
+EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY
+THAT THE SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND FREEDOM FROM
+INFRINGEMENT, AND ANY WARRANTY THAT THE DOCUMENTATION WILL CONFORM TO THE
+SOFTWARE, OR ANY WARRANTY THAT THE SOFTWARE WILL BE ERROR FREE.  IN NO EVENT
+SHALL NIST BE LIABLE FOR ANY DAMAGES, INCLUDING, BUT NOT LIMITED TO, DIRECT,
+INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF, RESULTING FROM,
+OR IN ANY WAY CONNECTED WITH THIS SOFTWARE, WHETHER OR NOT BASED UPON
+WARRANTY, CONTRACT, TORT, OR OTHERWISE, WHETHER OR NOT INJURY WAS SUSTAINED
+BY PERSONS OR PROPERTY OR OTHERWISE, AND WHETHER OR NOT LOSS WAS SUSTAINED
+FROM, OR AROSE OUT OF THE RESULTS OF, OR USE OF, THE SOFTWARE OR SERVICES
+PROVIDED HEREUNDER.
+
+To see the latest statement, please visit:
+[Copyright, Fair Use, and Licensing Statements for SRD, Data, and Software](https://www.nist.gov/director/copyright-fair-use-and-licensing-statements-srd-data-and-software)
+
+### All other source files
+All other source files are distributed under the GNU Lesser General Public License v3.0 or later.  
 SPDX-License-Identifier: LGPL-3.0-or-later
+
+## Contact
+Questions regarding this project can be directed to Philip D. Kent (NIST Assoc.) <philip.kent@nist.gov>.  

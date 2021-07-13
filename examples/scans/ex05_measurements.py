@@ -1,4 +1,4 @@
-# Example 4: Performing multiple measurements
+# Example 5: Performing multiple measurements
 #
 # How to perform multiple measurements at each scan point.
 #
@@ -51,7 +51,7 @@ class Example4Scan(Scan1D, EnvExperiment):
 
 
 class M1Model(ScanModel):
-    namespace = "example_4.m1"
+    namespace = "example_5.m1"
     fit_function = fitting.Power
 
     # Note: All datasets will be broadcast, saved, and persisted in this example
@@ -61,7 +61,7 @@ class M1Model(ScanModel):
 
 
 class M2Model(ScanModel):
-    namespace = "example_4.m2"
+    namespace = "example_5.m2"
     fit_function = fitting.Power
 
     broadcast = True

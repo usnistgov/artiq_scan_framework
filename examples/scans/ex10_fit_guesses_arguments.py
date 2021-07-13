@@ -1,4 +1,4 @@
-# Example 9: Fitting guess arguments
+# Example 10: Fitting guess arguments
 #
 # How to specify fit guesses using GUI arguments in the dashboard
 from artiq.experiment import *
@@ -87,7 +87,7 @@ class Example9Scan(Scan1D, EnvExperiment):
 
 
 class Example9Model(ScanModel):
-    namespace = "example_9"
+    namespace = "example_10"
     fit_function = fitting.Power
 
     man_scale = {

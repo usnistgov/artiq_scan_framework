@@ -1,4 +1,4 @@
-#  Example 8: after_measure() callback example
+#  Example 9: after_measure() callback example
 #
 #    1. `after_measure()` is called after the measure method is called
 #    2. When `after_measure()` is called self._data has been updated

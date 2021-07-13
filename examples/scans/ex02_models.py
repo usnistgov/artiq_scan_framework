@@ -1,4 +1,4 @@
-# Example 1: Calculating and plotting mean values
+# Example 2: Calculating and plotting mean values
 #
 # How to register a scan model to calculate and plot mean values and standard errors.
 
@@ -8,14 +8,14 @@ from scan_framework import *
 
 # 1. Create a scan model.
 #    This is a class that inherits from ScanModel and handles all data processing and storage.
-class Example1Model(ScanModel):
+class Example2Model(ScanModel):
     # 2. Define a namespace.
     #    Data will be saved under this top level key in the datasets.
-    namespace = "example_1"
-    plot_title = 'Example 1'
+    namespace = "example_2"
+    plot_title = 'Example 2'
 
 
-class Example1Scan(Scan1D, EnvExperiment):
+class Example2Scan(Scan1D, EnvExperiment):
 
     def build(self):
         super().build()  # create the `core` and `scheduler` devices
@@ -34,7 +34,7 @@ class Example1Scan(Scan1D, EnvExperiment):
 
     def prepare(self):
         # 3. Create an instance of the scan model.
-        self.model = Example1Model(self)
+        self.model = Example2Model(self)
 
         # 4. Register the model with `measurement=True`.
         #    This instructs the framework to, at the end of each scan point,

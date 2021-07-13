@@ -1,4 +1,4 @@
-# Example 6a: Warmup Points
+# Example 7a: Warmup Points
 #
 # Basic example of warmup points
 #   1. The number of warmup points is set by nwarmup_points

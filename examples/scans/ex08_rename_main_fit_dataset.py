@@ -1,4 +1,4 @@
-# Example 7: Rename the main fit dataset
+# Example 8: Rename the main fit dataset
 #
 # How to rename the main fit dataset containing the main fit of the scan
 
@@ -7,7 +7,7 @@ from scan_framework import *
 
 
 class Example7Model(ScanModel):
-    namespace = 'example_7'
+    namespace = 'example_8'
     fit_function = fitting.Power
 
     # 1. Define main_fit as a list to rename the fit param

@@ -1,4 +1,4 @@
-# Example 3: Callbacks
+# Example 4: Callbacks
 #
 # How to set a device value at the start of each scan point using the
 # `set_scan_point()` callback.
@@ -54,5 +54,5 @@ class Example3Scan(Scan1D, EnvExperiment):
 
 
 class Example3Model(ScanModel):
-    namespace = "example_3"
+    namespace = "example_4"
     fit_function = fitting.Power

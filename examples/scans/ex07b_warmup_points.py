@@ -1,4 +1,4 @@
-# Example 6b: Warmup Points
+# Example 7b: Warmup Points
 #
 # Point values and warmup method example
 #   1. The value of each warmup point is set by get_warmup_points()

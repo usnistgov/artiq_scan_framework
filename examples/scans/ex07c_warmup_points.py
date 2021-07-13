@@ -1,4 +1,4 @@
-# Example 6c: Warmup Points
+# Example 7c: Warmup Points
 #
 # Multiple measurements example
 #   1. Each warmup point is repeated once for each measurement.

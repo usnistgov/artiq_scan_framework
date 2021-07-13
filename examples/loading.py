@@ -40,16 +40,9 @@ class Loading(Lib):
     loading_threshold = 1
 
     # oven
-
-    # removed from master or philip as of 8/13/2020
-    #oven_current = 1.15
-
-    # added on kyle-687stylab as of 8/13/2020
     oven_current = 1.13
 
     oven_warmup_current = 1.15
-
-    # added on kyle-687stylab as of 8/13/2020
     oven_warmup_time = 20*s
     second_warmup = 10*s
 

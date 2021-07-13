@@ -1,4 +1,0 @@
-1. Pick a license
-2. State that curvefitting is public domain (work of a federal employee) in license
-3. Cleanup old fit functions that were in lib and add to analysis package.  Also reduce any overlap between
-   fit functions in lib and ones in analysis.

@@ -1,4 +1,4 @@
-# Example 2: Fitting data
+# Example 3: Fitting data
 #
 # How to instruct the scan framework to perform a fit to the calculated mean values and save a fitted parameter
 # to the datasets.
@@ -46,7 +46,7 @@ class Example2Scan(Scan1D, EnvExperiment):
 
 
 class Example2Model(ScanModel):
-    namespace = "example_2"
+    namespace = "example_3"
 
     # 2. Define the function.
     #    The framework will fit the calculated means to this function.
