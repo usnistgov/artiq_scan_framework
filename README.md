@@ -8,7 +8,7 @@ The framework provides a number of useful features such as automatic calculation
 of fits, and plotting that do not need to be performed by the user.  This reduces the size and complexity of 
 scan experiments to make them fast to implement, easy to read, and easy to maintain.   
 
-Please refer to [TODO: add link to documentation]() for the full scan framework documentation including many worked examples and a
+Please refer to https://stylus.ipages.nist.gov/scan_framework/ for the full scan framework documentation including many worked examples and a
 full API listing.  The following gives a broad overview of the most import aspects of the scan framework.
 
 ## Project Status
@@ -174,7 +174,7 @@ $python -m scan_framework.applets.plot_xy_ntrace_white
 ```
 
 ## Documentation
-Full documentation is available at TODO: add link to documentation (Documentation)[]
+Full documentation is available at https://stylus.ipages.nist.gov/scan_framework/
 
 Detailed APIs are also available:
 TODO: Update Links
