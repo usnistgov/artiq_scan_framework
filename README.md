@@ -16,7 +16,7 @@ Active development
 
 ## Testing Summary
 The framework has been thoroughly tested through its use in lab experiments at NIST since 2017.  It is currently being 
-used by the ion storage group and quantum processing at NIST.   
+used by the Quantum Processing Group and the Ion Storage Group at NIST.   
 
 ## Getting started
 
