@@ -99,7 +99,7 @@ $python -m scan_framework.applets.plot_xy current_scan.plots.y
     --error current_scan.plots.error
 ```
 
-For getting started only the ```current_scan``` applet above is needed.  Additional features of the scan framework 
+For getting started, only the ```current_scan``` applet above is needed.  Additional features of the scan framework 
 require additional applets [listed below](##-applets) in the Applets section.  To use those features you will 
 also need to create the additional applets to the dashboard. 
 
