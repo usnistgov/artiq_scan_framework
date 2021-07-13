@@ -1,0 +1,424 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Processing and handling of scan data &mdash; NIST Scan Framework For ARTIQ 2.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Core scan features" href="core_features.html" />
+    <link rel="prev" title="Getting Started with Scans" href="getting_started.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installing the NIST scan framework</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../scans.html">Creating scan experiments</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html">Getting Started with Scans</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Processing and handling of scan data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#generating-statistics-and-mutating-datasets">Generating statistics and mutating datasets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#performing-fits">Performing fits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#avoiding-bad-fits-fit-validations">Avoiding bad fits: fit validations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-handling-of-fits">Custom handling of fits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setting-fit-guesses-in-the-gui">Setting fit guesses in the GUI</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core_features.html">Core scan features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_tracking.html">Relative scan ranges and auto tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time_freq_scans.html">Time &amp; frequency scans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multiple_measurements.html">Performing multiple measurements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calculations.html">Performing calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="warmup_points.html">Running warmup points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monitor_histograms.html">Monitor histograms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2d_scans.html">2D Scans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lost_ion.html">Lost ion detection and reloading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Using models for data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scans_ref.html">Scans references and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models_ref.html">Models reference and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analysis.html">Curve fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../applets.html">Applets</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NIST Scan Framework For ARTIQ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../scans.html">Creating scan experiments</a> &raquo;</li>
+        
+      <li>Processing and handling of scan data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/scans/statistics.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="processing-and-handling-of-scan-data">
+<h1>Processing and handling of scan data<a class="headerlink" href="#processing-and-handling-of-scan-data" title="Permalink to this headline">¶</a></h1>
+<p>All processing of data is performed by a scan model, which is registered to instruct the framework
+to use this model for specific data processing tasks.</p>
+<div class="section" id="generating-statistics-and-mutating-datasets">
+<h2>Generating statistics and mutating datasets<a class="headerlink" href="#generating-statistics-and-mutating-datasets" title="Permalink to this headline">¶</a></h2>
+<p>The mean of measured values at each scan point and the standard error of this mean value are generated
+by registering a class of type <a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel" title="scan_framework.models.scan_model.ScanModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScanModel</span></code></a> with the <code class="code docutils literal notranslate"><span class="pre">measurement</span></code>
+argument set to the name of the measurement (or simply to True in the case of a single measurement).  For the
+case of a single measurement, executing</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">MyScanModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>instructs the framework to calculate the mean and standard error after each scan point completes and to mutate
+the corresponding <a class="reference internal" href="../models/datasets.html#datasets"><span class="std std-ref">datasets</span></a> with these values.  The standard framework <a class="reference internal" href="applets.html#applets"><span class="std std-ref">applets</span></a>
+then plot the mean and standard error after each scan point completes.</p>
+<p>This greatly simplifies the task of data processing, as the framework handles data processing for you with a
+single call to <a class="reference internal" href="api.html#scan_framework.scans.scan.Scan.register_model" title="scan_framework.scans.scan.Scan.register_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_model()</span></code></a>.  If, however, more control over the generation of statistics and mutating
+of datasets is needed, the <a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel.mutate_datasets" title="scan_framework.models.scan_model.ScanModel.mutate_datasets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mutate_datasets()</span></code></a> method
+can be overridden in the scan model class that is registered.</p>
+<p>Histograms are also generated and updated at the end of each scan point by registering a model as a
+‘measurement’ model (i.e. by setting the <code class="code docutils literal notranslate"><span class="pre">measurement</span></code> argument as shown above)</p>
+</div>
+<div class="section" id="performing-fits">
+<h2>Performing fits<a class="headerlink" href="#performing-fits" title="Permalink to this headline">¶</a></h2>
+<p>A final fit of a function to the generated mean values is performed by registering a class of type
+<a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel" title="scan_framework.models.scan_model.ScanModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScanModel</span></code></a> with the <code class="code docutils literal notranslate"><span class="pre">fit</span></code> argument set to the name of the
+fit (or simply to True in the case of a single fit).  Usually this is the same scan model registered
+to generated statistics but this is not strictly required – any registered fit model will simply perform a fit on the values
+that it finds for the <code class="code docutils literal notranslate"><span class="pre">points</span></code> and <code class="code docutils literal notranslate"><span class="pre">mean</span></code> datasets under its namespace.</p>
+<p>For the case of a single measurement and a single fit, executing</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">MyScanModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>instructs the framework to generate statistics and perform a fit to these statistics at the end of the scan using
+the specified scan model.  The model’s data will be fit to the function specified by its <code class="code docutils literal notranslate"><span class="pre">fit_function</span></code> attribute.</p>
+<p>The <a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel.fit_data" title="scan_framework.models.scan_model.ScanModel.fit_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit_data()</span></code></a> method of every registered fit model is called
+by the framework when the scan completes.  The <a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel.fit_data" title="scan_framework.models.scan_model.ScanModel.fit_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit_data()</span></code></a> method
+then fetches the data to use in the fit via <a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel.get_fit_data" title="scan_framework.models.scan_model.ScanModel.get_fit_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_fit_data()</span></code></a>,
+which returns the contents of the <code class="code docutils literal notranslate"><span class="pre">points</span></code> and <code class="code docutils literal notranslate"><span class="pre">mean</span></code> datasets.  Either of these methods may be
+overridden in the scan model if more control over the fitting procedure is needed.</p>
+<p>Fitting is then performed by <a class="reference internal" href="../analysis/api.html#module-scan_framework.analysis.curvefits" title="scan_framework.analysis.curvefits"><code class="xref py py-mod docutils literal notranslate"><span class="pre">curvefits</span></code></a> package, which uses four arguments
+when performing fits: <code class="code docutils literal notranslate"><span class="pre">hold</span></code>, <code class="code docutils literal notranslate"><span class="pre">man_guess</span></code>, <code class="code docutils literal notranslate"><span class="pre">man_bounds</span></code>, and <code class="code docutils literal notranslate"><span class="pre">man_scale</span></code>.  Each of these
+arguments can be specified within the model to hold fit parameters at fixed values, provided initial guesses, bound
+fit parameters, and set the scale of a fit parameters respectively.  In the scan model, the <code class="code docutils literal notranslate"><span class="pre">guess</span></code> attribute
+sets  fit guesses, the <code class="code docutils literal notranslate"><span class="pre">man_scale</span></code> attribute sets fit scales, the <code class="code docutils literal notranslate"><span class="pre">man_bounds</span></code> attribute sets fit bounds,
+and the <code class="code docutils literal notranslate"><span class="pre">hold</span></code> attribute specifies which parameters should be held.</p>
+<p>For example, the following scan model specifies a fit function, guesses for the fit params,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyScanModel</span><span class="p">(</span><span class="n">ScanModel</span><span class="p">):</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="s2">&quot;my_scan_model&quot;</span>
+    <span class="n">fit_function</span> <span class="o">=</span> <span class="n">fitting</span><span class="o">.</span><span class="n">Power</span>
+
+    <span class="n">guess</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s1">&#39;y0&#39;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">}</span>
+    <span class="n">man_scale</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;y0&#39;</span><span class="p">:</span> <span class="mi">1</span>
+    <span class="p">}</span>
+    <span class="n">man_bounds</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">.9</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">],</span>
+        <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">hold</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;y0&#39;</span><span class="p">:</span> <span class="mf">0.0</span>
+    <span class="p">}</span>
+
+    <span class="c1"># 3. Specify the fit param to save</span>
+    <span class="n">main_fit</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="avoiding-bad-fits-fit-validations">
+<h2>Avoiding bad fits: fit validations<a class="headerlink" href="#avoiding-bad-fits-fit-validations" title="Permalink to this headline">¶</a></h2>
+<p>To ensure that incorrect fitted parameters are not saved, three types of validators can be defined in any
+<a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel" title="scan_framework.models.scan_model.ScanModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScanModel</span></code></a> that perform fits for the scan.</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>Pre-validators:</dt><dd><p>These run on the data to be fit prior to performing a fit.  If any pre-validator of a model fails, a fit will not
+be performed by that model.  Pre-validators are defined by the
+<a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel.pre_validators" title="scan_framework.models.scan_model.ScanModel.pre_validators"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pre_validators</span></code></a> property of the
+<a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel" title="scan_framework.models.scan_model.ScanModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScanModel</span></code></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Fit param validators:</dt><dd><p>These validate the fitted parameters after a fit is performed.  If any fail, a warning message is displayed in
+the log window of the dashboard to notify the user and the model’s <code class="code docutils literal notranslate"><span class="pre">main_fit</span></code> fit parameter will be broadcast
+and persisted to the datasets. Fit param validators are defined by the
+<a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel.validators" title="scan_framework.models.scan_model.ScanModel.validators"><code class="xref py py-attr docutils literal notranslate"><span class="pre">validators</span></code></a> property of the
+<a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel" title="scan_framework.models.scan_model.ScanModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScanModel</span></code></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Strong fit param validators:</dt><dd><p>These also validate fitted parameters after a fit is performed.  If any strong validators fail, an error message is
+displayed in the log windows of the dashboard and the model’s <code class="code docutils literal notranslate"><span class="pre">main_fit</span></code> fit parameter will <strong>not</strong> be
+broadcast and persisted to the datasets.  Strong fit param validators are defined by the
+<a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel.strong_validators" title="scan_framework.models.scan_model.ScanModel.strong_validators"><code class="xref py py-attr docutils literal notranslate"><span class="pre">validators</span></code></a> property of the
+<a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel" title="scan_framework.models.scan_model.ScanModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScanModel</span></code></a>.</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p>Pre-validators are useful as a pre-check on the measured values of the scan.  This allows a scan to only perform a fit
+when, for example, the measured values are within some correct range or have some correct features.  Fit param
+validators and strong fit param validators are useful to ensure that the fitted parameters are not outside some range of
+acceptable values.  Used in combination, fit validations can be quite robust in avoiding the use of incorrect
+values for experimental parameters due to fits that simply didn’t converge to the correct value or were attempted
+on data that was inadequate to fit.  Fit validations are not guaranteed to catch all cases of incorrect fits, however.</p>
+<p>See the <a class="reference internal" href="../models/validators.html#model-validators"><span class="std std-ref">Model Validators</span></a> section for details about each type of validation and how to define
+validators.</p>
+</div>
+<div class="section" id="custom-handling-of-fits">
+<h2>Custom handling of fits<a class="headerlink" href="#custom-handling-of-fits" title="Permalink to this headline">¶</a></h2>
+<p>The framework calls the <a class="reference internal" href="api.html#scan_framework.scans.scan.Scan.after_fit" title="scan_framework.scans.scan.Scan.after_fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">after_fit()</span></code></a> method of the scan class after
+any fit is performed.  Implementing the optional callback <a class="reference internal" href="api.html#scan_framework.scans.scan.Scan.after_fit" title="scan_framework.scans.scan.Scan.after_fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">after_fit()</span></code></a> in
+a scan experiment then allows custom handling of the fitted parameters.  The fit object
+<a class="reference internal" href="../analysis/api.html#scan_framework.analysis.curvefits.Fit" title="scan_framework.analysis.curvefits.Fit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fit</span></code></a> can be accessed in this callback using <code class="code docutils literal notranslate"><span class="pre">model.fit</span></code> where
+<code class="code docutils literal notranslate"><span class="pre">model</span></code> is the model argument passed to <a class="reference internal" href="api.html#scan_framework.scans.scan.Scan.after_fit" title="scan_framework.scans.scan.Scan.after_fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">after_fit()</span></code></a>.</p>
+<p>The arguments passed to <a class="reference internal" href="api.html#scan_framework.scans.scan.Scan.after_fit" title="scan_framework.scans.scan.Scan.after_fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">after_fit()</span></code></a>
+are</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>The name of the fit.  This name is set by the <code class="code docutils literal notranslate"><span class="pre">fit</span></code> argument of <a class="reference internal" href="api.html#scan_framework.scans.scan.Scan.register_model" title="scan_framework.scans.scan.Scan.register_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_model()</span></code></a>.</p></li>
+<li><p>If the fit is considered valid by the fit validations (see below for info on fit validations).</p></li>
+<li><p>If the main fit param was saved.</p></li>
+<li><p>The instance of the model that was registered to perform the fit.</p></li>
+</ol>
+</div></blockquote>
+<p>See <a class="reference internal" href="api.html#scan_framework.scans.scan.Scan.after_fit" title="scan_framework.scans.scan.Scan.after_fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">after_fit()</span></code></a> for a full description this callback and its
+arguments.</p>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">after_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit_name</span><span class="p">,</span> <span class="n">valid</span><span class="p">,</span> <span class="n">saved</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="c1"># if the fit passed validations and was saved (i.e. the user selected &#39;Fit and Save&#39; in the GUI)</span>
+    <span class="k">if</span> <span class="n">valid</span> <span class="ow">and</span> <span class="n">saved</span><span class="p">:</span>
+        <span class="c1"># update the frequency of the RF synthesizer to the new value that was found by the scan</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">x0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dds_rf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="setting-fit-guesses-in-the-gui">
+<h2>Setting fit guesses in the GUI<a class="headerlink" href="#setting-fit-guesses-in-the-gui" title="Permalink to this headline">¶</a></h2>
+<p>Fit guesses may also be set in the dashboard GUI using fit guess arguments.  Fit guess arguments are created
+just like ARTIQ <code class="code docutils literal notranslate"><span class="pre">NumberValue()</span></code> GUI arguments except that the <code class="code docutils literal notranslate"><span class="pre">FitGuess</span></code> processor is used instead.
+For example, a fit guess for the fit param named <code class="code docutils literal notranslate"><span class="pre">alpha</span></code> can be entered in the GUI by creating a
+fit guess argument in the <code class="code docutils literal notranslate"><span class="pre">build()</span></code> method of the scan:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s1">&#39;guess_alpha&#39;</span><span class="p">,</span> <span class="n">FitGuess</span><span class="p">(</span>
+        <span class="n">fit_param</span><span class="o">=</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+        <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">use</span><span class="o">=</span><span class="s1">&#39;ask&#39;</span><span class="p">,</span>
+        <span class="n">step</span><span class="o">=</span><span class="mf">0.1</span>
+    <span class="p">))</span>
+</pre></div>
+</div>
+<p>When submitted, the framework will register <code class="code docutils literal notranslate"><span class="pre">self.guess_alpha</span></code> as the guess for the fit param named <code class="code docutils literal notranslate"><span class="pre">alpha</span></code>
+and will use this as the initial guess for <code class="code docutils literal notranslate"><span class="pre">alpha</span></code> when performing fits.  The name of the fit param is always
+explicitly set using the <code class="code docutils literal notranslate"><span class="pre">fit_param</span></code> argument to <code class="code docutils literal notranslate"><span class="pre">FitGuess(...)</span></code>.  The <code class="code docutils literal notranslate"><span class="pre">use</span></code> argument of
+<code class="code docutils literal notranslate"><span class="pre">FitGuess(...)</span></code> specifies when to use the guess in fitting and can take on one of three values:</p>
+<ol class="arabic simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">use='ask'</span></code>: An additional checkbox will be created to manually enable/disable using the guess during fitting.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">use=True</span></code>: The guess is always used during fitting.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">use=False</span></code>: The guess is never used during fitting.  Either the guess defined in the scan model or an auto-generated
+guess from the <code class="code docutils literal notranslate"><span class="pre">FitFunction</span></code> class will be used.</p></li>
+</ol>
+<p>Any argument accepted by the ARTIQ <code class="code docutils literal notranslate"><span class="pre">NumberValue(...)</span></code> processor can be passed to <cite>FitGuess()</cite> to adjust the
+scale, unit, step size, etc.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="core_features.html" class="btn btn-neutral float-right" title="Core scan features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="getting_started.html" class="btn btn-neutral" title="Getting Started with Scans" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
