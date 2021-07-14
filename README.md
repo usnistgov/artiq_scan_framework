@@ -1,15 +1,25 @@
 # The NIST Scan Framework for ARTIQ
 The NIST scan framework is a framework that greatly simplifies the process of writing and maintaining
-scans of experimental parameters using the ARTIQ control system and language.  The framework adopts the 
-philosophy of convention over configuration where datasets are stored for analysis and plotting in a standard
-directory structure. 
+scans of experimental parameters using the ARTIQ control system and language.  The most common and repeated tasks 
+of a scan are performed automatically by the framework:
 
-The framework provides a number of useful features such as automatic calculation of statistics, fitting, validation
-of fits, and plotting that do not need to be performed by the user.  This reduces the size and complexity of 
-scan experiments to make them fast to implement, easy to read, and easy to maintain.   
+1. Iterating over a list of scan points.
+2. Repeating a measurement multiple times at each scan point. 
+3. Mutating datasets with the experimental data collected during scan execution.
+4. Calculation of statistics on the collected data.
+5. Plotting of calculated mean values during execution.
+5. Fitting of a function to the calculated mean values.
+6. Validation of data before fitting.
+7. Validation of the fitted parameters after fitting.
 
-Please refer to https://stylus.ipages.nist.gov/scan_framework/ for the full scan framework documentation including many worked examples and a
-full API listing.  The following gives a broad overview of the most import aspects of the scan framework.
+Fitting validation at the end of the scan gives the user control over what fitted parameters should be considered valid 
+and helps avoid incorrect fit parameters from being saved and later used in an experiment.  The framework also adopts the 
+philosophy of convention over configuration: datasets are stored for analysis and plotting in a standardize way which
+removes much of the data handling that needs to performed by the writer of a scan.   
+
+Please refer to https://stylus.ipages.nist.gov/scan_framework/ for the full scan framework documentation including 
+many worked examples and a full API listing.  The following gives a broad overview of the most import aspects of 
+the scan framework.
 
 ## Project Status
 Active development

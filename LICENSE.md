@@ -6,7 +6,7 @@ of the NIST DISCLAIMER at the top of the source file.
 
 #### Software developed by employees of NIST.  
 The following software was developed by employees of NIST.  See the NIST DISCLAIMER below.
-1.  All content in analysis/curvefits.py of the analysis submodule. 
+1.  All content in the analysis submodule/folder. 
    
 #### Software provided under the GNU Lesser General Public License.  
 Any other content that is not listed above as being developed by employees of NIST and
