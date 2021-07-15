@@ -55,4 +55,4 @@ class Example3Scan(Scan1D, EnvExperiment):
 
 class Example3Model(ScanModel):
     namespace = "example_4"
-    fit_function = fitting.Power
+    fit_function = curvefits.Power

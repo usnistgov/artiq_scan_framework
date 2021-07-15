@@ -50,7 +50,7 @@ class Example2Model(ScanModel):
 
     # 2. Define the function.
     #    The framework will fit the calculated means to this function.
-    fit_function = fitting.Power
+    fit_function = curvefits.Power
 
     # 3. Optionally specify guesses, scales, and bound for the fit param.
     guess = {

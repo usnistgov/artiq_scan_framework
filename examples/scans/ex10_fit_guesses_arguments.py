@@ -88,7 +88,7 @@ class Example9Scan(Scan1D, EnvExperiment):
 
 class Example9Model(ScanModel):
     namespace = "example_10"
-    fit_function = fitting.Power
+    fit_function = curvefits.Power
 
     man_scale = {
         'A': 1,

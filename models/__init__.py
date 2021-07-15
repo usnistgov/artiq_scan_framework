@@ -6,4 +6,3 @@ from .hist_model import *
 from .scan_model import *
 from .time_freq_model import *
 from .time_model import *
-import scan_framework.analysis.curvefits as fitting

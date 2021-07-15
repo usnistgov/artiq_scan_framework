@@ -6,7 +6,7 @@ from scan_framework import *
 from math import sin, pi
 
 # Custom fit function to fit pi times
-class SineSquared(fitting.FitFunction):
+class SineSquared(curvefits.FitFunction):
     @classmethod
     def names(cls):
         """Valid parameter names for this function type, in order for value()

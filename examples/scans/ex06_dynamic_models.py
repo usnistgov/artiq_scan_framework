@@ -57,7 +57,7 @@ class Example6Model(ScanModel):
     broadcast = True
     persist = True
     save = True
-    fit_function = fitting.Power
+    fit_function = curvefits.Power
 
     # 2b. Use @property to dynamically determine an attribute
     @property

@@ -1,3 +1,4 @@
+from artiq.experiment import *
 import scan_framework.tickle_scan as ts
 
 

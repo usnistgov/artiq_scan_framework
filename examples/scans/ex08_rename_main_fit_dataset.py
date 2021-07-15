@@ -8,7 +8,7 @@ from scan_framework import *
 
 class Example7Model(ScanModel):
     namespace = 'example_8'
-    fit_function = fitting.Power
+    fit_function = curvefits.Power
 
     # 1. Define main_fit as a list to rename the fit param
     #   The first entry is the name of the fit parameter and the second is the name of the dataset

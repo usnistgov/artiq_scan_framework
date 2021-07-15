@@ -52,7 +52,7 @@ class Example4Scan(Scan1D, EnvExperiment):
 
 class M1Model(ScanModel):
     namespace = "example_5.m1"
-    fit_function = fitting.Power
+    fit_function = curvefits.Power
 
     # Note: All datasets will be broadcast, saved, and persisted in this example
     broadcast = True
@@ -62,7 +62,7 @@ class M1Model(ScanModel):
 
 class M2Model(ScanModel):
     namespace = "example_5.m2"
-    fit_function = fitting.Power
+    fit_function = curvefits.Power
 
     broadcast = True
     persist = True

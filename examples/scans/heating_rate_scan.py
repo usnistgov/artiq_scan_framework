@@ -1,4 +1,5 @@
 # Include the scan_framework files.
+from artiq.experiment import *
 from scan_framework import *
 
 # Include the model for this scan.

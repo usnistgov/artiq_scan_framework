@@ -1,4 +1,5 @@
 # Example showing how to use the TimeFreqScan class with auto-tracking
+from artiq.experiment import *
 from scan_framework.scans import *
 from scan_framework.models import *
 from scan_framework.analysis.curvefits import AtomLine, Sine

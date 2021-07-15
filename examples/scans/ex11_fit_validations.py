@@ -123,7 +123,7 @@ class Example11Model(TimeFreqModel):
             return False
 
 
-class RabiSpectrum(fitting.FitFunction):
+class RabiSpectrum(curvefits.FitFunction):
     @classmethod
     def names(cls):
         return ['A', 'omega', 'x0', 't', 'y0']

@@ -1,3 +1,4 @@
+from artiq.experiment import *
 from scan_framework import *
 from lib.models.tickle_model import *
 import lib.device_params as params

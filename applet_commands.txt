@@ -1,4 +1,11 @@
+Applets for the ARTIQ dashboard
+===============================
+
 [Current Scan]
+# The current scan applet displays the average value returned from the measure() method at each scan point.
+# Each point displayed is for a single scan point. Scans configured to calculate statistics will automatically
+# write statistics to the `current_scan` namespace.  The current scan applet plots this contained in the
+# `current_scan` namespace.  This plot is updated as the scan executes.
 $python -m scan_framework.applets.plot_xy current_scan.plots.y
     --x current_scan.plots.x
     --fit current_scan.plots.fitline
@@ -12,7 +19,15 @@ $python -m scan_framework.applets.plot_xy current_scan.plots.y
     --rid current_scan.rid
     --error current_scan.plots.error
 
+[Count Monitor]
+# The count monitor applet displays the average value returned by the measure() method after each scan point
+# completes.
+${artiq_applet}big_number counts
+
 [Current Histogram]
+# The current histogram applet plots a histogram of all values returned by the measure() during a single scan point.
+# The histogram gives the distribution in measurement values only for the current scan point.  This plot is updated
+# as the scan executes.
 $python -m scan_framework.applets.plot_hist current_hist.bins
     --x current_hist.bin_boundaries
     --x_units current_hist.x_units
@@ -20,32 +35,17 @@ $python -m scan_framework.applets.plot_hist current_hist.bins
     --plot_title current_hist.plot_title
 
 [Current Aggregate Histogram]
+# The current aggregate histogram applet plots a histogram of all values returned by the measure() during the entire
+# scan.  The histogram is aggregate over all scan points.  This plot is updated as the scan executes.
 $python -m scan_framework.applets.plot_hist current_hist.aggregate_bins
     --x current_hist.bin_boundaries
     --x_units current_hist.x_units
     --x_label current_hist.x_label
     --plot_title current_hist.plot_title
 
-[Count Monitor]
-${artiq_applet}big_number counts
-
-[Current Scan For The ARTIQ Browser]
-$python -m scan_framework.applets.plot_xy current_scan.plots.y
-    --x current_scan.plots.x
-    --fit current_scan.plots.fitline
-    --title current_scan.plots.plot_title
-    --x_scale current_scan.plots.x_scale
-    --x_units current_scan.plots.x_units
-    --y_scale current_scan.plots.y_scale
-    --x_label current_scan.plots.x_label
-    --y_units current_scan.plots.y_units
-    --y_label current_scan.plots.y_label
-    --rid current_scan.rid
-    --error current_scan.plots.error
-    --trigger 1
-
-# ---------- Applets for 2D scans below
 [Current Sub Scan (for 2D scans)]
+# The current sub scan applet plots the mean value returned by the measure() method of the sub-scan of a 2D scan.
+# This plot is updated as the scan executes and is cleared after each sub-scan completes.
 $python -m scan_framework.applets.plot_xy current_scan.plots.dim1.y
     --x current_scan.plots.dim1.x
     --fit current_scan.plots.dim1.fitline
@@ -59,7 +59,8 @@ $python -m scan_framework.applets.plot_xy current_scan.plots.dim1.y
     --rid current_scan.rid
     --i_plot current_scan.plots.subplot.i_plot
 
-[Current Sub Scan No Fits]
+[Current Sub Scan No Fits (for 2D scans)]
+# Same as the current sub-scan applet, except the curve of the best fit is not plotted.
 $python -m scan_framework.applets.plot_xy current_scan.plots.dim1.y
     --x current_scan.plots.dim1.x
     --title current_scan.plots.dim1.plot_title
@@ -71,6 +72,26 @@ $python -m scan_framework.applets.plot_xy current_scan.plots.dim1.y
     --trigger current_scan.plots.trigger
     --rid current_scan.rid
     --i_plot current_scan.plots.subplot.i_plot
+
+
+Applets for the ARTIQ browser
+=============================
+
+[Current Scan For The ARTIQ Browser]
+# Same as the current_scan appleta bove, but for the ARTIQ browser.
+$python -m scan_framework.applets.plot_xy current_scan.plots.y
+    --x current_scan.plots.x
+    --fit current_scan.plots.fitline
+    --title current_scan.plots.plot_title
+    --x_scale current_scan.plots.x_scale
+    --x_units current_scan.plots.x_units
+    --y_scale current_scan.plots.y_scale
+    --x_label current_scan.plots.x_label
+    --y_units current_scan.plots.y_units
+    --y_label current_scan.plots.y_label
+    --rid current_scan.rid
+    --error current_scan.plots.error
+    --trigger 1
 
 
 
