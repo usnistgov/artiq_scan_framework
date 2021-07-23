@@ -759,6 +759,7 @@ class Scan(HasEnvironment):
         return self.do_measure(point)
 
     # interface: for child class (optional)
+    @rpc(flags={"async"})
     def mutate_datasets(self, i_point, measurement, point, data):
         """Interface method  (optional, has default behavior)
 
@@ -826,6 +827,7 @@ class Scan(HasEnvironment):
 
     # interface: for child class (optional)
     # RPC
+    @rpc(flags={"async"})
     def _set_counts(self, counts):
         """Interface method  (optional)
 
@@ -844,6 +846,7 @@ class Scan(HasEnvironment):
         self.set_dataset('counts', counts, broadcast=True, persist=True)
 
     # interface: for child class (optional)
+    @rpc(flags={"async"})
     def _calculate_all(self, i_point, point):
         # for every registered calculation....
         for calculation in self.calculations:

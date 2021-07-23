@@ -14,17 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.1] - 2021-07-14
 
-- Fixed outdated unittests to work in ARTIQ version 3
-- The previous alias of "fitting" for analysis.curvefits has been renamed to "curvefits".  Adding 
-  "from scan_framework import *" now imports the analysis.curvefits submodule with the alias of curvefits.  
+- Fixed outdated unittests to work in ARTIQ version 3 
 
-## [2.0.0] - 2021-05-27
+## [2.0.0] - 2021-07-13
 
 ### Added
 
 - All existing files for the scan framework currently used at NIST.
 
-Changes from previous in-house version of the scan framework:
+### Changes from previous in-house version of the scan framework:
+- The previous alias of "fitting" for analysis.curvefits has been renamed to "curvefits".  Adding 
+  "from scan_framework import *" now imports the analysis.curvefits submodule with the alias of curvefits. 
+- The 'frequency_center' attribute has been replaced by '_x_offset' attribute
 - TimeFrequencyScan renamed to TimeFreqScan
 - FrequencyScan renamed to FreqScan
 - Renamed FrequencyModel to FreqModel

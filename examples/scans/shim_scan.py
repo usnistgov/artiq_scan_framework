@@ -1,3 +1,13 @@
+# Real world example scan: shim scan
+#
+# Author: Philip Kent / NIST Quantum Processing Group
+#
+# Note: This example cannot be run as a number of dependencies are not included.
+# This scan is provided to give an example of usage of the scan framework in
+# an actual lab experiment.
+
+
+
 from artiq.experiment import *
 from scan_framework import *
 from lib.stylus_scan import *

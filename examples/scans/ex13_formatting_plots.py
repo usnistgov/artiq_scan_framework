@@ -6,6 +6,7 @@ from scan_framework import *
 
 
 class Example13Scan(Scan1D, FreqScan, EnvExperiment):
+    run_on_core = False
 
     def build(self):
         super().build()
@@ -17,7 +18,7 @@ class Example13Scan(Scan1D, FreqScan, EnvExperiment):
     def prepare(self):
         self.register_model(Example13Model(self), measurement=True)
 
-    @kernel
+    #@kernel
     def measure(self, frequency):
         # Return some dummy data to be plotted.
         return int((frequency/(1*MHz))**2)

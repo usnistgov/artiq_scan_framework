@@ -1,4 +1,13 @@
-# Example showing how to use the TimeFreqScan class with auto-tracking
+# Real world example scan: microwave scan
+# Demonstrates how to use the TimeFreqScan class with auto-tracking
+#
+# Author: Philip Kent / NIST Quantum Processing Group
+#
+# Note: This example cannot be run as a number of dependencies are not included.
+# This scan is provided to give an example of usage of the scan framework in
+# an actual lab experiment.
+
+
 from artiq.experiment import *
 from scan_framework.scans import *
 from scan_framework.models import *

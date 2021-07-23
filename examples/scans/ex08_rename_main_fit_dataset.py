@@ -10,6 +10,9 @@ class Example7Model(ScanModel):
     namespace = 'example_8'
     fit_function = curvefits.Power
 
+    # uncomment to see all datasets under the 'example_8' dataset key in the dashboard
+    #broadcast = True
+
     # 1. Define main_fit as a list to rename the fit param
     #   The first entry is the name of the fit parameter and the second is the name of the dataset
     main_fit = ["A", "slope"]  # save the 'A' fit parameter to a dataset named 'slope'
@@ -24,7 +27,10 @@ class Example7Scan(Scan1D, EnvExperiment):
 
     def build(self):
         super().build()
-        self.scan_arguments()
+        # Data will only appear under the 'example_8' dataset key when fit results are
+        # saved because Example7Model does not broadcast by default
+        self.scan_arguments(fit_options={'default': 'Fit and Save'})
+
         self.model1 = Example7Model(self)
         self.register_model(self.model1, measurement=True, fit=True)
 

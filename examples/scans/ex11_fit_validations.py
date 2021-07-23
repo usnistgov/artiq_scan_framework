@@ -41,6 +41,7 @@ class Example2Scan(Scan1D, FreqScan, EnvExperiment):
         self.scan_arguments(frequencies={'start': -0.2*MHz, 'stop': 0.2*MHz})
 
     def prepare(self):
+        self._x_offset = self.transition_frequency
         model = Example11Model(self)
 
         # 1. Validations can be disabled via the `disable_validations` attribute of the ScanModel that is performing the

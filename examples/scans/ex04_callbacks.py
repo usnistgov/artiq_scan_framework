@@ -29,6 +29,10 @@ class Example3Scan(Scan1D, EnvExperiment):
     def get_scan_points(self):
         return self.frequencies
 
+    @kernel
+    def initialize_devices(self):
+        self.core.reset()
+
     # 1. Create a `set_scan_point()` method.
     #    The set_scan_point() callback is called once at the start of each scan point,
     #    before your measure() method is repeated multiple times.
@@ -43,6 +47,7 @@ class Example3Scan(Scan1D, EnvExperiment):
 
         # Note: `set_scan_point()` is typically used to set a device to the value of the current
         #        scan point.
+        self.core.break_realtime()
         self.dds0.set(frequency)
 
     @kernel
