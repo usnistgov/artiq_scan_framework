@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.1] - 2021-07-14
 
-- Fixed outdated unittests to work in ARTIQ version 3 
+- Fixed outdated unittests to work in ARTIQ version 3
+- The mutate_datasets(), _set_counts(), & _calculate_all() scan callbacks are now asynchronouse (fire and forget) 
+  remote procedure calls.
 
 ## [2.0.0] - 2021-07-13
 
