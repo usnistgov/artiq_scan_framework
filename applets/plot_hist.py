@@ -2,7 +2,7 @@
 
 import PyQt5  # make sure pyqtgraph imports Qt5
 import pyqtgraph
-
+import numpy as np
 from artiq.applets.simple import TitleApplet
 
 
@@ -25,11 +25,12 @@ class HistogramPlot(pyqtgraph.PlotWidget):
         try:
             y = data[self.args.y][1]
             fit = data.get(self.args.fit, (False, None))[1] or [1 for _ in range(10)]
+            print(self.args.x)
             if self.args.x is None:
                 x = None
             else:
                 x = data[self.args.x][1]
-
+            fit = data.get(self.args.fit, (False, None))[1]
             x_units = data.get(self.args.x_units, (False, None))[1] or 1
             x_label = data.get(self.args.x_label, (False, None))[1] or ""
             y_label = data.get(self.args.y_label, (False, None))[1] or ""
@@ -43,6 +44,7 @@ class HistogramPlot(pyqtgraph.PlotWidget):
             x = x / x_units
 
         if len(y) and len(x) == len(y) + 1:
+
             self.clear()
             self.plot(x, y, stepMode=True, fillLevel=0,
                       brush=(0, 0, 255, 150))
@@ -53,8 +55,8 @@ class HistogramPlot(pyqtgraph.PlotWidget):
             # draw fit
             if fit is not None:
                 # style
-                pen = self.get_style('fit.pen')
-                self.plot(x, fit, pen=None)
+                pen = pyqtgraph.mkPen(color='r', width=4)
+                self.plot(np.linspace((x[1] + x[0]) / 2, (x[-1] + x[-2]) / 2, len(y)), fit, pen=pen)
         else:
             print("Plot Hist: x and y dimensions don't agree")
 

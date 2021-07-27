@@ -12,11 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for ARTIQ version 6 in the artiq-6 branch
 - Version 2.0: Added support for returning multiple measurements from the `measure()` method 
 
-## [2.0.1] - 2021-07-14
+## [2.0.1] - 2021-07-27
 
 - Fixed outdated unittests to work in ARTIQ version 3
 - The mutate_datasets(), _set_counts(), & _calculate_all() scan callbacks are now asynchronouse (fire and forget) 
   remote procedure calls.
+- Added ability to plot a fitline in the histogram plotting applet
 
 ## [2.0.0] - 2021-07-13
 
