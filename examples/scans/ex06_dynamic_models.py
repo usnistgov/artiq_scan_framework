@@ -9,7 +9,7 @@ from artiq.experiment import *
 from scan_framework import *
 
 
-class Example5Scan(Scan1D, EnvExperiment):
+class Example6Scan(Scan1D, EnvExperiment):
 
     def build(self):
         super().build()
