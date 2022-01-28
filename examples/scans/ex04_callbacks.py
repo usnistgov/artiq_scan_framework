@@ -6,7 +6,7 @@ from artiq.experiment import *
 from scan_framework import *
 
 
-class Example3Scan(Scan1D, EnvExperiment):
+class Example4Scan(Scan1D, EnvExperiment):
 
     def build(self):
         super().build()
@@ -23,7 +23,7 @@ class Example3Scan(Scan1D, EnvExperiment):
         self.setattr_device('dds0')
 
     def prepare(self):
-        self.model = Example3Model(self)
+        self.model = Example4Model(self)
         self.register_model(self.model, measurement=True, fit=True)
 
     def get_scan_points(self):
@@ -58,6 +58,6 @@ class Example3Scan(Scan1D, EnvExperiment):
         return int(frequency ** 2.0)
 
 
-class Example3Model(ScanModel):
+class Example4Model(ScanModel):
     namespace = "example_4"
     fit_function = curvefits.Power

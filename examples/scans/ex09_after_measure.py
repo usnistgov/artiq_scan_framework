@@ -6,7 +6,7 @@ from artiq.experiment import *
 from scan_framework.scans import *
 
 
-class Example8Scan(Scan1D, EnvExperiment):
+class Example9Scan(Scan1D, EnvExperiment):
 
     def build(self):
         super().build()

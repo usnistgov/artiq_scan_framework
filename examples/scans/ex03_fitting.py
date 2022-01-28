@@ -6,7 +6,7 @@ from artiq.experiment import *
 from scan_framework import *
 
 
-class Example2Scan(Scan1D, EnvExperiment):
+class Example3Scan(Scan1D, EnvExperiment):
 
     def build(self):
         super().build()
@@ -30,7 +30,7 @@ class Example2Scan(Scan1D, EnvExperiment):
         ))
 
     def prepare(self):
-        self.model = Example2Model(self)
+        self.model = Example3Model(self)
 
         # 1. Register the model with fit=True.
         #    This instructs the framework to fit a function to the saved mean values
@@ -45,7 +45,7 @@ class Example2Scan(Scan1D, EnvExperiment):
         return int(frequency**2.0)
 
 
-class Example2Model(ScanModel):
+class Example3Model(ScanModel):
     namespace = "example_3"
 
     # 2. Define the function.
@@ -74,5 +74,5 @@ class Example2Model(ScanModel):
     # 6. Specify the fit param to save
     #    This will broadcast and persist the fitted param to the global dataset store if 'Fit and Save' or
     #    'Fit Only and Save' are selected in the dashboard.
-    #     In this example alpha will be saved to 'example_2.alpha'
+    #     In this example alpha will be saved to 'example_3.alpha'
     main_fit = 'alpha'
