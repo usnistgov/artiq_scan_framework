@@ -38,12 +38,19 @@ class Scan(HasEnvironment):
     listed in order of execution.  (see the 'Scan Callbacks' section for additional information)
     """
     # -- kernel invariants
+    ###nresults version
+    #kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements', 'nresults',
+    #                     'do_fit', 'save_fit', 'fit_only'}
     kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements',
                          'do_fit', 'save_fit', 'fit_only'}
 
     # ------------------- Configuration Attributes ---------------------
     # These are set by the child scan class to enable/disable features and control how the scan is run.
 
+    #Feature: lean fpga data array
+    lean_data = True              #: Enable the _data array of counts stored on the fpga to only include nrepeats, nmeasurements, possibly nresults. This array will be overwritten every
+                                  #: pass and every new scan point, so you must have enable_mutate to store these results. This will be overridden if enable_mutate is false
+    
     # Feature: dataset mutating
     enable_mutate = True          #: Mutate mean values and standard errors datasets after each scan point.  Used to monitor progress of scan while it is running.
 
@@ -93,6 +100,13 @@ class Scan(HasEnvironment):
         self.create_logger()
 
         # initialize variables
+        
+        ###nresults version
+        #self._measure_results = []
+        #self.nresults = 1 #Number of results to return per measurement
+        #self.result_names=None
+        #self.nresults = None
+        
         self.nmeasurements = 0
         self.npoints = 0
         #self.npasses = 1  #: Number of passes
@@ -113,7 +127,7 @@ class Scan(HasEnvironment):
         self._terminated = False  #: scan has been terminated
         self.measurement = ''  #: the current measurement
 
-        # -- cass variables
+        # -- class variables
         self.measurements = []  #: List of measurements performed on each scan point
         self.calculations = []
         self._ncalcs = 0
@@ -155,6 +169,10 @@ class Scan(HasEnvironment):
     def _initialize(self, resume):
         """Initialize the scan"""
         self._logger.debug("_initialize()")
+        
+        ###nresults version
+        #if self.nresults is not None and self.result_names is None:
+        #    self.result_names = ["result_{0}".format(i) for i in range(self.nresults)]
 
         # initialize state variables
         self._paused = False
@@ -164,6 +182,9 @@ class Scan(HasEnvironment):
         self._logger.debug("executing prepare_scan callback")
 
         if not resume:
+            ###nresults version
+            #self._measure_results = [0 for _ in range(self.nresults)]
+            
             # load scan points
             self._load_points()
             self._logger.debug('loaded points')
@@ -380,6 +401,12 @@ class Scan(HasEnvironment):
 
         # iterate over repeats
         counts = np.int32(0)
+        if self.lean_data:
+            idx=None
+            poffset=0
+        else:
+            idx=self._idx
+        
         for i_repeat in range(nrepeats):
             # iterate over measurements
             for i_measurement in range(nmeasurements):
@@ -391,8 +418,15 @@ class Scan(HasEnvironment):
                 self.lab_before_measure(point, self.measurement)
 
                 # perform a single measurement and store the result
-                count = self.do_measure(point)
-                self._data[self._idx][i_measurement][poffset + i_repeat] = count
+                ###nresults version
+                # self.do_measure(point)
+                # for i_result in range(self.nresults):
+                #     count = self._measure_results[i_result]
+                #     self._data[idx][i_measurement][poffset + i_repeat][i_result] = count
+                #     counts += count
+                
+                count=self.do_measure(point)
+                self._data[idx][i_measurement][poffset + i_repeat][i_result] = count
                 counts += count
 
                 # callback
@@ -400,22 +434,24 @@ class Scan(HasEnvironment):
                 self.lab_after_measure(point, self.measurement)
 
         # update the dataset used to monitor counts
+        #mean = counts / (nrepeats*nmeasurements*self.nresults)
         mean = counts / (nrepeats*nmeasurements)
 
         # cost: 18 ms per point
         # mutate dataset values
         if self.enable_mutate:
-            length = (self._i_pass + 1) * nrepeats
+            #length = (self._i_pass + 1) * nrepeats
+            #length = poffset+nrepeats
             for i_measurement in range(nmeasurements):
                 # get data for model
-                data = self._data[self._idx][i_measurement][:length]
+                data = self._data[idx][i_measurement][poffset:poffset+nrepeats]
 
                 # get the name of the measurement
                 measurement = self.measurements[i_measurement]
 
                 # rpc to host
                 # send data to the model
-                self.mutate_datasets(i_point, measurement, point, data)
+                self.mutate_datasets(i_point, poffset, measurement, point, data)
             # self._logger.info("i_pass = ")
             # self._logger.info(i_pass)
             # self._logger.info("idx = ")
@@ -477,13 +513,23 @@ class Scan(HasEnvironment):
         """initialize memory to record counts on core device"""
 
         #: 3D array of counts measured at each scan point, measurement, pass, and repeat
-        self._data = np.array([
-            [
-                [
-                    np.int32(0) for k in range(self.nrepeats * self.npasses)
-                ] for j in range(self.nmeasurements)
-            ] for i in range(self.npoints)
-        ], dtype=np.int32)
+        # self._data = np.array([
+        #     [
+        #         [
+        #             np.int32(0) for k in range(self.nrepeats * self.npasses)
+        #         ] for j in range(self.nmeasurements)
+        #     ] for i in range(self.npoints)
+        # ], dtype=np.int32)
+        if self.lean_data:
+            ###nresults version
+            #self._data = np.zeros((self.nmeasurements, self.nrepeats, self.nresults),dtype=np.int32)
+            self._data = np.zeros((self.nmeasurements, self.nrepeats),dtype=np.int32)
+        else:
+            ###nresults version
+            #self._data = np.zeros((self.npoints, self.nmeasurements, self.nrepeats*self.npasses, self.nresults),
+            #                  dtype=np.int32)
+            self._data = np.zeros((self.npoints, self.nmeasurements, self.nrepeats*self.npasses),
+                              dtype=np.int32)
         self._logger.debug('initialized storage')
 
     # private: for scan.py
@@ -587,6 +633,11 @@ class Scan(HasEnvironment):
     def _calculate(self, i_point, point, calculation, entry):
         """Perform calculations on collected data after each scan point"""
         model = entry['model']
+        ###nresults version possibly
+        # for i_result in range(self.nresults):
+        #     value = model.mutate_datasets_calc(i_point, point, calculation)
+        #     if 'mutate_plot' in entry and entry['mutate_plot']:
+        #         self._mutate_plot(entry, i_point, point, value)
         value = model.mutate_datasets_calc(i_point, point, calculation)
         if 'mutate_plot' in entry and entry['mutate_plot']:
             self._mutate_plot(entry, i_point, point, value)
@@ -760,7 +811,7 @@ class Scan(HasEnvironment):
 
     # interface: for child class (optional)
     @rpc(flags={"async"})
-    def mutate_datasets(self, i_point, measurement, point, data):
+    def mutate_datasets(self, i_point, poffset, measurement, point, data):
         """Interface method  (optional, has default behavior)
 
         If this method is not overridden, all data collected for the specified measurement during the
@@ -790,7 +841,7 @@ class Scan(HasEnvironment):
                 #    entry = self._model_registry['measurements'][measurement]
 
                 # mutate the stats for this measurement with the data passed from the core device
-                mean = entry['model'].mutate_datasets(i_point, point, data)
+                mean = entry['model'].mutate_datasets(i_point, poffset, point, data)
                 self._mutate_plot(entry, i_point, point, mean)
 
                 # keep a record on the host of the data collected for this pass, measurement, and scan point
@@ -985,7 +1036,8 @@ class Scan(HasEnvironment):
     @portable
     def do_measure(self, point):
         """Provides a way for subclasses to override the method signature of the measure method."""
-        return self.measure(point)
+        result= self.measure(point)
+        self._measure_results[0] = result
 
     # ------------------- Helper Methods ---------------------
     # helper: for child class

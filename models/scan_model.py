@@ -484,7 +484,7 @@ class ScanModel(Model):
         # draw plots when done writting
         self.set('plots.trigger', 1)
 
-    def mutate_datasets(self, i_point, point, counts):
+    def mutate_datasets(self, i_point, poffset, point, counts):
         """Generates the mean and standard error of the mean for the measured value at the specified scan point
         and mutates the corresponding datasets.  The `points` and `counts` datasets are also mutated with the
         specified scan point value and raw values measured at the specified scan point.  If histograms are enabled,
@@ -492,30 +492,32 @@ class ScanModel(Model):
         binned values to updated the histogram plots.
 
         :param i_point: scan point index
+        :param poffset: index of start of measurements for this pass
         :param point: value of scan point
         :param counts: array containing all values returned by the scan's measure() method during the specified
                        scan point
         """
         dim = self._scan._dim
-
+        nrepeats=self.nrepeats
         # mutate the dataset containing the scan point values
-        self.mutate_points(i_point, point)
+        self.mutate_points(i_point, point) #TODO this shouldn't need to be called every time, does this slow down the rpc?
         # mutate the dataset containing the array of counts measured at each repetition of the scan point
         if dim == 1:
             # mutate the counts dataset
-            i = ((i_point, i_point + 1), (0, len(counts)))
+            i = ((i_point, i_point + 1), (poffset, poffset+nrepeats)) ###not sure how len(counts) is supposed to be correct
             self.stat_model.mutate('counts', i, counts, update_local=False)
 
             # mutate the local counts array (so it can be written when a scan resumes)
-            self.stat_model.counts[i_point, 0:len(counts)] = counts
+            self.stat_model.counts[i_point, poffset:poffset+nrepeats] = counts
         else:
             # mutate the counts dataset with counts
-            i = ((i_point[0], i_point[0] + 1), (i_point[1], i_point[1] + 1), (0, len(counts)))
+            i = ((i_point[0], i_point[0] + 1), (i_point[1], i_point[1] + 1), (poffset,poffset+nrepeats))
             self.stat_model.mutate('counts', i, counts, update_local=False)
 
             # mutate the local counts array (so it can be written when a scan resumes)
-            self.stat_model.counts[i_point[0], i_point[1], 0:len(counts)] = counts
+            self.stat_model.counts[i_point[0], i_point[1], poffset:poffset+nrepeats] = counts
 
+        counts=self.stat_model.counts
         # calculate the mean
         mean = self.calc_mean(counts)
 
