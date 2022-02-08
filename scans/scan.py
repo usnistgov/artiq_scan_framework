@@ -401,11 +401,15 @@ class Scan(HasEnvironment):
 
         # iterate over repeats
         counts = np.int32(0)
-        if self.lean_data:
+        if self.lean_data and self.enable_mutate:
+            #lean data array has no point index (idx=None) and doesn't save multiple passes (poffset=0)
             idx=None
             poffset=0
+            #however mutating the dataset needs to know the index to shift by for the datasets, so mutate_poffset=poffset
+            mutate_poffset=poffset
         else:
             idx=self._idx
+            mutate_poffset=0
         
         for i_repeat in range(nrepeats):
             # iterate over measurements
@@ -426,7 +430,7 @@ class Scan(HasEnvironment):
                 #     counts += count
                 
                 count=self.do_measure(point)
-                self._data[idx][i_measurement][poffset + i_repeat][i_result] = count
+                self._data[idx][i_measurement][poffset + i_repeat] = count
                 counts += count
 
                 # callback
@@ -443,8 +447,8 @@ class Scan(HasEnvironment):
             #length = (self._i_pass + 1) * nrepeats
             #length = poffset+nrepeats
             for i_measurement in range(nmeasurements):
-                # get data for model
-                data = self._data[idx][i_measurement][poffset:poffset+nrepeats]
+                # get data for model, if mutate_poffset=0, full data array 0:poffset+nrepeats, otherwise small data array poffset:poffset+nrepeats
+                data = self._data[idx][i_measurement][mutate_poffset:poffset+nrepeats]
 
                 # get the name of the measurement
                 measurement = self.measurements[i_measurement]
@@ -1036,8 +1040,10 @@ class Scan(HasEnvironment):
     @portable
     def do_measure(self, point):
         """Provides a way for subclasses to override the method signature of the measure method."""
-        result= self.measure(point)
-        self._measure_results[0] = result
+        ###nresults version
+        #result= self.measure(point)
+        #self._measure_results[0] = result
+        return self.measure(point)
 
     # ------------------- Helper Methods ---------------------
     # helper: for child class
