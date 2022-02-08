@@ -2,3 +2,4 @@
 __pycache__
 /docs/_build
 ERB_NOTES
+*.bak
