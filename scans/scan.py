@@ -401,7 +401,14 @@ class Scan(HasEnvironment):
 
         # iterate over repeats
         counts = np.int32(0)
-        idx=self._idx
+        if self.lean_data and self.enable_mutate:
+            #lean data array has no point index (idx=None) and doesn't save multiple passes (data_poffset=0)
+            idx=None
+            data_poffset=0
+        else:
+            idx=self._idx
+            data_poffset=poffset
+        
         for i_repeat in range(nrepeats):
             # iterate over measurements
             for i_measurement in range(nmeasurements):
@@ -417,17 +424,11 @@ class Scan(HasEnvironment):
                 # self.do_measure(point)
                 # for i_result in range(self.nresults):
                 #     count = self._measure_results[i_result]
-                #    if self.lean_data and self.enable_mutate:
-                #        self._data[i_measurement,i_repeat,i_result] = count
-                #    else:
-                #        self._data[idx,i_measurement,poffset + i_repeat,i_result] = count
-                #    counts += count
+                #     self._data[idx][i_measurement][data_poffset + i_repeat][i_result] = count
+                #     counts += count
+                
                 count=self.do_measure(point)
-                if self.lean_data and self.enable_mutate:
-                    self._data[i_measurement,i_repeat] = count
-                else:
-                    self._data[idx,i_measurement,poffset + i_repeat] = count
-                    
+                self._data[idx][i_measurement][data_poffset + i_repeat] = count
                 counts += count
 
                 # callback
@@ -444,11 +445,8 @@ class Scan(HasEnvironment):
             #length = (self._i_pass + 1) * nrepeats
             #length = poffset+nrepeats
             for i_measurement in range(nmeasurements):
-                # get data for model, only send newly generated data array
-                if self.lean_data and self.enable_mutate:
-                    data = self._data[i_measurement][:nrepeats]
-                else:
-                    data = self._data[idx][i_measurement][poffset:poffset+nrepeats]
+                # get data for model, only send newly generated data array data_poffset:data_poffset+nrepeats
+                data = self._data[idx][i_measurement][data_poffset:data_poffset+nrepeats]
 
                 # get the name of the measurement
                 measurement = self.measurements[i_measurement]
