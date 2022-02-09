@@ -238,6 +238,7 @@ class ReloadingScan(Scan):
 
     # -- settings
     enable_reloading = True  #: Reload ion when it is lost?
+    lean_data = False
 
     # -- scan state
     _lost_ion = False  #: ion has been lost
