@@ -502,25 +502,25 @@ class ScanModel(Model):
         self.mutate_points(i_point, point) #TODO this shouldn't need to be called every time, does this slow down the rpc?
         # mutate the dataset containing the array of counts measured at each repetition of the scan point
         if dim == 1:
-            # mutate the counts dataset with counts at point i_point,poffset (this pass or 0 if all passes):len(counts)
-            i = ((i_point, i_point + 1), (poffset, len(counts)))
+            # mutate the counts dataset with counts at point i_point,poffset:poffset+len(counts)
+            i = ((i_point, i_point + 1), (poffset, poffset+len(counts)))
             self.stat_model.mutate('counts', i, counts, update_local=False)
 
             # mutate the local counts array (so it can be written when a scan resumes)
-            self.stat_model.counts[i_point, poffset:len(counts)] = counts
+            self.stat_model.counts[i_point, poffset:poffset+len(counts)] = counts
             
             #resize counts to full filled local array for statistics modeling
-            counts=self.stat_model.counts[i_point,0:len(counts)]
+            counts=self.stat_model.counts[i_point,0:poffset+len(counts)]
         else:
-            # mutate the 2D counts dataset with counts at point i_point[0],i_point[1],poffset (this pass or 0 if all passes):len(counts)
-            i = ((i_point[0], i_point[0] + 1), (i_point[1], i_point[1] + 1), (poffset,len(counts)))
+            # mutate the 2D counts dataset with counts at point i_point[0],i_point[1],poffset:poffset+len(counts)
+            i = ((i_point[0], i_point[0] + 1), (i_point[1], i_point[1] + 1), (poffset,poffset+len(counts)))
             self.stat_model.mutate('counts', i, counts, update_local=False)
 
             # mutate the local counts array (so it can be written when a scan resumes)
-            self.stat_model.counts[i_point[0], i_point[1], poffset:len(counts)] = counts
+            self.stat_model.counts[i_point[0], i_point[1], poffset:poffset+len(counts)] = counts
             
             #resize counts to full filled local array for statistics modeling
-            counts=self.stat_model.counts[i_point[0],i_point[1],0:len(counts)]
+            counts=self.stat_model.counts[i_point[0],i_point[1],0:poffset+len(counts)]
             
         # calculate the mean
         mean = self.calc_mean(counts)
