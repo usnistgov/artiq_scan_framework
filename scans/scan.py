@@ -403,7 +403,7 @@ class Scan(HasEnvironment):
         counts = np.int32(0)
         if self.lean_data and self.enable_mutate:
             #lean data array has no point index (idx=None) and doesn't save multiple passes (data_poffset=0)
-            idx=None
+            idx=0
             data_poffset=0
         else:
             idx=self._idx
@@ -522,10 +522,10 @@ class Scan(HasEnvironment):
         #         ] for j in range(self.nmeasurements)
         #     ] for i in range(self.npoints)
         # ], dtype=np.int32)
-        if self.lean_data:
+        if self.lean_data and self.enable_mutate:
             ###nresults version
-            #self._data = np.zeros((self.nmeasurements, self.nrepeats, self.nresults),dtype=np.int32)
-            self._data = np.zeros((self.nmeasurements, self.nrepeats),dtype=np.int32)
+            #self._data = np.zeros((1,self.nmeasurements, self.nrepeats, self.nresults),dtype=np.int32)
+            self._data = np.zeros((1,self.nmeasurements, self.nrepeats),dtype=np.int32)
         else:
             ###nresults version
             #self._data = np.zeros((self.npoints, self.nmeasurements, self.nrepeats*self.npasses, self.nresults),
