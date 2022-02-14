@@ -48,9 +48,6 @@ class Scan(HasEnvironment):
     # These are set by the child scan class to enable/disable features and control how the scan is run.
 
     #Feature: lean fpga data array
-    lean_data = True              #: Enable the _data array of counts stored on the fpga to only include nrepeats, nmeasurements, possibly nresults. This array will be overwritten every
-                                  #: pass and every new scan point, so you must have enable_mutate to store these results. This will be overridden if enable_mutate is false
-    
     # Feature: dataset mutating
     enable_mutate = True          #: Mutate mean values and standard errors datasets after each scan point.  Used to monitor progress of scan while it is running.
 
@@ -161,9 +158,11 @@ class Scan(HasEnvironment):
                 if self.enable_profiling:
                     self.pr.disable()
                     p = pstats.Stats(self.pr)
-                    p.strip_dirs()
-                    p.sort_stats('cumulative')
+                    #p.strip_dirs()
+                    p.sort_stats('time')
                     p.print_stats(10)
+                    p.sort_stats('cumulative')
+                    p.print_stats(20)
 
     # private: for scan.py
     def _initialize(self, resume):
@@ -401,13 +400,6 @@ class Scan(HasEnvironment):
 
         # iterate over repeats
         counts = np.int32(0)
-        if self.lean_data and self.enable_mutate:
-            #lean data array has no point index (idx=None) and doesn't save multiple passes (data_poffset=0)
-            idx=0
-            data_poffset=0
-        else:
-            idx=self._idx
-            data_poffset=poffset
         
         for i_repeat in range(nrepeats):
             # iterate over measurements
@@ -424,11 +416,11 @@ class Scan(HasEnvironment):
                 # self.do_measure(point)
                 # for i_result in range(self.nresults):
                 #     count = self._measure_results[i_result]
-                #     self._data[idx][i_measurement][data_poffset + i_repeat][i_result] = count
+                #     self._data[i_measurement][i_repeat][i_result] = count
                 #     counts += count
                 
                 count=self.do_measure(point)
-                self._data[idx][i_measurement][data_poffset + i_repeat] = count
+                self._data[i_measurement][i_repeat] = count
                 counts += count
 
                 # callback
@@ -442,11 +434,9 @@ class Scan(HasEnvironment):
         # cost: 18 ms per point
         # mutate dataset values
         if self.enable_mutate:
-            #length = (self._i_pass + 1) * nrepeats
-            #length = poffset+nrepeats
             for i_measurement in range(nmeasurements):
-                # get data for model, only send newly generated data array data_poffset:data_poffset+nrepeats
-                data = self._data[idx][i_measurement][data_poffset:data_poffset+nrepeats]
+                # get data for model, only send newly generated data array 0:nrepeats
+                data = self._data[i_measurement]
 
                 # get the name of the measurement
                 measurement = self.measurements[i_measurement]
@@ -522,16 +512,9 @@ class Scan(HasEnvironment):
         #         ] for j in range(self.nmeasurements)
         #     ] for i in range(self.npoints)
         # ], dtype=np.int32)
-        if self.lean_data and self.enable_mutate:
-            ###nresults version
-            #self._data = np.zeros((1,self.nmeasurements, self.nrepeats, self.nresults),dtype=np.int32)
-            self._data = np.zeros((1,self.nmeasurements, self.nrepeats),dtype=np.int32)
-        else:
-            ###nresults version
-            #self._data = np.zeros((self.npoints, self.nmeasurements, self.nrepeats*self.npasses, self.nresults),
-            #                  dtype=np.int32)
-            self._data = np.zeros((self.npoints, self.nmeasurements, self.nrepeats*self.npasses),
-                              dtype=np.int32)
+        ###nresults version
+        #self._data = np.zeros((self.nmeasurements, self.nrepeats, self.nresults),dtype=np.int32)
+        self._data = np.zeros((self.nmeasurements, self.nrepeats),dtype=np.int32)
         self._logger.debug('initialized storage')
 
     # private: for scan.py
