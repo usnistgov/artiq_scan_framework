@@ -47,7 +47,6 @@ class Scan(HasEnvironment):
     # ------------------- Configuration Attributes ---------------------
     # These are set by the child scan class to enable/disable features and control how the scan is run.
 
-    #Feature: lean fpga data array
     # Feature: dataset mutating
     enable_mutate = True          #: Mutate mean values and standard errors datasets after each scan point.  Used to monitor progress of scan while it is running.
 
@@ -247,7 +246,6 @@ class Scan(HasEnvironment):
         shape = self._shape
         plot_shape = self._plot_shape
         points = self._points
-
         # datasets are only initialized/written when a scan can run
         if not self.fit_only:
 
@@ -310,7 +308,7 @@ class Scan(HasEnvironment):
             self._before_loop(resume)
             # callback
             self.initialize_devices()
-
+            
             # iterate of passes
             while self._i_pass < npasses:
                 # update offset into self.dataptr[] where data begins for this pass
@@ -2074,3 +2072,83 @@ class MetaScan(Scan1D):
 
         # prepare top level scan
         super().prepare_scan()
+        
+class ContinuousScan(Scan):
+    """Extension of the :class:`~scan_framework.scans.scan.Scan` class for continuous scans."""
+    continuous_points = 1000      #: only saving the user settable number of points, defaulting to 1000, eventually add feature for saving all points to a file possibly
+    continuous_plot = 50          #: number of points to plot on a continuous scan, scrolls to right hopefully as points added beyond this number.
+    def __init__(self, managers_or_parent, *args, **kwargs):
+        super().__init__(managers_or_parent, *args, **kwargs)
+        self._dim = 1
+        self._i_point = np.int64(0)
+    @portable
+    def _loop(self,resume=False):
+       ncalcs = self._ncalcs
+       nmeasurements = self.nmeasurements
+       nrepeats = self.nrepeats
+       measurements = self.measurements
+
+       try:
+           # callback
+           self._before_loop(resume)
+           # callback
+           self.initialize_devices()
+           
+           point=0.0
+           self._i_point=0
+           poffset=0
+           while True:
+               if not resume or self._idx==0:
+                   self.before_pass(self._i_pass)
+               self._repeat_loop(point,self._i_point,nrepeats,nmeasurements,measurements,poffset,ncalcs)
+               self._i_point+=1
+               point+=1
+               if self._i_point == self.continuous_points:
+                   self._i_point =0
+       except Paused:
+           self._paused = True
+       finally:
+           self.cleanup()
+
+    def _load_points(self):
+        # grab the points
+        points = [i for i in range(self.continuous_points)]
+
+        # total number of scan points
+        self.npoints = np.int32(self.continuous_points)
+
+        # initialize shapes (these are the authority on data structure sizes)...
+
+        # shape of the stats.counts dataset
+        self._shape = np.int32(self.npoints)
+
+        # shape of the plots.x, plots.y, and plots.fitline datasets
+        if self._plot_shape is None:
+            self._plot_shape = np.int32(self.continuous_plot)
+
+        # initialize 1D data structures...
+
+        # 1D array of scan points (these are saved to the stats.points dataset)
+        self._points = np.array(points, dtype=np.float64)
+
+        # flattened 1D array of scan points (these are looped over on the core)
+        self._points_flat = np.array(points, dtype=np.float64)
+
+    def _mutate_plot(self, entry, i_point, point, mean):
+        model = entry['model']
+        i_point = int(point % self.continuous_plot)
+        # mutate plot x/y datasets
+        model.mutate_plot(i_point=i_point, x=point, y=mean)
+
+        # tell the current_scan applet to redraw itself
+        model.set('plots.trigger', 1, which='mirror')
+        model.set('plots.trigger', 0, which='mirror')
+
+    def _offset_points(self, x_offset):
+        if x_offset is not None:
+            self._points += x_offset
+            self._points_flat += x_offset
+
+    def _write_datasets(self, entry):
+        entry['model'].write_datasets(dimension=0)
+        entry['datasets_written'] = True
