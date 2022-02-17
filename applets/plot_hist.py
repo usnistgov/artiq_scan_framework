@@ -25,7 +25,6 @@ class HistogramPlot(pyqtgraph.PlotWidget):
         try:
             y = data[self.args.y][1]
             fit = data.get(self.args.fit, (False, None))[1] or [1 for _ in range(10)]
-            print(self.args.x)
             if self.args.x is None:
                 x = None
             else:
