@@ -3,6 +3,7 @@ import numpy as np
 from time import time, sleep
 import inspect
 import cProfile, pstats
+from scan_framework.scans.data_logger import DataLogger
 
 
 # allows @portable methods that use delay_mu to compile
@@ -182,11 +183,21 @@ class Scan(HasEnvironment):
         self._logger.debug("executing prepare_scan callback")
 
         if not resume:
+            if self.continuous_scan:
+                #Set _load_points,_loop,_mutate_plot, _offset_points to be continuous versions
+                self._load_points=ContinuousScan(self,self)._load_points
+                self._loop=ContinuousScan(self,self)._loop
+                self._mutate_plot=ContinuousScan(self,self)._mutate_plot
+                self._offset_points=ContinuousScan(self,self)._offset_points
+                if self.continuous_save:
+                    self.continuous_logger=DataLogger(self)
+                else:
+                    self.continuous_logger=None
             ###nresults version
             #self._measure_results = [0 for _ in range(self.nresults)]
             
             # load scan points
-            self.load_points()
+            self._load_points()
             self._logger.debug('loaded points')
 
         # this expects that self.npoints is available
@@ -215,7 +226,7 @@ class Scan(HasEnvironment):
             self.nmeasurements = len(self.measurements)
 
             # expects self._x_offset has been set
-            self.offset_points(self._x_offset)
+            self._offset_points(self._x_offset)
             self._logger.debug("offset points by {0}".format(self._x_offset))
 
             # initialize storage
@@ -410,14 +421,6 @@ class Scan(HasEnvironment):
                 # callback
                 self.before_measure(measure_point, self.measurement)
                 self.lab_before_measure(measure_point, self.measurement)
-
-                # perform a single measurement and store the result
-                ###nresults version
-                # self.do_measure(measure_point)
-                # for i_result in range(self.nresults):
-                #     count = self._measure_results[i_result]
-                #     self._data[i_measurement][i_repeat][i_result] = count
-                #     counts += count
                 
                 count=self.do_measure(measure_point)
                 self._data[i_measurement][i_repeat] = count
@@ -504,16 +507,7 @@ class Scan(HasEnvironment):
     def _init_storage(self):
         """initialize memory to record counts on core device"""
 
-        #: 3D array of counts measured at each scan point, measurement, pass, and repeat
-        # self._data = np.array([
-        #     [
-        #         [
-        #             np.int32(0) for k in range(self.nrepeats * self.npasses)
-        #         ] for j in range(self.nmeasurements)
-        #     ] for i in range(self.npoints)
-        # ], dtype=np.int32)
-        ###nresults version
-        #self._data = np.zeros((self.nmeasurements, self.nrepeats, self.nresults),dtype=np.int32)
+        #: 3D array of counts measured for a given scan point, i.e. nmeasurement*nrepeats*nresults
         self._data = np.zeros((self.nmeasurements, self.nrepeats),dtype=np.int32)
         self._logger.debug('initialized storage')
 
@@ -625,7 +619,7 @@ class Scan(HasEnvironment):
         #         self._mutate_plot(entry, i_point, point, value)
         value = model.mutate_datasets_calc(i_point, point, calculation)
         if 'mutate_plot' in entry and entry['mutate_plot']:
-            self.mutate_plot(entry, i_point, point, value)
+            self._mutate_plot(entry, i_point, point, value)
 
     # ------------------- Interface Methods ---------------------
 
@@ -654,21 +648,6 @@ class Scan(HasEnvironment):
         try:
             # start the profiler (if it's enabled)
             self._profile(start=True)
-            
-            #Set load_points,loop,mutate_plot, offset points to either be continuous or standard versions
-            if self.continuous_scan:
-                #self.load_points=ContinuousScan(self,self)
-                #self.load_points._load_points()
-                #ContinuousScan(self,self)._load_points()
-                self.load_points=ContinuousScan(self,self)._load_points
-                self.loop=ContinuousScan(self,self)._loop
-                self.mutate_plot=ContinuousScan(self,self)._mutate_plot
-                self.offset_points=ContinuousScan(self,self)._offset_points
-            else:
-                self.load_points=self._load_points
-                self.loop=self._loop
-                self.mutate_plot=self._mutate_plot
-                self.offset_points=self._offset_points
 
             # initialize the scan
             self._initialize(resume)
@@ -842,7 +821,7 @@ class Scan(HasEnvironment):
 
                 # mutate the stats for this measurement with the data passed from the core device
                 mean = entry['model'].mutate_datasets(i_point, poffset, point, data)
-                self.mutate_plot(entry, i_point, point, mean)
+                self._mutate_plot(entry, i_point, point, mean)
 
                 # keep a record on the host of the data collected for this pass, measurement, and scan point
                 # for i_repetition in range(len(data)):
@@ -875,6 +854,9 @@ class Scan(HasEnvironment):
         except TerminationRequested:
             self.logger.warning("Scan terminated.")
             self._terminated = True
+            if self.continuous_logger:
+                first_pass=self.continuous_points==int(self.continuous_index)
+                ContinuousScan(self,self).continuous_logging(self,self.continuous_logger,first_pass)
 
     # interface: for child class (optional)
     # RPC
@@ -1274,7 +1256,7 @@ class Scan(HasEnvironment):
             self._timeit('compile')
         self._logger.debug("running scan on core device")
         self.lab_before_scan_core()
-        self.loop(resume)
+        self._loop(resume)
         self.after_scan_core()
         self.lab_after_scan_core()
 
@@ -1290,7 +1272,7 @@ class Scan(HasEnvironment):
                        started for the first time.
         """
         self._logger.debug("running scan on the host")
-        self.loop(resume)
+        self._loop(resume)
 
     # helper: for child class
     def simulate_measure(self, point, measurement):
@@ -2114,16 +2096,18 @@ class ContinuousScan(HasEnvironment):
            # callback
            parent.initialize_devices()
            
-           point=parent._points[parent._idx]
            poffset=0
            while True:
                if not resume or parent._idx==0:
                    parent.before_pass(parent._i_pass)
-               parent._repeat_loop(point,parent.continuous_measure_point,parent._idx,nrepeats,nmeasurements,measurements,poffset,ncalcs)
+               parent._repeat_loop(parent.continuous_index,parent.continuous_measure_point,parent._idx,nrepeats,nmeasurements,measurements,poffset,ncalcs)
                parent._idx+=1
-               point+=1
+               parent.continuous_index+=1
                if parent._idx == parent.continuous_points:
                    parent._idx =0
+                   if parent.continuous_logger:
+                       first_pass=parent.continuous_points==int(parent.continuous_index)
+                       self.continuous_logging(parent,parent.continuous_logger,first_pass)
        except Paused:
            parent._paused = True
        finally:
@@ -2153,6 +2137,8 @@ class ContinuousScan(HasEnvironment):
         
         # flattened 1D array of scan points (these are looped over on the core)
         parent._points_flat = np.array(points, dtype=np.float64)
+        
+        parent.continuous_index=0.0
 
     def _mutate_plot(self, entry, i_point, point, mean):
         parent=self.parent
@@ -2169,3 +2155,16 @@ class ContinuousScan(HasEnvironment):
         parent=self.parent
         if x_offset is not None:
             parent.continuous_measure_point += x_offset
+    def continuous_logging(self,parent,logger,first_pass):
+        for entry in parent._model_registry:
+            # model registered for this measurement
+            if entry['measurement']:
+                # grab the model for the measurement from the registry
+                # get counts for measurement of the measurement model
+                if parent._terminated:
+                    counts = entry['model'].stat_model.counts[0:int(parent._idx)]
+                else:
+                    counts = entry['model'].stat_model.counts
+                    
+                name = entry['model'].stat_model.namespace +'.counts'
+                logger.append_continuous_data(counts, name, first_pass)
