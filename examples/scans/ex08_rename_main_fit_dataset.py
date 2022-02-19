@@ -6,7 +6,7 @@ from artiq.experiment import *
 from scan_framework import *
 
 
-class Example7Model(ScanModel):
+class Example8Model(ScanModel):
     namespace = 'example_8'
     fit_function = curvefits.Power
 
@@ -23,15 +23,15 @@ class Example7Model(ScanModel):
     }
 
 
-class Example7Scan(Scan1D, EnvExperiment):
+class Example8Scan(Scan1D, EnvExperiment):
 
     def build(self):
         super().build()
         # Data will only appear under the 'example_8' dataset key when fit results are
-        # saved because Example7Model does not broadcast by default
+        # saved because Example8Model does not broadcast by default
         self.scan_arguments(fit_options={'default': 'Fit and Save'})
 
-        self.model1 = Example7Model(self)
+        self.model1 = Example8Model(self)
         self.register_model(self.model1, measurement=True, fit=True)
 
     def get_scan_points(self):

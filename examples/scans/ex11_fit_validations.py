@@ -11,7 +11,7 @@ import random
 from math import pi
 
 
-class Example2Scan(Scan1D, FreqScan, EnvExperiment):
+class Example11Scan(Scan1D, FreqScan, EnvExperiment):
     run_on_core = False
 
     def build(self):
