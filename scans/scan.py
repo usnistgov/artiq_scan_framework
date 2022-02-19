@@ -3,6 +3,7 @@ import numpy as np
 from time import time, sleep
 import inspect
 import cProfile, pstats
+from scan_framework.scans.data_logger import DataLogger
 
 
 # allows @portable methods that use delay_mu to compile
@@ -47,7 +48,6 @@ class Scan(HasEnvironment):
     # ------------------- Configuration Attributes ---------------------
     # These are set by the child scan class to enable/disable features and control how the scan is run.
 
-    #Feature: lean fpga data array
     # Feature: dataset mutating
     enable_mutate = True          #: Mutate mean values and standard errors datasets after each scan point.  Used to monitor progress of scan while it is running.
 
@@ -72,7 +72,7 @@ class Scan(HasEnvironment):
 
     # Feature: host scans
     run_on_core = True            #: Set to False to run scans entirely on the host and not on the core device.
-
+    
     # Feature: profiling/timing
     enable_profiling = False  #: Profile the execution of the scan to find bottlenecks.
     enable_timing = False  #: Enable automatic timing of certain events.  Currently only compilation time is timed.
@@ -114,6 +114,8 @@ class Scan(HasEnvironment):
         self.nrepeats = None
         self._x_offset = None
         self.debug = 0
+        
+        self.continuous_scan=None
 
         self.do_fit = False  #: Fits are performed after the scan completes.  Set automatically by scan framework from the 'Fit Options' argument
         self.save_fit = False  #: Fitted params are saved to datasets.  Set automatically by scan framework from the 'Fit Options' argument
@@ -181,6 +183,16 @@ class Scan(HasEnvironment):
         self._logger.debug("executing prepare_scan callback")
 
         if not resume:
+            if self.continuous_scan:
+                #Set _load_points,_loop,_mutate_plot, _offset_points to be continuous versions
+                self._load_points=ContinuousScan(self,self)._load_points
+                self._loop=ContinuousScan(self,self)._loop
+                self._mutate_plot=ContinuousScan(self,self)._mutate_plot
+                self._offset_points=ContinuousScan(self,self)._offset_points
+                if self.continuous_save:
+                    self.continuous_logger=DataLogger(self)
+                else:
+                    self.continuous_logger=None
             ###nresults version
             #self._measure_results = [0 for _ in range(self.nresults)]
             
@@ -247,7 +259,6 @@ class Scan(HasEnvironment):
         shape = self._shape
         plot_shape = self._plot_shape
         points = self._points
-
         # datasets are only initialized/written when a scan can run
         if not self.fit_only:
 
@@ -310,7 +321,7 @@ class Scan(HasEnvironment):
             self._before_loop(resume)
             # callback
             self.initialize_devices()
-
+            
             # iterate of passes
             while self._i_pass < npasses:
                 # update offset into self.dataptr[] where data begins for this pass
@@ -365,7 +376,7 @@ class Scan(HasEnvironment):
             self._i_point = i_points[self._idx]
 
             # repeat measurement on scan point
-            self._repeat_loop(point, self._i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
+            self._repeat_loop(point, point, self._i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
                               last_point=False, last_pass=last_pass)
             self._idx += 1
 
@@ -380,7 +391,7 @@ class Scan(HasEnvironment):
 
     # private: for scan.py
     @portable
-    def _repeat_loop(self, point, i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
+    def _repeat_loop(self, point, measure_point, i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
                      last_point=False, last_pass=False):
 
         # check for higher priority experiment or termination requested
@@ -393,10 +404,10 @@ class Scan(HasEnvironment):
                 raise Paused
 
         # dynamically offset the scan point
-        point = self.offset_point(i_point, point)
+        measure_point = self.offset_point(i_point, measure_point)
 
         # callback
-        self.set_scan_point(i_point, point)
+        self.set_scan_point(i_point, measure_point)
 
         # iterate over repeats
         counts = np.int32(0)
@@ -408,24 +419,16 @@ class Scan(HasEnvironment):
                 self.measurement = measurements[i_measurement]
 
                 # callback
-                self.before_measure(point, self.measurement)
-                self.lab_before_measure(point, self.measurement)
-
-                # perform a single measurement and store the result
-                ###nresults version
-                # self.do_measure(point)
-                # for i_result in range(self.nresults):
-                #     count = self._measure_results[i_result]
-                #     self._data[i_measurement][i_repeat][i_result] = count
-                #     counts += count
+                self.before_measure(measure_point, self.measurement)
+                self.lab_before_measure(measure_point, self.measurement)
                 
-                count=self.do_measure(point)
+                count=self.do_measure(measure_point)
                 self._data[i_measurement][i_repeat] = count
                 counts += count
 
                 # callback
-                self.after_measure(point, self.measurement)
-                self.lab_after_measure(point, self.measurement)
+                self.after_measure(measure_point, self.measurement)
+                self.lab_after_measure(measure_point, self.measurement)
 
         # update the dataset used to monitor counts
         #mean = counts / (nrepeats*nmeasurements*self.nresults)
@@ -452,14 +455,14 @@ class Scan(HasEnvironment):
         # perform calculations
         if ncalcs > 0:
             # rpc to host
-            self._calculate_all(i_point, point)
+            self._calculate_all(i_point, measure_point)
 
         # analyze data
         self._analyze_data(i_point, last_pass, last_point)
 
         # callback
-        self.after_scan_point(i_point, point)
-        self._after_scan_point(i_point, point, mean)
+        self.after_scan_point(i_point, measure_point)
+        self._after_scan_point(i_point, measure_point, mean)
 
         # rpc to host
         if self.enable_count_monitor:
@@ -504,16 +507,7 @@ class Scan(HasEnvironment):
     def _init_storage(self):
         """initialize memory to record counts on core device"""
 
-        #: 3D array of counts measured at each scan point, measurement, pass, and repeat
-        # self._data = np.array([
-        #     [
-        #         [
-        #             np.int32(0) for k in range(self.nrepeats * self.npasses)
-        #         ] for j in range(self.nmeasurements)
-        #     ] for i in range(self.npoints)
-        # ], dtype=np.int32)
-        ###nresults version
-        #self._data = np.zeros((self.nmeasurements, self.nrepeats, self.nresults),dtype=np.int32)
+        #: 3D array of counts measured for a given scan point, i.e. nmeasurement*nrepeats*nresults
         self._data = np.zeros((self.nmeasurements, self.nrepeats),dtype=np.int32)
         self._logger.debug('initialized storage')
 
@@ -657,7 +651,7 @@ class Scan(HasEnvironment):
 
             # initialize the scan
             self._initialize(resume)
-
+            
             # run the scan
             if not self.fit_only:
                 if resume:
@@ -860,6 +854,9 @@ class Scan(HasEnvironment):
         except TerminationRequested:
             self.logger.warning("Scan terminated.")
             self._terminated = True
+            if self.continuous_logger:
+                first_pass=self.continuous_points==int(self.continuous_index)
+                ContinuousScan(self,self).continuous_logging(self,self.continuous_logger,first_pass)
 
     # interface: for child class (optional)
     # RPC
@@ -1090,7 +1087,14 @@ class Scan(HasEnvironment):
             self.setattr_argument('nrepeats', NumberValue(**nrepeats), group='Scan Settings')
         if nbins is not False:
             self.setattr_argument('nbins', NumberValue(**nbins), group='Scan Settings')
-
+        
+        ### Set continuous scan argument options
+        self.setattr_argument('continuous_scan',BooleanValue(default=False),group='Continuous Scan')#, tooltip="make this a continuous scan.")
+        self.setattr_argument('continuous_points',NumberValue(default=1000,ndecimals=0,step=1),group='Continuous Scan')#, tooltip="number of points to save to stats datasets. Points are overriden after this replacing oldest point taken.")
+        self.setattr_argument('continuous_plot',NumberValue(default=50,ndecimals=0,step=1),group='Continuous Scan')#, tooltip = "number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.")
+        self.setattr_argument('continuous_measure_point',NumberValue(default=0.0),group='Continuous Scan')#, tooltip = "point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this")
+        self.setattr_argument('continuous_save',BooleanValue(default=False),group='Continuous Scan')#, tooltip = "Save points to external file when datasets will be overriden. Currently not implemented")
+        
         if self.enable_fitting and fit_options is not False:
             fovals = fit_options.pop('values')
             self.setattr_argument('fit_options', EnumerationValue(fovals, **fit_options), group='Fit Settings')
@@ -2074,3 +2078,93 @@ class MetaScan(Scan1D):
 
         # prepare top level scan
         super().prepare_scan()
+        
+class ContinuousScan(HasEnvironment):
+    def build(self,parent):
+        self.parent=parent
+    @portable
+    def _loop(self,resume=False):
+       parent = self.parent
+       ncalcs = parent._ncalcs
+       nmeasurements = parent.nmeasurements
+       nrepeats = parent.nrepeats
+       measurements = parent.measurements
+
+       try:
+           # callback
+           parent._before_loop(resume)
+           # callback
+           parent.initialize_devices()
+           
+           poffset=0
+           while True:
+               if not resume or parent._idx==0:
+                   parent.before_pass(parent._i_pass)
+               parent._repeat_loop(parent.continuous_index,parent.continuous_measure_point,parent._idx,nrepeats,nmeasurements,measurements,poffset,ncalcs)
+               parent._idx+=1
+               parent.continuous_index+=1
+               if parent._idx == parent.continuous_points:
+                   parent._idx =0
+                   if parent.continuous_logger:
+                       first_pass=parent.continuous_points==int(parent.continuous_index)
+                       self.continuous_logging(parent,parent.continuous_logger,first_pass)
+       except Paused:
+           parent._paused = True
+       finally:
+           parent.cleanup()
+
+    def _load_points(self):
+        parent=self.parent
+        # grab the points
+        points = [i for i in range(parent.continuous_points)]
+
+        # total number of scan points
+        parent.npoints = np.int32(parent.continuous_points)
+
+        # initialize shapes (these are the authority on data structure sizes)...
+
+        # shape of the stats.counts dataset
+        parent._shape = np.int32(parent.npoints)
+
+        # shape of the plots.x, plots.y, and plots.fitline datasets
+        if parent._plot_shape is None:
+            parent._plot_shape = np.int32(parent.continuous_plot)
+
+        # initialize 1D data structures...
+
+        # 1D array of scan points (these are saved to the stats.points dataset)
+        parent._points = np.array(points, dtype=np.float64)
+        
+        # flattened 1D array of scan points (these are looped over on the core)
+        parent._points_flat = np.array(points, dtype=np.float64)
+        
+        parent.continuous_index=0.0
+
+    def _mutate_plot(self, entry, i_point, point, mean):
+        parent=self.parent
+        model = entry['model']
+        i_point = int(point % parent.continuous_plot)
+        # mutate plot x/y datasets
+        model.mutate_plot(i_point=i_point, x=point, y=mean)
+
+        # tell the current_scan applet to redraw itself
+        model.set('plots.trigger', 1, which='mirror')
+        model.set('plots.trigger', 0, which='mirror')
+
+    def _offset_points(self, x_offset):
+        parent=self.parent
+        if x_offset is not None:
+            parent.continuous_measure_point += x_offset
+    def continuous_logging(self,parent,logger,first_pass):
+        for entry in parent._model_registry:
+            # model registered for this measurement
+            if entry['measurement']:
+                # grab the model for the measurement from the registry
+                # get counts for measurement of the measurement model
+                if parent._terminated:
+                    counts = entry['model'].stat_model.counts[0:int(parent._idx)]
+                else:
+                    counts = entry['model'].stat_model.counts
+                    
+                name = entry['model'].stat_model.namespace +'.counts'
+                logger.append_continuous_data(counts, name, first_pass)
