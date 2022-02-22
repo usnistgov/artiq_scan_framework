@@ -363,11 +363,13 @@ class Scan(HasEnvironment):
                     nmeasurements, measurements, last_pass=False):
         # -- warm-up points
         self.warming_up = True
-        for wupoint in warmup_points:
-            for i_measurement in range(nmeasurements):
-                self.measurement = measurements[i_measurement]
-                self.warmup(wupoint)
-        self.warming_up = False
+        if nwarmup_points:
+            self.warming_up = True
+            for wupoint in warmup_points:
+                for i_measurement in range(nmeasurements):
+                    self.measurement = measurements[i_measurement]
+                    self.warmup(wupoint)
+            self.warming_up = False
 
         # -- loop over the scan points
         while self._idx < npoints - 1:
@@ -383,7 +385,7 @@ class Scan(HasEnvironment):
         # last scan point is special (optimization)
         point = points[npoints - 1]
         self._i_point = i_points[npoints - 1]
-        self._repeat_loop(point, self._i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
+        self._repeat_loop(point, point, self._i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
                           last_point=True, last_pass=last_pass)
 
         # -- reset loop counter
@@ -1777,7 +1779,11 @@ class Scan1D(Scan):
 
         # flattened 1D array of scan points (these are looped over on the core)
         self._points_flat = np.array(points, dtype=np.float64)
-        self._warmup_points = np.array(warmup_points, dtype=np.float64)
+        if self.nwarmup_points:
+            self._warmup_points = np.array(warmup_points, dtype=np.float64)
+        else:
+            self._warmup_points = np.array([0],dtype=np.float64)
+
 
         # flattened 1D array of point indices as tuples
         # (these are used on the core to map the flat idx index to the 2D point index)
@@ -1855,8 +1861,12 @@ class Scan2D(Scan):
         else:
             warmup_points = list(self._warmup_points)
         warmup_points = [p for p in warmup_points]
-        self._warmup_points = np.array(warmup_points, dtype=np.float64)
         self.nwarmup_points = np.int32(len(warmup_points))
+        if self.nwarmup_points:
+            self._warmup_points = np.array(warmup_points, dtype=np.float64)
+        else:
+            self._warmup_points = np.array([0],dtype=np.float64)
+
 
         # this turn's ARTIQ scan arguments into lists
         points = [p for p in points[0]], [p for p in points[1]]
