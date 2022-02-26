@@ -5,7 +5,7 @@ from artiq.experiment import *
 from scan_framework import *
 
 
-class Example9Scan(Scan1D, EnvExperiment):
+class Example10Scan(Scan1D, EnvExperiment):
 
     def build(self):
         super().build()
@@ -63,7 +63,7 @@ class Example9Scan(Scan1D, EnvExperiment):
         ))
 
     def prepare(self):
-        self.model = Example9Model(self)
+        self.model = Example10Model(self)
         self.register_model(self.model, measurement=True, fit=True)
 
     def get_scan_points(self):
@@ -86,7 +86,7 @@ class Example9Scan(Scan1D, EnvExperiment):
         self.logger.warning('y0: {}'.format(self.get_dataset('current_scan.fits.params.y0')))
 
 
-class Example9Model(ScanModel):
+class Example10Model(ScanModel):
     namespace = "example_10"
     fit_function = curvefits.Power
 
