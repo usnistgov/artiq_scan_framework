@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started with Scans &mdash; NIST Scan Framework For ARTIQ 2.0.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Processing and handling of scan data" href="statistics.html" />
+    <link rel="prev" title="Creating scan experiments" href="../scans.html" /> 
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">  
+  <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+  <!--<script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>-->
+  <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />  
+  <script type="text/javascript">
+	  function link_is_external(link_element) {
+	      return (link_element.host !== window.location.host);
+	  }
+	  (function ($) {
+	      $.fn.leaveNotice = function (opt) {
+	          var defaults = {
+	              siteName: "NIST",
+	              exitMessage:
+	                  "<h2><strong>Thank you for visiting {SITENAME}.</strong></h2><p>We hope your visit was informative.</p><p>We have provided this link to a non-NIST site because it has information that may be of interest to our users. NIST does not necessarily endorse the views expressed or the facts presented on this site. Further, NIST does not endorse any commercial products that may be advertised or available on this site.</p>",
+	              preLinkMessage: "<div class='setoff'><p>You will now be directed to:<br/>{URL}</p></div>",
+	              linkString: "",
+	              newWindow: false,
+	              timeOut: 1e4,
+	              overlayId: "ln-blackout",
+	              messageBoxId: "ln-messageBox",
+	              messageHolderId: "ln-messageHolder",
+	              linkId: "ln-link",
+	              displayUrlLength: 50,
+	              overlayAlpha: 0.3,
+	          };
+	          var options = $.extend(defaults, opt);
+	          return this.each(function () {
+				  if(link_is_external(this)) {
+		              el = $(this);
+					  $(this).unbind();
+		              var url = el.attr("href");
+		              var ulen = options.displayUrlLength;
+		              if (url.length >= ulen) {
+		                  var suffix = "...";
+		              } else {
+		                  var suffix = "";
+		              }
+		              var shortUrl = url.substr(0, ulen) + suffix;
+		              var title = el.attr("title");
+		              if (title === undefined || title == "") {
+		                  var linkText = shortUrl;
+		              } else {
+		                  var linkText = title;
+		              }
+		              options.timeOut = options.newWindow ? 0 : options.timeOut;
+		              el.click(function (event) {
+						  event.preventDefault();
+		                  $("body").append('<div id="' + options.overlayId + '"></div>');
+		                  $("body").append('<div id="' + options.messageHolderId + '"><div id="' + options.messageBoxId + '"></div></div>');
+		                  if (options.overlayAlpha !== false) {
+		                      $("#" + options.overlayId).css("opacity", options.overlayAlpha);
+		                  }
+		                  preFilteredContent = options.exitMessage + options.preLinkMessage;
+		                  msgContent = preFilteredContent.replace(/\{URL\}/g, '<a id="' + options.linkId + '" href="' + url + '" title="' + url + '"' + options.linkString + ">" + linkText + "</a>");
+		                  msgContent = msgContent.replace(/\{SITENAME\}/g, options.siteName);
+		                  if (options.timeOut > 0) {
+		                      msgContent += '<p id="ln-cancelMessage"><a href="#close" id="ln-cancelLink">Cancel</a> or press the ESC key.</p>';
+		                  } else {
+		                      msgContent += '<p id="ln-cancelMessage">Click the link above to continue or <a href="#close" id="ln-cancelLink">Cancel</a></p>';
+		                  }
+		                  $("#" + options.messageBoxId).append(msgContent);
+		                  if (options.timeOut > 0) {
+		                      leaveIn = setTimeout(function () {
+		                          $("#ln-cancelMessage").html("<em>Loading...</em>");
+		                          window.location.href = url;
+		                      }, options.timeOut);
+		                  } else {
+		                      leaveIn = false;
+		                  }
+		                  if (options.newWindow) {
+		                      $("a#" + options.linkId)
+		                          .attr("target", "_blank")
+		                          .click(function () {
+		                              closeDialog(options, leaveIn);
+		                          });
+		                  }
+		                  $("#ln-cancelLink").click(function () {
+		                      closeDialog(options, leaveIn);
+		                      return false;
+		                  });
+		                  $(document).bind("keyup", function (e) {
+		                      if (e.which == 27) {
+		                          closeDialog(options, leaveIn);
+		                      }
+		                  });
+		                  $(window).unload(function () {
+		                      closeDialog(options, leaveIn);
+		                  });
+		                  return false;
+		              });
+				  }
+	          });
+	      };
+	      function closeDialog(options, timer) {
+	          if (options.timeOut > 0) {
+	              clearTimeout(timer);
+	          }
+	          $("#" + options.overlayId + ", #" + options.messageHolderId).fadeOut("fast", function () {
+	              $("#" + options.overlayId + ", #" + options.messageHolderId).remove();
+	          });
+	          $(document).unbind("keyup");
+	      }
+	  })(jQuery);
+	  
+  	$(function(){
+  	  $('a').leaveNotice();
+  	});
+  </script>
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
+          </a>
+              <div class="version">
+                2.0.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installing the NIST scan framework</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../scans.html">Creating scan experiments</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Getting Started with Scans</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-1d-scan">Creating a 1D Scan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-scan-model">Creating a Scan Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="statistics.html">Processing and handling of scan data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_features.html">Core scan features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_tracking.html">Relative scan ranges and auto tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time_freq_scans.html">Time &amp; frequency scans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multiple_measurements.html">Performing multiple measurements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calculations.html">Performing calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="warmup_points.html">Running warmup points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monitor_histograms.html">Monitor histograms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2d_scans.html">2D Scans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lost_ion.html">Lost ion detection and reloading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Using models for data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scans_ref.html">Scans references and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models_ref.html">Models reference and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analysis.html">Curve fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../applets.html">Applets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NIST Scan Framework For ARTIQ</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../scans.html">Creating scan experiments</a> &raquo;</li>
+      <li>Getting Started with Scans</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/scans/getting_started.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="getting-started-with-scans">
+<h1>Getting Started with Scans<a class="headerlink" href="#getting-started-with-scans" title="Permalink to this headline">¶</a></h1>
+<p>As an example of how to use the scan framework to create a scan of an experimental parameter, below steps through how
+to create a 1D scan over a set of frequencies.</p>
+<div class="section" id="creating-a-1d-scan">
+<h2>Creating a 1D Scan<a class="headerlink" href="#creating-a-1d-scan" title="Permalink to this headline">¶</a></h2>
+<p>To create a 1D scan, a few basic things are needed:</p>
+<ol class="arabic simple">
+<li><p>Include the scan framework classes using <code class="code docutils literal notranslate"><span class="pre">from</span> <span class="pre">scan_framework.scans</span> <span class="pre">import</span> <span class="pre">*</span></code></p></li>
+<li><p>Create an experiment that inherits from <code class="code docutils literal notranslate"><span class="pre">scan_framework.scans.scan.Scan1D</span></code>.</p></li>
+<li><p>(optional) Call <code class="code docutils literal notranslate"><span class="pre">super().build()</span></code> to create the <code class="code docutils literal notranslate"><span class="pre">self.core</span></code> and <code class="code docutils literal notranslate"><span class="pre">self.scheduler</span></code> devices.</p></li>
+<li><p>Call <code class="code docutils literal notranslate"><span class="pre">self.scan_arguments()</span></code> in the build method.</p></li>
+<li><p>(optional) Create an instance of a scan model and register it by calling <code class="code docutils literal notranslate"><span class="pre">register_model()</span></code> in either <code class="code docutils literal notranslate"><span class="pre">build()</span></code>
+or <code class="code docutils literal notranslate"><span class="pre">prepare()</span></code>.</p></li>
+<li><p>Implement the <code class="code docutils literal notranslate"><span class="pre">get_scan_points()</span></code> method to return the scan points.  Typically this just returns a GUI argument
+of type <code class="code docutils literal notranslate"><span class="pre">Scannable</span></code>, but can return any object that is iterable such as a list or a numpy array.</p></li>
+<li><p>Implement the <code class="code docutils literal notranslate"><span class="pre">measure()</span></code> method.</p></li>
+</ol>
+<p>Inheriting from <code class="code docutils literal notranslate"><span class="pre">Scan1D</span></code> provides all the logic that is needed for executing a scan.  The scan framework
+then interfaces with your class by over-ridding the <code class="code docutils literal notranslate"><span class="pre">run()</span></code> method and calling two template methods that must be
+implemented in your class – <code class="code docutils literal notranslate"><span class="pre">get_scan_points()</span></code>, and <code class="code docutils literal notranslate"><span class="pre">measure()</span></code>.  The <code class="code docutils literal notranslate"><span class="pre">get_scan_points()</span></code>
+method returns a list of scan points that the framework will automatically loop over, and the <code class="code docutils literal notranslate"><span class="pre">measure()</span></code> method
+will be called multiple times at each scan point within the main loop (once at each repetition of the scan point).
+The <code class="code docutils literal notranslate"><span class="pre">measure()</span></code> method performs a measurement at the current scan point and returns the value of that measurement
+as an integer (typically a number of integer PMT counts).  You may also write your own <code class="code docutils literal notranslate"><span class="pre">run()</span></code> method, which
+allows for greater control over the procedural flow of a scan.  See the source code for the
+<a class="reference internal" href="api.html#scan_framework.scans.scan.Scan.run" title="scan_framework.scans.scan.Scan.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a> method in the <a class="reference internal" href="api.html#scan_framework.scans.scan.Scan" title="scan_framework.scans.scan.Scan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Scan</span></code></a> class.
+It is easiest to copy and paste that entire run method into your class and make modifications as necessary.  A few
+GUI arguments for controlling the execution of the scan are also needed.  These are created by calling
+<code class="code docutils literal notranslate"><span class="pre">self.scan_arguments()</span></code> in the <code class="code docutils literal notranslate"><span class="pre">build()</span></code> method.</p>
+<p>Finally, if you wish to use the scan framework to process the data that is generated, a scan model needs to be instantiated
+and registered with the framework.  This is done by calling <code class="code docutils literal notranslate"><span class="pre">register_model()</span></code>.  There are a number of
+arguments to the <code class="code docutils literal notranslate"><span class="pre">register_model()</span></code> method that instruct the framework how to use your model – such as
+if it should calculate statistics or perform a fit on the statistics generated  (see <a class="reference internal" href="api.html#scan_framework.scans.scan.Scan.register_model" title="scan_framework.scans.scan.Scan.register_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_model()</span></code></a>
+for a full listing of these arguments).  If you need to perform custom statistics or simply want more control over, say,
+fitting, you can opt to not register a model and perform statistics calculations and fitting manually within the scan.
+Typically, this is not needed, however.  Please consult <a class="reference internal" href="api.html#scans-api"><span class="std std-ref">Full API documentation for scans</span></a> for details on how to perform manual
+data processing.</p>
+<p>Following these requirements a typical, but basic, 1D scan might look something like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># include all classes needed for writing scan experiments</span>
+<span class="kn">from</span> <span class="nn">scan_framework.scans</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># include your scan model class</span>
+<span class="kn">from</span> <span class="nn">my_repository.models.my_model</span> <span class="kn">import</span> <span class="n">MyModel</span>
+
+
+<span class="k">class</span> <span class="nc">MyScan</span><span class="p">(</span><span class="n">Scan1D</span><span class="p">,</span> <span class="n">EnvExperiment</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># create self.core and self.scheduler</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+        <span class="c1"># create the scan range GUI argument</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s1">&#39;frequencies&#39;</span><span class="p">,</span> <span class="n">Scannable</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">RangeScan</span><span class="p">(</span>
+            <span class="n">start</span><span class="o">=</span><span class="mi">450</span><span class="o">*</span><span class="n">MHz</span><span class="p">,</span>
+            <span class="n">stop</span><span class="o">=</span><span class="mi">550</span><span class="o">*</span><span class="n">MHz</span><span class="p">,</span>
+            <span class="n">npoints</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="o">*</span><span class="n">MHz</span><span class="p">,</span>
+            <span class="n">ndecimals</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MHz&quot;</span><span class="p">))</span>
+
+        <span class="c1"># create GUI arguments for configuring the scan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_arguments</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># create an instance of your scan model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># register your scan model with the framework</span>
+        <span class="c1"># setting measurement=True</span>
+        <span class="c1">#   instructs the framework to calculate statistics using the model and to also</span>
+        <span class="c1">#   store all collected or calculated data under the model&#39;s namespace</span>
+        <span class="c1">#</span>
+        <span class="c1"># setting fit=True</span>
+        <span class="c1">#    instructs the framework to perform a fit on the calculated mean values using</span>
+        <span class="c1">#    the fit function specified by the model&#39;s `fit_function` attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_scan_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># return the set of scan points to the framework</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequencies</span>
+
+    <span class="nd">@kernel</span>
+    <span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+       <span class="c1"># `point` is set to the value of the current scan point.</span>
+       <span class="c1"># In this case it is the current frequency in `self.frequencies`</span>
+
+       <span class="c1"># ... ARTIQ commands to perform measurement: e.g. cooling, pulse sequences, detection.</span>
+
+       <span class="c1"># return the result of the measurement as an integer (i.e. PMT counts)</span>
+       <span class="k">return</span> <span class="n">counts</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-scan-model">
+<h2>Creating a Scan Model<a class="headerlink" href="#creating-a-scan-model" title="Permalink to this headline">¶</a></h2>
+<p>To process the data collected by a scan, a scan model is also needed.  All processing of scan data and data handling
+is performed by the scan model, which is a Python class that extends from <a class="reference internal" href="../models/api.html#scan_framework.models.scan_model.ScanModel" title="scan_framework.models.scan_model.ScanModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScanModel</span></code></a>
+and has built-in data processing capabilities.  In its most basic form, a scan model only needs to define a
+<a class="reference internal" href="../models/settings.html#scan_framework.models.scan_model.ScanModel.namespace" title="scan_framework.models.scan_model.ScanModel.namespace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">namespace</span></code></a> attribute, which specifies the dataset key under which
+all data will be saved.  If the model is to be used for fitting, additionally the
+<a class="reference internal" href="../models/settings.html#scan_framework.models.scan_model.ScanModel.fit_function" title="scan_framework.models.scan_model.ScanModel.fit_function"><code class="xref py py-attr docutils literal notranslate"><span class="pre">fit_function</span></code></a> and
+<a class="reference internal" href="../models/settings.html#scan_framework.models.scan_model.ScanModel.main_fit" title="scan_framework.models.scan_model.ScanModel.main_fit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">main_fit</span></code></a> attributes need to be specified.</p>
+<p>A very basic scan model might look something like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># include all classes needed for creating scan models</span>
+<span class="kn">from</span> <span class="nn">scan_framework.models</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="k">class</span> <span class="nc">MyScanModel</span><span class="p">(</span><span class="n">ScanModel</span><span class="p">):</span>
+    <span class="c1"># All datasets will be created under the dataset key given by the namespace attribute.</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="s1">&#39;microwaves.%transition&#39;</span>
+
+    <span class="c1"># Specifies what fit function to use</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fit_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fit_functions</span><span class="o">.</span><span class="n">RabiSpectrum</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fit_functions</span><span class="o">.</span><span class="n">Sine</span>
+
+    <span class="c1"># Specifies the fit param of interest.</span>
+    <span class="c1"># This fit param will be broadcast and persisted to the datasets and is visible in the dashboard</span>
+    <span class="c1"># when the fit passes any defined validations (more on validations later in this guide)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">main_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;frequency&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;pi_time&#39;</span>
+</pre></div>
+</div>
+<p>Here, the <code class="code docutils literal notranslate"><span class="pre">fit_function</span></code> property specifies what fit function to use during fitting and the <code class="code docutils literal notranslate"><span class="pre">main_fit</span></code>
+property specifies the name of the fitted param of interest that is to be saved for later use (e.g. a transition
+frequency or a pi time).  If ‘Fit and Save’ is selected in the GUI, and a fit was successful, the fit param named
+by <code class="code docutils literal notranslate"><span class="pre">main_fit</span></code> will be broadcast, persisted, and saved to the datasets.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>By default, all dataset except the <code class="code docutils literal notranslate"><span class="pre">main_fit</span></code> dataset are created with <code class="code docutils literal notranslate"><span class="pre">broadcast=False,</span> <span class="pre">persist=False,</span> <span class="pre">save=True</span></code> as to
+not clutter up the datasets in the dashboard but still be available in the hdf5 file for post-processing.  See
+the <a class="reference internal" href="../models.html#models"><span class="std std-ref">Using models for data processing</span></a> section for more details.</p>
+</div>
+<p>Finally, the <code class="code docutils literal notranslate"><span class="pre">%transition</span></code> portion of the <code class="code docutils literal notranslate"><span class="pre">namespace</span></code> attribute is an optional token that will be replaced with
+the value of the scan model attribute named <code class="code docutils literal notranslate"><span class="pre">transition</span></code>, if it exists.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../scans.html" class="btn btn-neutral float-left" title="Creating scan experiments" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="statistics.html" class="btn btn-neutral float-right" title="Processing and handling of scan data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

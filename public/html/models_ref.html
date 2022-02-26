@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Models reference and API docs &mdash; NIST Scan Framework For ARTIQ 2.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Datasets" href="models/datasets.html" />
+    <link rel="prev" title="Full API documentation for scans" href="scans/api.html" /> 
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">  
+  <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+  <!--<script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>-->
+  <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />  
+  <script type="text/javascript">
+	  function link_is_external(link_element) {
+	      return (link_element.host !== window.location.host);
+	  }
+	  (function ($) {
+	      $.fn.leaveNotice = function (opt) {
+	          var defaults = {
+	              siteName: "NIST",
+	              exitMessage:
+	                  "<h2><strong>Thank you for visiting {SITENAME}.</strong></h2><p>We hope your visit was informative.</p><p>We have provided this link to a non-NIST site because it has information that may be of interest to our users. NIST does not necessarily endorse the views expressed or the facts presented on this site. Further, NIST does not endorse any commercial products that may be advertised or available on this site.</p>",
+	              preLinkMessage: "<div class='setoff'><p>You will now be directed to:<br/>{URL}</p></div>",
+	              linkString: "",
+	              newWindow: false,
+	              timeOut: 1e4,
+	              overlayId: "ln-blackout",
+	              messageBoxId: "ln-messageBox",
+	              messageHolderId: "ln-messageHolder",
+	              linkId: "ln-link",
+	              displayUrlLength: 50,
+	              overlayAlpha: 0.3,
+	          };
+	          var options = $.extend(defaults, opt);
+	          return this.each(function () {
+				  if(link_is_external(this)) {
+		              el = $(this);
+					  $(this).unbind();
+		              var url = el.attr("href");
+		              var ulen = options.displayUrlLength;
+		              if (url.length >= ulen) {
+		                  var suffix = "...";
+		              } else {
+		                  var suffix = "";
+		              }
+		              var shortUrl = url.substr(0, ulen) + suffix;
+		              var title = el.attr("title");
+		              if (title === undefined || title == "") {
+		                  var linkText = shortUrl;
+		              } else {
+		                  var linkText = title;
+		              }
+		              options.timeOut = options.newWindow ? 0 : options.timeOut;
+		              el.click(function (event) {
+						  event.preventDefault();
+		                  $("body").append('<div id="' + options.overlayId + '"></div>');
+		                  $("body").append('<div id="' + options.messageHolderId + '"><div id="' + options.messageBoxId + '"></div></div>');
+		                  if (options.overlayAlpha !== false) {
+		                      $("#" + options.overlayId).css("opacity", options.overlayAlpha);
+		                  }
+		                  preFilteredContent = options.exitMessage + options.preLinkMessage;
+		                  msgContent = preFilteredContent.replace(/\{URL\}/g, '<a id="' + options.linkId + '" href="' + url + '" title="' + url + '"' + options.linkString + ">" + linkText + "</a>");
+		                  msgContent = msgContent.replace(/\{SITENAME\}/g, options.siteName);
+		                  if (options.timeOut > 0) {
+		                      msgContent += '<p id="ln-cancelMessage"><a href="#close" id="ln-cancelLink">Cancel</a> or press the ESC key.</p>';
+		                  } else {
+		                      msgContent += '<p id="ln-cancelMessage">Click the link above to continue or <a href="#close" id="ln-cancelLink">Cancel</a></p>';
+		                  }
+		                  $("#" + options.messageBoxId).append(msgContent);
+		                  if (options.timeOut > 0) {
+		                      leaveIn = setTimeout(function () {
+		                          $("#ln-cancelMessage").html("<em>Loading...</em>");
+		                          window.location.href = url;
+		                      }, options.timeOut);
+		                  } else {
+		                      leaveIn = false;
+		                  }
+		                  if (options.newWindow) {
+		                      $("a#" + options.linkId)
+		                          .attr("target", "_blank")
+		                          .click(function () {
+		                              closeDialog(options, leaveIn);
+		                          });
+		                  }
+		                  $("#ln-cancelLink").click(function () {
+		                      closeDialog(options, leaveIn);
+		                      return false;
+		                  });
+		                  $(document).bind("keyup", function (e) {
+		                      if (e.which == 27) {
+		                          closeDialog(options, leaveIn);
+		                      }
+		                  });
+		                  $(window).unload(function () {
+		                      closeDialog(options, leaveIn);
+		                  });
+		                  return false;
+		              });
+				  }
+	          });
+	      };
+	      function closeDialog(options, timer) {
+	          if (options.timeOut > 0) {
+	              clearTimeout(timer);
+	          }
+	          $("#" + options.overlayId + ", #" + options.messageHolderId).fadeOut("fast", function () {
+	              $("#" + options.overlayId + ", #" + options.messageHolderId).remove();
+	          });
+	          $(document).unbind("keyup");
+	      }
+	  })(jQuery);
+	  
+  	$(function(){
+  	  $('a').leaveNotice();
+  	});
+  </script>
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
+          </a>
+              <div class="version">
+                2.0.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing.html">Installing the NIST scan framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scans.html">Creating scan experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Using models for data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scans_ref.html">Scans references and API docs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Models reference and API docs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models/datasets.html">Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/settings.html">Configurations reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/statevars.html">Checking the state of a scan model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/api.html">Full API documentation for models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="analysis.html">Curve fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="applets.html">Applets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NIST Scan Framework For ARTIQ</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Models reference and API docs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/models_ref.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="models-reference-and-api-docs">
+<h1>Models reference and API docs<a class="headerlink" href="#models-reference-and-api-docs" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="models/datasets.html">Datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models/datasets.html#current-scan-namespace"><code class="code docutils literal notranslate"><span class="pre">current_scan</span></code> namespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/datasets.html#current-scan-fits-namespace"><code class="code docutils literal notranslate"><span class="pre">current_scan.fits</span></code> namespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/datasets.html#current-scan-plots-namespace"><code class="code docutils literal notranslate"><span class="pre">current_scan.plots</span></code> namespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/datasets.html#current-hist-namespace"><code class="code docutils literal notranslate"><span class="pre">current_hist</span></code> namespace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models/settings.html">Configurations reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models/settings.html#datset-configurations">Datset configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/settings.html#fitting-configurations">Fitting configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/settings.html#fit-validation-configurations">Fit validation configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/settings.html#plotting-configurations">Plotting configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/settings.html#enabling-disabling-features">Enabling/disabling features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models/statevars.html">Checking the state of a scan model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models/api.html">Full API documentation for models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models/api.html#module-scan_framework.models.model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">models.model</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/api.html#module-scan_framework.models.scan_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">models.scan_model</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/api.html#module-scan_framework.models.hist_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">models.hist_model</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/api.html#module-scan_framework.models.fit_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">models.fit_model</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/api.html#module-scan_framework.models.time_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">models.time_model</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/api.html#module-scan_framework.models.freq_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">models.freq_model</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/api.html#module-scan_framework.models.time_freq_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">models.time_freq_model</span></code> module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scans/api.html" class="btn btn-neutral float-left" title="Full API documentation for scans" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="models/datasets.html" class="btn btn-neutral float-right" title="Datasets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

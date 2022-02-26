@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scan_framework.scans.extensions &mdash; NIST Scan Framework For ARTIQ 2.0.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">  
+  <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+  <!--<script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>-->
+  <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />  
+  <script type="text/javascript">
+	  function link_is_external(link_element) {
+	      return (link_element.host !== window.location.host);
+	  }
+	  (function ($) {
+	      $.fn.leaveNotice = function (opt) {
+	          var defaults = {
+	              siteName: "NIST",
+	              exitMessage:
+	                  "<h2><strong>Thank you for visiting {SITENAME}.</strong></h2><p>We hope your visit was informative.</p><p>We have provided this link to a non-NIST site because it has information that may be of interest to our users. NIST does not necessarily endorse the views expressed or the facts presented on this site. Further, NIST does not endorse any commercial products that may be advertised or available on this site.</p>",
+	              preLinkMessage: "<div class='setoff'><p>You will now be directed to:<br/>{URL}</p></div>",
+	              linkString: "",
+	              newWindow: false,
+	              timeOut: 1e4,
+	              overlayId: "ln-blackout",
+	              messageBoxId: "ln-messageBox",
+	              messageHolderId: "ln-messageHolder",
+	              linkId: "ln-link",
+	              displayUrlLength: 50,
+	              overlayAlpha: 0.3,
+	          };
+	          var options = $.extend(defaults, opt);
+	          return this.each(function () {
+				  if(link_is_external(this)) {
+		              el = $(this);
+					  $(this).unbind();
+		              var url = el.attr("href");
+		              var ulen = options.displayUrlLength;
+		              if (url.length >= ulen) {
+		                  var suffix = "...";
+		              } else {
+		                  var suffix = "";
+		              }
+		              var shortUrl = url.substr(0, ulen) + suffix;
+		              var title = el.attr("title");
+		              if (title === undefined || title == "") {
+		                  var linkText = shortUrl;
+		              } else {
+		                  var linkText = title;
+		              }
+		              options.timeOut = options.newWindow ? 0 : options.timeOut;
+		              el.click(function (event) {
+						  event.preventDefault();
+		                  $("body").append('<div id="' + options.overlayId + '"></div>');
+		                  $("body").append('<div id="' + options.messageHolderId + '"><div id="' + options.messageBoxId + '"></div></div>');
+		                  if (options.overlayAlpha !== false) {
+		                      $("#" + options.overlayId).css("opacity", options.overlayAlpha);
+		                  }
+		                  preFilteredContent = options.exitMessage + options.preLinkMessage;
+		                  msgContent = preFilteredContent.replace(/\{URL\}/g, '<a id="' + options.linkId + '" href="' + url + '" title="' + url + '"' + options.linkString + ">" + linkText + "</a>");
+		                  msgContent = msgContent.replace(/\{SITENAME\}/g, options.siteName);
+		                  if (options.timeOut > 0) {
+		                      msgContent += '<p id="ln-cancelMessage"><a href="#close" id="ln-cancelLink">Cancel</a> or press the ESC key.</p>';
+		                  } else {
+		                      msgContent += '<p id="ln-cancelMessage">Click the link above to continue or <a href="#close" id="ln-cancelLink">Cancel</a></p>';
+		                  }
+		                  $("#" + options.messageBoxId).append(msgContent);
+		                  if (options.timeOut > 0) {
+		                      leaveIn = setTimeout(function () {
+		                          $("#ln-cancelMessage").html("<em>Loading...</em>");
+		                          window.location.href = url;
+		                      }, options.timeOut);
+		                  } else {
+		                      leaveIn = false;
+		                  }
+		                  if (options.newWindow) {
+		                      $("a#" + options.linkId)
+		                          .attr("target", "_blank")
+		                          .click(function () {
+		                              closeDialog(options, leaveIn);
+		                          });
+		                  }
+		                  $("#ln-cancelLink").click(function () {
+		                      closeDialog(options, leaveIn);
+		                      return false;
+		                  });
+		                  $(document).bind("keyup", function (e) {
+		                      if (e.which == 27) {
+		                          closeDialog(options, leaveIn);
+		                      }
+		                  });
+		                  $(window).unload(function () {
+		                      closeDialog(options, leaveIn);
+		                  });
+		                  return false;
+		              });
+				  }
+	          });
+	      };
+	      function closeDialog(options, timer) {
+	          if (options.timeOut > 0) {
+	              clearTimeout(timer);
+	          }
+	          $("#" + options.overlayId + ", #" + options.messageHolderId).fadeOut("fast", function () {
+	              $("#" + options.overlayId + ", #" + options.messageHolderId).remove();
+	          });
+	          $(document).unbind("keyup");
+	      }
+	  })(jQuery);
+	  
+  	$(function(){
+  	  $('a').leaveNotice();
+  	});
+  </script>
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
+          </a>
+              <div class="version">
+                2.0.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installing.html">Installing the NIST scan framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scans.html">Creating scan experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Using models for data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scans_ref.html">Scans references and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models_ref.html">Models reference and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Curve fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../applets.html">Applets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">NIST Scan Framework For ARTIQ</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>scan_framework.scans.extensions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scan_framework.scans.extensions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Extensions to the base scan class which provide commonly used features.</span>
+
+<span class="kn">from</span> <span class="nn">artiq.language.core</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.scan</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scan_framework.scans.loading_interface</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scipy.fftpack</span> <span class="kn">import</span> <span class="n">fft</span>
+
+
+<div class="viewcode-block" id="TimeScan"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeScan">[docs]</a><span class="k">class</span> <span class="nc">TimeScan</span><span class="p">(</span><span class="n">Scan</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scan class for scanning over time values.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TimeScan.scan_arguments"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeScan.scan_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">scan_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">{},</span> <span class="n">npasses</span><span class="o">=</span><span class="p">{},</span> <span class="n">nrepeats</span><span class="o">=</span><span class="p">{},</span> <span class="n">nbins</span><span class="o">=</span><span class="p">{},</span> <span class="n">fit_options</span><span class="o">=</span><span class="p">{},</span> <span class="n">guesses</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># assign default values for scan GUI arguments</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;stop&#39;</span><span class="p">:</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">us</span><span class="p">,</span> <span class="s1">&#39;npoints&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s1">&#39;unit&#39;</span><span class="p">:</span> <span class="s1">&#39;us&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">us</span><span class="p">,</span> <span class="s1">&#39;global_step&#39;</span><span class="p">:</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">us</span><span class="p">,</span>
+                     <span class="s1">&#39;ndecimals&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">times</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="c1"># create core scan arguments</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">scan_arguments</span><span class="p">(</span><span class="n">npasses</span><span class="o">=</span><span class="n">npasses</span><span class="p">,</span> <span class="n">nrepeats</span><span class="o">=</span><span class="n">nrepeats</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="n">nbins</span><span class="p">,</span> <span class="n">fit_options</span><span class="o">=</span><span class="n">fit_options</span><span class="p">,</span> <span class="n">guesses</span><span class="o">=</span><span class="n">guesses</span><span class="p">)</span>
+
+        <span class="c1"># create scan arguments for time scans</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s1">&#39;times&#39;</span><span class="p">,</span> <span class="n">Scannable</span><span class="p">(</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">RangeScan</span><span class="p">(</span>
+                <span class="n">start</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span>
+                <span class="n">stop</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span><span class="p">],</span>
+                <span class="n">npoints</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;npoints&#39;</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="n">unit</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;unit&#39;</span><span class="p">],</span>
+            <span class="n">scale</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">],</span>
+            <span class="n">global_step</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;global_step&#39;</span><span class="p">],</span>
+            <span class="n">ndecimals</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;ndecimals&#39;</span><span class="p">]</span>
+        <span class="p">),</span> <span class="n">group</span><span class="o">=</span><span class="s1">&#39;Scan Range&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TimeScan.get_scan_points"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeScan.get_scan_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_scan_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span></div></div>
+
+
+<div class="viewcode-block" id="FreqScan"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.FreqScan">[docs]</a><span class="k">class</span> <span class="nc">FreqScan</span><span class="p">(</span><span class="n">Scan</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scan class for scanning over frequency values.&quot;&quot;&quot;</span>
+    <span class="n">_freq_center_manual</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="FreqScan.scan_arguments"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.FreqScan.scan_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">scan_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frequencies</span><span class="o">=</span><span class="p">{},</span> <span class="n">npasses</span><span class="o">=</span><span class="p">{},</span> <span class="n">nrepeats</span><span class="o">=</span><span class="p">{},</span> <span class="n">nbins</span><span class="o">=</span><span class="p">{},</span> <span class="n">fit_options</span><span class="o">=</span><span class="p">{},</span> <span class="n">guesses</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># assign default values for scan GUI arguments</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">5</span><span class="o">*</span><span class="n">MHz</span><span class="p">,</span> <span class="s1">&#39;stop&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="o">*</span><span class="n">MHz</span><span class="p">,</span> <span class="s1">&#39;npoints&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s1">&#39;unit&#39;</span><span class="p">:</span> <span class="s1">&#39;MHz&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">MHz</span><span class="p">,</span> <span class="s1">&#39;ndecimals&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">frequencies</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="c1"># crate core scan arguments</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">scan_arguments</span><span class="p">(</span><span class="n">npasses</span><span class="o">=</span><span class="n">npasses</span><span class="p">,</span>
+                               <span class="n">nrepeats</span><span class="o">=</span><span class="n">nrepeats</span><span class="p">,</span>
+                               <span class="n">nbins</span><span class="o">=</span><span class="n">nbins</span><span class="p">,</span>
+                               <span class="n">fit_options</span><span class="o">=</span><span class="n">fit_options</span><span class="p">,</span>
+                               <span class="n">guesses</span><span class="o">=</span><span class="n">guesses</span><span class="p">)</span>
+
+        <span class="c1"># create scan arguments for frequency scans</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="s1">&#39;Scan Range&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s1">&#39;frequencies&#39;</span><span class="p">,</span> <span class="n">Scannable</span><span class="p">(</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">RangeScan</span><span class="p">(</span>
+                <span class="n">start</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span>
+                <span class="n">stop</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span><span class="p">],</span>
+                <span class="n">npoints</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;npoints&#39;</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="n">unit</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;unit&#39;</span><span class="p">],</span>
+            <span class="n">scale</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">],</span>
+            <span class="n">ndecimals</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;ndecimals&#39;</span><span class="p">]</span>
+        <span class="p">),</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FreqScan.get_scan_points"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.FreqScan.get_scan_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_scan_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequencies</span></div></div>
+
+
+<div class="viewcode-block" id="TimeFreqScan"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeFreqScan">[docs]</a><span class="k">class</span> <span class="nc">TimeFreqScan</span><span class="p">(</span><span class="n">Scan</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Allows a scan experiment to scan over either a set of time values or a set of frequency values.&quot;&quot;&quot;</span>
+    <span class="n">frequency_center</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># default must be None so it can be overriden in the scan</span>
+    <span class="n">pulse_time</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># default must be None so it can be overriden in the scan</span>
+    <span class="n">enable_auto_tracking</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="TimeFreqScan.scan_arguments"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeFreqScan.scan_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">scan_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">{},</span> <span class="n">frequencies</span><span class="o">=</span><span class="p">{},</span> <span class="n">frequency_center</span><span class="o">=</span><span class="p">{},</span> <span class="n">pulse_time</span><span class="o">=</span><span class="p">{},</span> <span class="n">npasses</span><span class="o">=</span><span class="p">{},</span> <span class="n">nrepeats</span><span class="o">=</span><span class="p">{},</span> <span class="n">nbins</span><span class="o">=</span><span class="p">{},</span> <span class="n">fit_options</span><span class="o">=</span><span class="p">{},</span> <span class="n">guesses</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># assign default values for scan GUI arguments</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;stop&#39;</span><span class="p">:</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">us</span><span class="p">,</span> <span class="s1">&#39;npoints&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s1">&#39;unit&#39;</span><span class="p">:</span> <span class="s1">&#39;us&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">us</span><span class="p">,</span> <span class="s1">&#39;global_step&#39;</span><span class="p">:</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">us</span><span class="p">,</span> <span class="s1">&#39;ndecimals&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">times</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">5</span><span class="o">*</span><span class="n">MHz</span><span class="p">,</span> <span class="s1">&#39;stop&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="o">*</span><span class="n">MHz</span><span class="p">,</span> <span class="s1">&#39;npoints&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s1">&#39;unit&#39;</span><span class="p">:</span> <span class="s1">&#39;MHz&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">MHz</span><span class="p">,</span> <span class="s1">&#39;ndecimals&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">frequencies</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;unit&#39;</span><span class="p">:</span> <span class="s1">&#39;MHz&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="n">MHz</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">MHz</span><span class="p">,</span> <span class="s1">&#39;ndecimals&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">frequency_center</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;unit&#39;</span><span class="p">:</span> <span class="s1">&#39;us&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="n">us</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">us</span><span class="p">,</span> <span class="s1">&#39;ndecimals&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">pulse_time</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="c1"># create GUI argument to select if scan is a time or a frequency scan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s1">&#39;scan&#39;</span><span class="p">,</span> <span class="n">EnumerationValue</span><span class="p">([</span><span class="s1">&#39;frequency&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;frequency&#39;</span><span class="p">))</span>
+
+        <span class="c1"># create core scan arguments</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">scan_arguments</span><span class="p">(</span><span class="n">npasses</span><span class="o">=</span><span class="n">npasses</span><span class="p">,</span> <span class="n">nrepeats</span><span class="o">=</span><span class="n">nrepeats</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="n">nbins</span><span class="p">,</span> <span class="n">fit_options</span><span class="o">=</span><span class="n">fit_options</span><span class="p">,</span> <span class="n">guesses</span><span class="o">=</span><span class="n">guesses</span><span class="p">)</span>
+
+        <span class="c1"># create remaining scan arguments for time and frequency scans</span>
+        <span class="k">if</span> <span class="n">frequencies</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s1">&#39;frequencies&#39;</span><span class="p">,</span> <span class="n">Scannable</span><span class="p">(</span>
+                <span class="n">default</span><span class="o">=</span><span class="n">RangeScan</span><span class="p">(</span>
+                    <span class="n">start</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span>
+                    <span class="n">stop</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span><span class="p">],</span>
+                    <span class="n">npoints</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;npoints&#39;</span><span class="p">]</span>
+                <span class="p">),</span>
+                <span class="n">unit</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;unit&#39;</span><span class="p">],</span>
+                <span class="n">scale</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">],</span>
+                <span class="n">ndecimals</span><span class="o">=</span><span class="n">frequencies</span><span class="p">[</span><span class="s1">&#39;ndecimals&#39;</span><span class="p">]</span>
+            <span class="p">),</span> <span class="n">group</span><span class="o">=</span><span class="s1">&#39;Scan Range&#39;</span><span class="p">)</span>
+
+        <span class="c1"># auto tracking is disabled...</span>
+        <span class="c1"># ask user for the frequency center</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_auto_tracking</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">frequency_center</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s1">&#39;frequency_center&#39;</span><span class="p">,</span> <span class="n">NumberValue</span><span class="p">(</span><span class="o">**</span><span class="n">frequency_center</span><span class="p">),</span> <span class="n">group</span><span class="o">=</span><span class="s1">&#39;Scan Range&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulse_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">pulse_time</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s1">&#39;pulse_time&#39;</span><span class="p">,</span> <span class="n">NumberValue</span><span class="p">(</span><span class="o">**</span><span class="n">pulse_time</span><span class="p">),</span> <span class="n">group</span><span class="o">=</span><span class="s1">&#39;Scan Range&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s1">&#39;times&#39;</span><span class="p">,</span> <span class="n">Scannable</span><span class="p">(</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">RangeScan</span><span class="p">(</span>
+                <span class="n">start</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span>
+                <span class="n">stop</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span><span class="p">],</span>
+                <span class="n">npoints</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;npoints&#39;</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="n">unit</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;unit&#39;</span><span class="p">],</span>
+            <span class="n">scale</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">],</span>
+            <span class="n">global_step</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;global_step&#39;</span><span class="p">],</span>
+            <span class="n">ndecimals</span><span class="o">=</span><span class="n">times</span><span class="p">[</span><span class="s1">&#39;ndecimals&#39;</span><span class="p">]</span>
+        <span class="p">),</span> <span class="n">group</span><span class="o">=</span><span class="s1">&#39;Scan Range&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TimeFreqScan._attach_models"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeFreqScan._attach_models">[docs]</a>    <span class="k">def</span> <span class="nf">_attach_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bind_models</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_only</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__load_frequency_center</span><span class="p">()</span>
+
+        <span class="c1"># tell scan to offset x values by the frequency_center</span>
+        <span class="c1"># this is done even when not auto-tracking in case the user has manually set frequency_center</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span> <span class="o">==</span> <span class="s1">&#39;frequency&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_x_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;set _x_offset to frequency_center value of </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">__bind_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># bind each registered model to the scan type (frequency or time)</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_registry</span><span class="p">:</span>
+            <span class="c1"># tell the model if this a frequency or time scan</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span>
+
+            <span class="c1"># bind model namespace to scan type</span>
+            <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;bind&#39;</span> <span class="ow">in</span> <span class="n">entry</span> <span class="ow">and</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;bind&#39;</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">enable_auto_tracking</span> <span class="ow">and</span> <span class="s1">&#39;auto_track&#39;</span> <span class="ow">in</span> <span class="n">entry</span> <span class="ow">and</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;auto_track&#39;</span><span class="p">]):</span>
+                <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__load_frequency_center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># frequency or pulse time manually set in the scan, state that in the debug logs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;frequency_center manually set to </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulse_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;pulse_time manually set to </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulse_time</span><span class="p">))</span>
+
+        <span class="c1"># the frequency center is auto loaded from the fits by this class...</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_auto_tracking</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_registry</span><span class="p">:</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;auto_track&#39;</span> <span class="ow">in</span> <span class="n">entry</span> <span class="ow">and</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;auto_track&#39;</span><span class="p">]:</span>
+
+                    <span class="c1"># fetch the last fitted frequency and time values from the datasets</span>
+                    <span class="n">fitted_freq</span><span class="p">,</span> <span class="n">fitted_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_main_fits</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+                    <span class="c1"># hasn&#39;t been set yet, ok to auto load</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># set frequency center from saved fit values</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span> <span class="o">=</span> <span class="n">fitted_freq</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;auto set frequency_center to </span><span class="si">{0}</span><span class="s2"> from fits&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fitted_freq</span><span class="p">))</span>
+
+                    <span class="c1"># hasn&#39;t been set yet, ok to auto load</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulse_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># set pulse time from saved fit values</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pulse_time</span> <span class="o">=</span> <span class="n">fitted_time</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;auto set pulse_time to </span><span class="si">{0}</span><span class="s2"> from fits&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fitted_time</span><span class="p">))</span>
+
+<div class="viewcode-block" id="TimeFreqScan._get_main_fits"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeFreqScan._get_main_fits">[docs]</a>    <span class="k">def</span> <span class="nf">_get_main_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get&#39;s the last fitted frequency and time values&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">):</span>
+            <span class="n">restore</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">type</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">restore</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># get the last fitted frequency</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;frequency&#39;</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_main_fit</span><span class="p">(</span><span class="n">archive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># get the last fitted time</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;time&#39;</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_main_fit</span><span class="p">(</span><span class="n">archive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># rebind the model to it&#39;s original namespace</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">restore</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">freq</span><span class="p">,</span> <span class="n">time</span></div>
+
+<div class="viewcode-block" id="TimeFreqScan.get_scan_points"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeFreqScan.get_scan_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_scan_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span> <span class="o">==</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequencies</span></div>
+
+<div class="viewcode-block" id="TimeFreqScan.do_measure"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeFreqScan.do_measure">[docs]</a>    <span class="nd">@portable</span>
+    <span class="k">def</span> <span class="nf">do_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+        <span class="c1"># time scan</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
+            <span class="n">pulse_time</span> <span class="o">=</span> <span class="n">point</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">pulse_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span><span class="p">)</span>
+
+        <span class="c1"># frequency scan</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span> <span class="o">==</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulse_time</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="TimeFreqScan.report"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.TimeFreqScan.report">[docs]</a>    <span class="k">def</span> <span class="nf">report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">location</span> <span class="o">==</span> <span class="s1">&#39;bottom&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Type: </span><span class="si">%s</span><span class="s2"> scan&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span> <span class="o">==</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Frequency Center: </span><span class="si">%f</span><span class="s1"> MHz&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span> <span class="o">/</span> <span class="n">MHz</span><span class="p">))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulse_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Pulse Time: </span><span class="si">%f</span><span class="s2"> us&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulse_time</span> <span class="o">/</span> <span class="n">us</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Frequency: </span><span class="si">%f</span><span class="s1"> MHz&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_center</span> <span class="o">/</span> <span class="n">MHz</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="ReloadingScan"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan">[docs]</a><span class="k">class</span> <span class="nc">ReloadingScan</span><span class="p">(</span><span class="n">Scan</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Allows detection of lost ion, pausing scan, reloading ion, and resuming scan&quot;&quot;&quot;</span>
+
+    <span class="c1"># -- settings</span>
+    <span class="n">enable_reloading</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1">#: Reload ion when it is lost?</span>
+
+    <span class="c1"># -- scan state</span>
+    <span class="n">_lost_ion</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1">#: ion has been lost</span>
+
+    <span class="c1"># -- loading defaults</span>
+    <span class="n">loading_threshold</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">loading_pi_threshold</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">loading_timeout</span> <span class="o">=</span> <span class="mi">120</span> <span class="o">*</span> <span class="n">s</span>
+    <span class="n">loading_windows</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">loading_repeats</span> <span class="o">=</span> <span class="mi">100</span>
+
+    <span class="c1"># -- ion checking &amp; loading</span>
+    <span class="n">measure_background</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">perc_of_dark</span> <span class="o">=</span> <span class="mi">90</span>  <span class="c1">#: Percentage of dark rate at which background rate is set.</span>
+    <span class="n">perc_of_dark_second</span> <span class="o">=</span> <span class="mi">150</span>  <span class="c1">#: Percentage of dark rate at which ion present detection threshold is set.</span>
+    <span class="n">ion_windows</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1">#: Number of lost ion signals seen in data before a detection check is performed</span>
+    <span class="n">ion_threshold</span> <span class="o">=</span> <span class="mf">0.6</span>  <span class="c1">#: default value is always overwritten when background is measured</span>
+    <span class="n">ion_second_threshold</span> <span class="o">=</span> <span class="mf">2.0</span>  <span class="c1"># default value is always overwritten when background is measured</span>
+    <span class="n">ion_failures</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">check_for_ion</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">lose_ion_at</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># ====== Scan Interface Methods ======</span>
+
+<div class="viewcode-block" id="ReloadingScan._scan_arguments"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._scan_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">_scan_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_reloading</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setattr_argument</span><span class="p">(</span><span class="s2">&quot;check_for_ion&quot;</span><span class="p">,</span> <span class="n">BooleanValue</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="s1">&#39;Reloading&#39;</span><span class="p">)</span></div>
+        <span class="c1">#if self.enable_simulations:</span>
+        <span class="c1">#    self.setattr_argument(&#39;lose_ion_at&#39;, NumberValue(default=-1, ndecimals=0, step=1), group=&#39;Simulation&#39;)</span>
+
+<div class="viewcode-block" id="ReloadingScan._map_arguments"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._map_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">_map_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Map coarse grained attributes to fine grained options.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_reloading</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_for_ion</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">measure_background</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_for_ion</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">measure_background</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_scan</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">measure_background</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._initialize"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._initialize">[docs]</a>    <span class="k">def</span> <span class="nf">_initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resume</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_initialize</span><span class="p">(</span><span class="n">resume</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lose_ion_at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lose_ion_at</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_reloading</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;loading&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;An instance of the Loading subcomponent needs to be assigned to self.loading to use reloading.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;loading&#39;</span><span class="p">):</span>
+            <span class="c1"># hack so kernel methods can compile, artiq complains that there is no self.loading variable even though</span>
+            <span class="c1"># the code is unreachable</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loading</span> <span class="o">=</span> <span class="n">LoadingInterface</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._report"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._report">[docs]</a>    <span class="k">def</span> <span class="nf">_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Print details about the scan&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">location</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;enable_reloading is </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">enable_reloading</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._reset_state"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._reset_state">[docs]</a>    <span class="k">def</span> <span class="nf">_reset_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resume</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lost_ion</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ion_failures</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._before_loop"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._before_loop">[docs]</a>    <span class="nd">@portable</span>
+    <span class="k">def</span> <span class="nf">_before_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resume</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_scan</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">resume</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lose_ion_at</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_background</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">resume</span><span class="p">:</span>
+            <span class="c1"># check if ion is present before measuring background</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_ion_experiment</span><span class="p">(</span><span class="n">repeats</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+                <span class="c1"># measure the background</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;&gt; measuring background.&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_measure_ion_threshold</span><span class="p">()</span>
+            <span class="c1"># no ion is present, can&#39;t measure background</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Can&#39;t measure background because no ion is present.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lost_ion</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_load_ion</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="n">Paused</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Skipping background measurement.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._analyze_data"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._analyze_data">[docs]</a>    <span class="nd">@portable</span>
+    <span class="k">def</span> <span class="nf">_analyze_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="n">last_pass</span><span class="p">,</span> <span class="n">last_point</span><span class="p">):</span>
+        <span class="c1"># lost ion?</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_for_ion</span><span class="p">:</span>
+            <span class="c1"># force a detection check on the very last scan point as data based checks can fail</span>
+            <span class="c1"># to signal an ion lost at the end of a scan</span>
+            <span class="k">if</span> <span class="n">last_pass</span> <span class="ow">and</span> <span class="n">last_point</span><span class="p">:</span>
+                <span class="n">force_detection_check</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">force_detection_check</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_ion</span><span class="p">(</span><span class="n">i_point</span><span class="p">,</span> <span class="n">force_detection_check</span><span class="o">=</span><span class="n">force_detection_check</span><span class="p">):</span>
+                <span class="c1"># rewind to the scan point where the ion was first lost.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_rewind</span><span class="p">(</span><span class="n">num_points</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_windows</span><span class="p">)</span>
+
+                <span class="c1"># set state</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lost_ion</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="c1"># schedule ion reload</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Lost ion.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_load_ion</span><span class="p">()</span>
+
+                <span class="c1"># break main loop in scan.py</span>
+                <span class="k">raise</span> <span class="n">Paused</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._state_string"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._state_string">[docs]</a>    <span class="k">def</span> <span class="nf">_state_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;lost_ion=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lost_ion</span></div>
+
+    <span class="c1"># ====== Local Methods ======</span>
+<div class="viewcode-block" id="ReloadingScan._schedule_load_ion"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._schedule_load_ion">[docs]</a>    <span class="k">def</span> <span class="nf">_schedule_load_ion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># try to load or wait if tried too many times</span>
+
+        <span class="c1"># ion loading can&#39;t be performed for some reason</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loading</span><span class="o">.</span><span class="n">can_load</span><span class="p">():</span>
+
+            <span class="c1"># schedule a high priority experiment (e.g. ion_monitor) that will pause this scan</span>
+            <span class="c1"># until the issue can be fixed.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Can&#39;t load ion, scheduling blocking experiment until issue is fixed.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loading</span><span class="o">.</span><span class="n">schedule_wait_experiment</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_yield</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_load_ion</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># schedule the load ion experiment</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Scheduling ion reload.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loading</span><span class="o">.</span><span class="n">schedule_load_ion</span><span class="p">(</span><span class="n">due_date</span><span class="o">=</span><span class="n">time</span><span class="p">(),</span> <span class="n">synchronous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._measure_ion_threshold"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._measure_ion_threshold">[docs]</a>    <span class="nd">@kernel</span>
+    <span class="k">def</span> <span class="nf">_measure_ion_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Measure dark rate and  set self._ion_threshold to a percentage of the measured rate&quot;&quot;&quot;</span>
+        <span class="n">dark_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loading</span><span class="o">.</span><span class="n">measure_dark_rate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ion_threshold</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">perc_of_dark</span> <span class="o">/</span> <span class="mf">100.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">dark_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ion_second_threshold</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">perc_of_dark_second</span> <span class="o">/</span> <span class="mf">100.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">dark_rate</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;dark_rate measured at&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">dark_rate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ion_threshold set to&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_threshold</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ion_second_threshold set to&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_second_threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._check_ion"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._check_ion">[docs]</a>    <span class="nd">@portable</span>
+    <span class="k">def</span> <span class="nf">_check_ion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="n">force_detection_check</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return true if ion is present&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">force_detection_check</span><span class="p">:</span>
+            <span class="n">do_detection_check</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># -- data based checks:</span>
+        <span class="c1"># analyze data and signal for a detection based check after n successive failures</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">do_detection_check</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">i_measurement</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nmeasurements</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_ion_data</span><span class="p">(</span><span class="n">i_measurement</span><span class="p">,</span> <span class="n">i_point</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ion_failures</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ion_failures</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ion_windows</span><span class="p">:</span>
+                        <span class="n">do_detection_check</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ion_failures</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># -- detection based check:</span>
+        <span class="c1"># check for ion via detection</span>
+        <span class="k">if</span> <span class="n">do_detection_check</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ion_failures</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_ion_experiment</span><span class="p">():</span>
+                <span class="n">present</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">present</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">present</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">present</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._check_ion_data"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._check_ion_data">[docs]</a>    <span class="nd">@portable</span>
+    <span class="k">def</span> <span class="nf">_check_ion_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_measurement</span><span class="p">,</span> <span class="n">i_point</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return true if data collected indicates that the ion is still present&quot;&quot;&quot;</span>
+        <span class="c1">#offset = self._data.address(pos=[i_measurement, i_point])</span>
+        <span class="c1">#offset =</span>
+        <span class="c1">#offset = offset + i_pass * self.nrepeats</span>
+        <span class="n">sum_</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nrepeats</span><span class="p">):</span>
+            <span class="n">sum_</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_idx</span><span class="p">][</span><span class="n">i_measurement</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">nrepeats</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_i_pass</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">sum_</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrepeats</span>
+        <span class="k">if</span> <span class="n">mean</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ion_threshold</span><span class="p">:</span>
+            <span class="n">present</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">present</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># lose ion at</span>
+        <span class="c1">#if self.simulate_scan and not self._resuming:</span>
+        <span class="c1">#    if i_pass * self.npoints + i_point &gt;= self._lose_ion_at - 1:</span>
+        <span class="c1">#        present = False</span>
+        <span class="k">return</span> <span class="n">present</span></div>
+
+<div class="viewcode-block" id="ReloadingScan._check_ion_experiment"><a class="viewcode-back" href="../../../scans/api.html#scan_framework.scans.extensions.ReloadingScan._check_ion_experiment">[docs]</a>    <span class="nd">@portable</span>
+    <span class="k">def</span> <span class="nf">_check_ion_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repeats</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return true if the loading.ion_present experiment indicates that the ion is still present&quot;&quot;&quot;</span>
+        <span class="c1">#if self.simulate_scan:</span>
+        <span class="c1">#    if i_pass * self.npoints + i_point == self._lose_ion_at:</span>
+        <span class="c1">#        return False</span>
+        <span class="c1">#    else:</span>
+        <span class="c1">#        return True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&gt;&gt;&gt; calling loading.ion_present() with ion threshold set to &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_second_threshold</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loading</span><span class="o">.</span><span class="n">ion_present</span><span class="p">(</span><span class="n">repeats</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_second_threshold</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
