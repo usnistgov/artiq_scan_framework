@@ -2,3 +2,5 @@
 __pycache__
 /docs/_build
 ERB_NOTES
+.DS_Store
+._.DS_Store
