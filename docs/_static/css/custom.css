@@ -8,3 +8,12 @@
 .wy-nav-side {
 	top: 45px !important;
 }
+#nistheadergoeshere {
+	position: fixed;
+	z-index: 100;
+	width: 100%;
+}
+
+.wy-nav-content-wrap {
+    margin-top: 45px;
+}
