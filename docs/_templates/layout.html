@@ -28,8 +28,9 @@
 	          };
 	          var options = $.extend(defaults, opt);
 	          return this.each(function () {
-				  if link_is_external(this) {
+				  if(link_is_external(this)) {
 		              el = $(this);
+					  $(this).unbind();
 		              var url = el.attr("href");
 		              var ulen = options.displayUrlLength;
 		              if (url.length >= ulen) {
