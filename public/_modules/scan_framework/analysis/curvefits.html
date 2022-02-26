@@ -1,67 +1,33 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>scan_framework.analysis.curvefits &mdash; NIST Scan Framework For ARTIQ 2.0.0 documentation</title>
-  
-
-  
-  
-  
-  
-
-  
-
-  
-  
-    
-
-  
-
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scan_framework.analysis.curvefits &mdash; NIST Scan Framework For ARTIQ 2.0.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
-
-  
-  <script src="../../../_static/js/modernizr.min.js"></script>
-
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
+        <div class="wy-side-nav-search" >
             <a href="../../../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
-          
-
-          
           </a>
-
-          
-            
-            
               <div class="version">
                 2.0.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -69,17 +35,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installing.html">Installing the NIST scan framework</a></li>
@@ -91,104 +47,69 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../applets.html">Applets</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">NIST Scan Framework For ARTIQ</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
-        
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-        
       <li>scan_framework.analysis.curvefits</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <h1>Source code for scan_framework.analysis.curvefits</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf8 -*-</span>
 <span class="c1">#</span>
 <span class="c1"># Author: Daniel Slichter / NIST Ion Storage</span>
-<span class="c1"># 2016-2021</span>
+<span class="c1"># 2016-2022</span>
 <span class="c1"># </span>
 <span class="c1">#</span>
 <span class="c1"># Automated scientific curve fitting routines</span>
 <span class="c1">#</span>
 <span class="c1"># NIST DISCLAIMER</span>
 <span class="c1">#</span>
-<span class="c1"># This software was developed by employees of the National Institute of</span>
-<span class="c1"># Standards and Technology (NIST), an agency of the Federal Government and is</span>
-<span class="c1"># being made available as a public service. Pursuant to title 17 United States</span>
-<span class="c1"># Code Section 105, works of NIST employees are not subject to copyright</span>
-<span class="c1"># protection in the United States.  This software may be subject to foreign</span>
-<span class="c1"># copyright.  Permission in the United States and in foreign countries, to the</span>
-<span class="c1"># extent that NIST may hold copyright, to use, copy, modify, create derivative</span>
-<span class="c1"># works, and distribute this software and its documentation without fee is hereby</span>
-<span class="c1"># granted on a non-exclusive basis, provided that this notice and disclaimer of</span>
-<span class="c1"># warranty appears in all copies.</span>
+<span class="c1"># The following information applies to all software listed below as developed</span>
+<span class="c1"># by employees of NIST.</span>
 <span class="c1">#</span>
-<span class="c1"># THE SOFTWARE IS PROVIDED &#39;AS IS&#39; WITHOUT ANY WARRANTY OF ANY KIND, EITHER</span>
-<span class="c1"># EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY</span>
-<span class="c1"># THAT THE SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF</span>
-<span class="c1"># MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND FREEDOM FROM</span>
-<span class="c1"># INFRINGEMENT, AND ANY WARRANTY THAT THE DOCUMENTATION WILL CONFORM TO THE</span>
-<span class="c1"># SOFTWARE, OR ANY WARRANTY THAT THE SOFTWARE WILL BE ERROR FREE.  IN NO EVENT</span>
-<span class="c1"># SHALL NIST BE LIABLE FOR ANY DAMAGES, INCLUDING, BUT NOT LIMITED TO, DIRECT,</span>
-<span class="c1"># INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF, RESULTING FROM,</span>
-<span class="c1"># OR IN ANY WAY CONNECTED WITH THIS SOFTWARE, WHETHER OR NOT BASED UPON</span>
-<span class="c1"># WARRANTY, CONTRACT, TORT, OR OTHERWISE, WHETHER OR NOT INJURY WAS SUSTAINED</span>
-<span class="c1"># BY PERSONS OR PROPERTY OR OTHERWISE, AND WHETHER OR NOT LOSS WAS SUSTAINED</span>
-<span class="c1"># FROM, OR AROSE OUT OF THE RESULTS OF, OR USE OF, THE SOFTWARE OR SERVICES</span>
-<span class="c1"># PROVIDED HEREUNDER.</span>
+<span class="c1"># NIST-developed software is provided by NIST as a public service. You may use, copy, and distribute</span>
+<span class="c1"># copies of the software in any medium, provided that you keep intact this entire notice. You may</span>
+<span class="c1"># improve, modify, and create derivative works of the software or any portion of the software, and</span>
+<span class="c1"># you may copy and distribute such modifications or works. Modified works should carry a notice</span>
+<span class="c1"># stating that you changed the software and should note the date and nature of any such change.</span>
+<span class="c1"># Please explicitly acknowledge the National Institute of Standards and Technology as the source of</span>
+<span class="c1"># the software.</span>
+<span class="c1">#</span>
+<span class="c1"># NIST-developed software is expressly provided &quot;AS IS.&quot; NIST MAKES NO WARRANTY OF ANY KIND, EXPRESS,</span>
+<span class="c1"># IMPLIED, IN FACT, OR ARISING BY OPERATION OF LAW, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTY</span>
+<span class="c1"># OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND DATA ACCURACY. NIST</span>
+<span class="c1"># NEITHER REPRESENTS NOR WARRANTS THAT THE OPERATION OF THE SOFTWARE WILL BE UNINTERRUPTED OR</span>
+<span class="c1"># ERROR-FREE, OR THAT ANY DEFECTS WILL BE CORRECTED. NIST DOES NOT WARRANT OR MAKE ANY REPRESENTATIONS</span>
+<span class="c1"># REGARDING THE USE OF THE SOFTWARE OR THE RESULTS THEREOF, INCLUDING BUT NOT LIMITED TO THE</span>
+<span class="c1"># CORRECTNESS, ACCURACY, RELIABILITY, OR USEFULNESS OF THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1"># You are solely responsible for determining the appropriateness of using and distributing the</span>
+<span class="c1"># software and you assume all risks associated with its use, including but not limited to the risks</span>
+<span class="c1"># and costs of program errors, compliance with applicable laws, damage to or loss of data, programs</span>
+<span class="c1"># or equipment, and the unavailability or interruption of operation. This software is not intended to</span>
+<span class="c1"># be used in any situation where a failure could cause risk of injury or damage to property. The</span>
+<span class="c1"># software developed by NIST employees is not subject to copyright protection within the United States.</span>
 <span class="c1">#</span>
 <span class="c1"># To see the latest statement, please visit:</span>
-<span class="c1"># [https://www.nist.gov/director/copyright-fair-use-and-licensing-statements-srd-data-and-software](Copyright, Fair Use, and Licensing Statements for SRD, Data, and Software)</span>
+<span class="c1"># https://www.nist.gov/open/copyright-fair-use-and-licensing-statements-srd-data-software-and-technical-series-publications</span>
 
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">curve_fit</span>
 <span class="kn">from</span> <span class="nn">scipy.fftpack</span> <span class="kn">import</span> <span class="n">fft</span>
@@ -1917,54 +1838,26 @@
 </pre></div>
 
            </div>
-           
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright .
-
-    </p>
+    <p>&#169; Copyright .</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../../',
-            VERSION:'2.0.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../../_static/doctools.js"></script>
-
-  
-
-  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
