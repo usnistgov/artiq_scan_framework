@@ -11,3 +11,6 @@
 .wy-nav-shift {
 	position: absolute !important;
 }
+.wy-nav-side {
+	top: 45px !important;
+}
