@@ -244,11 +244,13 @@ class XYPlot(parent.Plot):
                 pass_pen = self.get_style('plot.pass_pen')
                 pass_size = self.get_style('plot.pass_size')
                 pass_symbol = self.get_style('plot.pass_symbol')
-
                 if self.pass_y is not None:
-                    for pi, py in enumerate(self.pass_y):
-                        pass_brush = pyqtgraph.mkBrush(color=self.get_style('plot.pass_color', pi))
-                        self.plot(x, py, pen=pass_pen, symbol=pass_symbol, symbolSize=pass_size, symbolBrush=pass_brush, symbolPen=None, name=name)
+                    try:
+                        for pi, py in enumerate(self.pass_y):
+                            pass_brush = pyqtgraph.mkBrush(color=self.get_style('plot.pass_color', pi))
+                            self.plot(x, py, pen=pass_pen, symbol=pass_symbol, symbolSize=pass_size, symbolBrush=pass_brush, symbolPen=None, name=name)
+                    except TypeError:
+                        pass
 
                 # plot
                 brush = pyqtgraph.mkBrush(color=self.get_style('plot.color', i))
