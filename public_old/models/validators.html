@@ -1,0 +1,376 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Validating fitted parameters &mdash; NIST Scan Framework For ARTIQ 2.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Formatting the appearance of plots" href="plots.html" />
+    <link rel="prev" title="Configuring fits" href="fitting.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installing the NIST scan framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scans.html">Creating scan experiments</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../models.html">Using models for data processing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html">Getting stated with models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting.html">Configuring fits</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Validating fitted parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-three-types-of-validators">The three types of validators</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pre-validators">Pre-Validators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fit-param-validators">Fit Param Validators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strong-fit-param-validators">Strong Fit Param Validators</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#validation-methods">Validation Methods</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#builtin-validation-methods">Builtin Validation Methods</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#user-defined-validation-methods">User Defined Validation Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="plots.html">Formatting the appearance of plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accessing_scan.html">Accessing the scan inside a scan model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histograms.html">Creating Histograms</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../scans_ref.html">Scans references and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models_ref.html">Models reference and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analysis.html">Curve fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../applets.html">Applets</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NIST Scan Framework For ARTIQ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../models.html">Using models for data processing</a> &raquo;</li>
+        
+      <li>Validating fitted parameters</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/models/validators.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="validating-fitted-parameters">
+<span id="model-validators"></span><h1>Validating fitted parameters<a class="headerlink" href="#validating-fitted-parameters" title="Permalink to this headline">¶</a></h1>
+<p>Validators are specified in a model by creating property methods (using the <code class="code docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator).
+There are three types of validations performed for fitting; <strong>pre-validation</strong>, <strong>validation</strong>, and <strong>strong-validation</strong>.
+Pre-validation determines if a fit should even be attempted.  Validation determines if the fit was successful and
+generates warnings when it was not.  Strong validation works exactly like validation, but prevents any fitted parameters
+from being saved when the fit was not successful.</p>
+<p>To validate a fitted parameter of the model’s fit function, set a key of <code class="code docutils literal notranslate"><span class="pre">params.&lt;param_name&gt;</span></code>.  To perform
+validations on custom fit parameters defined by the model’s <cite>fit_map</cite> attribute, set a key of <code class="code docutils literal notranslate"><span class="pre">&lt;custom_param_name&gt;</span></code>
+with the <code class="code docutils literal notranslate"><span class="pre">params.</span></code> prefix omitted.  See the Strong Fit Param Validators example below.</p>
+<div class="section" id="the-three-types-of-validators">
+<h2>The three types of validators<a class="headerlink" href="#the-three-types-of-validators" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pre-validators">
+<h3>Pre-Validators<a class="headerlink" href="#pre-validators" title="Permalink to this headline">¶</a></h3>
+<p>These are specified in the model with a <code class="code docutils literal notranslate"><span class="pre">pre_validators</span></code> property method.  They validate the data series being fit
+prior to performing the fit.  If any rule fails, the fit is not performed, a “Can’t Fit” message is printed, and the
+scan is allowed to complete.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">pre_validators</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="c1"># validation performed on the data series to be fit</span>
+        <span class="s2">&quot;y_data&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="c1"># fit only performed if max(means) - min(means) &gt; 1</span>
+            <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;min_height&#39;</span><span class="p">:</span> <span class="mi">1</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fit-param-validators">
+<h3>Fit Param Validators<a class="headerlink" href="#fit-param-validators" title="Permalink to this headline">¶</a></h3>
+<p>These are specified in the model with a <code class="code docutils literal notranslate"><span class="pre">validators</span></code> property method.  They validate the fitted parameters after
+the fit has been performed.  If any rule fails, a “Bad Fit” message is printed, the fit line is plotted, the fitted
+parameters are saved (if enabled in GUI) and the scan  is allowed to complete.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">validators</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="c1"># validates the fitted value of fit function&#39;s &#39;pi_time&#39; argument</span>
+        <span class="s2">&quot;params.pi_time&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;between&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">90</span><span class="o">*</span><span class="n">us</span><span class="p">,</span> <span class="mi">110</span><span class="o">*</span><span class="n">us</span><span class="p">],</span>
+            <span class="s1">&#39;max_change&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.01</span><span class="o">*</span><span class="n">us</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_main_fit</span><span class="p">()]</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;analysis.reg_err&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;less_than&quot;</span><span class="p">:</span> <span class="mf">0.1</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;analysis.r2&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;greater_than&quot;</span><span class="p">:</span> <span class="mf">0.6</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="code docutils literal notranslate"><span class="pre">params.pi_time</span></code> refers to an actual parameter of the fit function and not to a custom fit parameter.**</p>
+</div>
+</div>
+<div class="section" id="strong-fit-param-validators">
+<h3>Strong Fit Param Validators<a class="headerlink" href="#strong-fit-param-validators" title="Permalink to this headline">¶</a></h3>
+<p>These are specified in the model with a <code class="code docutils literal notranslate"><span class="pre">strong_validators</span></code> property method.  They validate the fitted parameters
+after the fit has been performed.  If any rule fails, a “Bad Fit” message is printed, the fit line is plotted, but the
+fitted parameters are not saved (even if enabled in GUI).  The scan is allowed to complete.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">strong_validators</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="c1"># validates a custom &#39;frequency&#39; param defined by the &#39;fit_map&#39; attribute</span>
+        <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="c1"># no fitted params are saved if the fitted frequency is outside the scan range</span>
+            <span class="s2">&quot;between&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;min_&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="s2">&quot;max_&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="validation-methods">
+<h2>Validation Methods<a class="headerlink" href="#validation-methods" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="builtin-validation-methods">
+<h3>Builtin Validation Methods<a class="headerlink" href="#builtin-validation-methods" title="Permalink to this headline">¶</a></h3>
+<p>These are defined in <code class="code docutils literal notranslate"><span class="pre">scan_framework.models.model.py</span></code> and are available to all models.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">greater_than(min_)</span></code></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">less_than(max_)</span></code></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">between(min_,</span> <span class="pre">max_)</span></code></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">max_change(max_diff,</span> <span class="pre">prev_value)</span></code></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">height(min_height,</span> <span class="pre">error_msg=None)</span></code></p></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="user-defined-validation-methods">
+<h3>User Defined Validation Methods<a class="headerlink" href="#user-defined-validation-methods" title="Permalink to this headline">¶</a></h3>
+<p>Any class method of your model can also be specified as the validation method.  For fit param validations, the first
+argument passed to your method is the param name, the second is the param value, and the remaining are any arguments
+passed in from your validator rule.  For data series validators, the first is the name of the series, the second is the
+data series array it self, and the remaining are any arguments passed in from your validator rule.</p>
+<p>Custom validation methods return True if the validation passes, or False if the validation fails.  If validation fails,
+the method also needs to add an errors message to self.validation_errors.</p>
+<p>For Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">pre_validators</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;y_data&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;my_height_validator&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;min_height&#39;</span><span class="p">:</span> <span class="mi">1</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">my_height_validator</span><span class="p">(</span><span class="n">series_name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">min_height</span><span class="p">):</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;=</span> <span class="n">min_height</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Amplitude of </span><span class="si">{0}</span><span class="s2"> less than minimum amplitude allowed for </span><span class="si">{1}</span><span class="s2"> of </span><span class="si">{2}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_errors</span><span class="p">[</span><span class="n">series_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">height</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">series_name</span><span class="p">,</span> <span class="n">min_height</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="plots.html" class="btn btn-neutral float-right" title="Formatting the appearance of plots" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="fitting.html" class="btn btn-neutral" title="Configuring fits" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

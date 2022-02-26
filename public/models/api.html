@@ -1,69 +1,35 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Full API documentation for models &mdash; NIST Scan Framework For ARTIQ 2.0.0 documentation</title>
-  
-
-  
-  
-  
-  
-
-  
-
-  
-  
-    
-
-  
-
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Full API documentation for models &mdash; NIST Scan Framework For ARTIQ 2.0.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Curve fitting" href="../analysis.html" />
     <link rel="prev" title="Checking the state of a scan model" href="statevars.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
+        <div class="wy-side-nav-search" >
             <a href="../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
-          
-
-          
           </a>
-
-          
-            
-            
               <div class="version">
                 2.0.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -71,17 +37,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installing.html">Installing the NIST scan framework</a></li>
@@ -108,70 +64,31 @@
 <li class="toctree-l1"><a class="reference internal" href="../applets.html">Applets</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">NIST Scan Framework For ARTIQ</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html">Docs</a> &raquo;</li>
-        
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../models_ref.html">Models reference and API docs</a> &raquo;</li>
-        
       <li>Full API documentation for models</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../_sources/models/api.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <div class="section" id="full-api-documentation-for-models">
 <h1>Full API documentation for models<a class="headerlink" href="#full-api-documentation-for-models" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="module-scan_framework.models.model">
@@ -563,7 +480,7 @@ of the fit.</p></li>
 <li><p><strong>&lt;namespace&gt;.plots.y_units:</strong> Units to display on the y-axis.</p></li>
 <li><p><strong>&lt;namespace&gt;.plots.x_scale:</strong> x-axis is scaled by this amount.</p></li>
 <li><p><strong>&lt;namespace&gt;.plots.y_scale:</strong> y-axis is scaled by this amount.</p></li>
-<li><p><strong>&lt;namespace&gt;.plots.trigger:</strong> Plots are redrawn by <code class="xref py py-mod docutils literal notranslate"><span class="pre">plot_xy</span></code> only when trigger
+<li><p><strong>&lt;namespace&gt;.plots.trigger:</strong> Plots are redrawn by <a class="reference internal" href="../applets/api.html#module-scan_framework.applets.plot_xy" title="scan_framework.applets.plot_xy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">plot_xy</span></code></a> only when trigger
 is set to 1.</p></li>
 <li><p><strong>&lt;namespace&gt;.plots.fitline:</strong> The line of best fit.</p></li>
 </ul>
@@ -1606,7 +1523,7 @@ be disabled by setting model.mirror = False after model is built.</p></li>
 <dl class="py method">
 <dt id="scan_framework.models.time_model.TimeModel.x_label">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">x_label</span></code><a class="headerlink" href="#scan_framework.models.time_model.TimeModel.x_label" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object=’‘) -&gt; str
+<dd><p>str(object=’’) -&gt; str
 str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
 <p>Create a new string object from the given object. If encoding or
 errors is specified, then the object must expose a data buffer
@@ -1620,7 +1537,7 @@ errors defaults to ‘strict’.</p>
 <dl class="py method">
 <dt id="scan_framework.models.time_model.TimeModel.x_units">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">x_units</span></code><a class="headerlink" href="#scan_framework.models.time_model.TimeModel.x_units" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object=’‘) -&gt; str
+<dd><p>str(object=’’) -&gt; str
 str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
 <p>Create a new string object from the given object. If encoding or
 errors is specified, then the object must expose a data buffer
@@ -1647,7 +1564,7 @@ errors defaults to ‘strict’.</p>
 <dl class="py method">
 <dt id="scan_framework.models.freq_model.FreqModel.x_label">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">x_label</span></code><a class="headerlink" href="#scan_framework.models.freq_model.FreqModel.x_label" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object=’‘) -&gt; str
+<dd><p>str(object=’’) -&gt; str
 str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
 <p>Create a new string object from the given object. If encoding or
 errors is specified, then the object must expose a data buffer
@@ -1661,7 +1578,7 @@ errors defaults to ‘strict’.</p>
 <dl class="py method">
 <dt id="scan_framework.models.freq_model.FreqModel.x_units">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">x_units</span></code><a class="headerlink" href="#scan_framework.models.freq_model.FreqModel.x_units" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object=’‘) -&gt; str
+<dd><p>str(object=’’) -&gt; str
 str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
 <p>Create a new string object from the given object. If encoding or
 errors is specified, then the object must expose a data buffer
@@ -1688,7 +1605,7 @@ errors defaults to ‘strict’.</p>
 <dl class="py method">
 <dt id="scan_framework.models.time_freq_model.TimeFreqModel.x_label">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">x_label</span></code><a class="headerlink" href="#scan_framework.models.time_freq_model.TimeFreqModel.x_label" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object=’‘) -&gt; str
+<dd><p>str(object=’’) -&gt; str
 str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
 <p>Create a new string object from the given object. If encoding or
 errors is specified, then the object must expose a data buffer
@@ -1702,7 +1619,7 @@ errors defaults to ‘strict’.</p>
 <dl class="py method">
 <dt id="scan_framework.models.time_freq_model.TimeFreqModel.x_units">
 <em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">x_units</span></code><a class="headerlink" href="#scan_framework.models.time_freq_model.TimeFreqModel.x_units" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object=’‘) -&gt; str
+<dd><p>str(object=’’) -&gt; str
 str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
 <p>Create a new string object from the given object. If encoding or
 errors is specified, then the object must expose a data buffer
@@ -1720,63 +1637,29 @@ errors defaults to ‘strict’.</p>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../analysis.html" class="btn btn-neutral float-right" title="Curve fitting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="statevars.html" class="btn btn-neutral" title="Checking the state of a scan model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="statevars.html" class="btn btn-neutral float-left" title="Checking the state of a scan model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../analysis.html" class="btn btn-neutral float-right" title="Curve fitting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright .
-
-    </p>
+    <p>&#169; Copyright .</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'2.0.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-
-  
-
-  <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
