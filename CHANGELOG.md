@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - All existing files for the scan framework currently used at NIST.
 
-### Breaking Changes from previous in-house version of the artiq\_ions scan class:
+### Changes from previous in-house version of the artiq\_ions scan class:
 - The previous alias of "fitting" for analysis.curvefits has been renamed to "curvefits".  Adding 
   "from scan_framework import *" now imports the analysis.curvefits submodule with the alias of curvefits. 
 - The 'frequency_center' attribute has been replaced by '_x_offset' attribute
