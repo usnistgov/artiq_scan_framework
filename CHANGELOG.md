@@ -5,12 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
 
-### Added 
+## [2.1.0] - 2022-02-27
+- Added continous scans: scans can be run continuously and only stop when a user terminates the scan. 
+- Added infinite logging for continous scans: all data collected during continous scan can be logged to an hdf5 file.
 
-- Added support for ARTIQ version 6 in the artiq-6 branch
-- Version 2.0: Added support for returning multiple measurements from the `measure()` method 
+
+## [2.0.2] - 2022-02-09
+
+- Fixed bug causing scans with npasses > 1 to disregard measurements from previous passes.
 
 ## [2.0.1] - 2021-07-27
 
