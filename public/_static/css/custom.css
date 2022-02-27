@@ -1,6 +1,7 @@
 
 .wy-grid-for-nav {
 	position: relative !important;
+	min-height: 100vh !important;
 }
 .wy-nav-shift {
 	position: absolute !important;
