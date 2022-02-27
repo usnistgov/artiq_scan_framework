@@ -8,6 +8,7 @@
 .wy-nav-side {
 	top: 0 !important;
 	z-index: 10;
+	background-color: #333333;
 }
 #nistheadergoeshere {
 	position: relative;
@@ -16,7 +17,7 @@
 }
 
 .wy-nav-content-wrap {
-    margin-top: 45px;
+    margin-top: 0px;
 }
 #ln-blackout {
 	z-index: 200;
@@ -25,7 +26,8 @@
 	z-index: 200;
 }
 .wy-side-nav-search {
-	margin-top: 45px !important;
+	margin-top: 0px !important;
+	padding-top: 0px !important;
 }
 .nist-footer {
     padding: 4px 0px !important;
