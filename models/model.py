@@ -12,9 +12,10 @@ class Model(HasEnvironment):
     errors = {}
     valid = True
     validators = {}             #: Dictionary containing definitions all fit validations
-    broadcast = True            #: If true the default behavior is to broadcast datasets when they are created.
-    persist = True              #: If true the default behavior is to persist datasets when they are created.
-    save = True                 #: If true the default behavior is to archive datasets to the hdf5 file when they are created.
+    broadcast = True            #: If true, the default behavior is to broadcast datasets when they are set using set_dataset().
+    persist = True              #: If true, the default behavior is to persist datasets  when they are set using set_dataset().
+    archive = True              #: If true, the default behavior is to archive datasets to the hdf5 file when they are set using set_dataset().
+    save = True                 #: (deprecated) If true, the default behavior is to archive datasets to the hdf5 file when they are set using set_dataset().
     default_fallback = False
 
     def build(self, bind=True, **kwargs):
@@ -100,7 +101,7 @@ class Model(HasEnvironment):
         return self.key(".".join(key))
 
     def init(self, key, shape=0, varname=None, fill_value=np.nan, dtype=np.float64, init_local=True,
-             broadcast=None, persist=None, save=None, which='both'):
+             broadcast=None, persist=None, archive=None, which='both', save=None):
         """Set a dataset with the specified shape and initializes its values to the specified fill_value.
         A local member variable of the model can also be initialized to the same value as the dataset.  This
         is useful when using methods like mutate() which updates the local variable with values as the associated
@@ -124,8 +125,8 @@ class Model(HasEnvironment):
         :type broadcast: Boolean
         :param persist: When setting the dataset, this value of the persist argument is used. see ARTIQ documentation.
         :type persist: Boolean
-        :param save: When setting the dataset, this value of the save argument is used. see ARTIQ documentation.
-        :type save: Boolean
+        :param archive: When setting the dataset, this value of the archive argument is used. see ARTIQ documentation.
+        :type archive: Boolean
         :param which:  ['both', 'main', or 'mirror'] Set to 'both' (default) to set the datasets under both the model
                        namespace and mirror namespace, set to 'main' to set only the dataset under the model namespace,
                        set to 'mirror' to set only the dataset under the mirror namespace.
@@ -148,7 +149,7 @@ class Model(HasEnvironment):
             setattr(self, varname, value)
 
         # set the dataset
-        self.set(key, value, which, broadcast, persist, save)
+        self.set(key, value, which, broadcast, persist, archve=archive, save=save)
 
     def load(self, key, varname=None, default=NoDefault, mirror=False, archive=True):
         """Assign the value stored in a dataset to an attribute of the model.
@@ -163,7 +164,7 @@ class Model(HasEnvironment):
         setattr(self, varname, self.get(key, default, mirror, archive=archive))
         return self
 
-    def write(self, key, varname=None, which='both', broadcast=None, persist=None, save=None):
+    def write(self, key, varname=None, which='both', broadcast=None, persist=None, archive=None, mirror=None, save=None):
         """Set a dataset with the value of an attribute of the model.
 
         :param key: Key of the dataset to set.
@@ -176,7 +177,8 @@ class Model(HasEnvironment):
         :param broadcast: When setting the dataset, this value of the broadcast argument is used. see ARTIQ
                           documentation.
         :param persist: When setting the dataset, this value of the persist argument is used. see ARTIQ documentation.
-        :param save: When setting the dataset, this value of the save argument is used. see ARTIQ 1documentation.
+        :param archive: When setting the dataset, this value of the archive argument is used. see ARTIQ documentation.
+        :param save: When setting the dataset, this value of the save argument is used. see ARTIQ documentation.
 
         """
 
@@ -188,11 +190,11 @@ class Model(HasEnvironment):
         value = getattr(self, varname)
 
         # set local value to it's dataset
-        self.set(key, value, which, broadcast, persist, save)
+        self.set(key, value, which, broadcast, persist, archive=archive, mirror=mirror, save=save)
 
-    def set(self, key, value=None, which='both', broadcast=None, persist=None, save=None, mirror=None):
-        """Set the dataset with the specified key to the specified value.  By default, the dataset is also
-          set under the mirror namespace.
+    def set(self, key, value=None, which='both', broadcast=None, persist=None, archive=None, mirror=None, save=None):
+        """Set the dataset with the specified key to the specified value.  By default the dataset is also
+          set under the mirror namespace.  When set under the mirror namespace the dataset is always broadcasted, persisted, and archived.
 
         :param key: The datsaet key.  This key will be prefixed with the namespace automatically.
         :type key: String
@@ -202,12 +204,20 @@ class Model(HasEnvironment):
                       both the model namespace and mirror namespace, set to 'main' to set only the dataset under
                       the model namespace, set to 'mirror' to set only the dataset under the mirror namespace.
         :type which: String ['both', 'main', or 'mirror']
-        :param broadcast: When setting the dataset, this value of the broadcast argument is used. see ARTIQ
-                          documentation.
+        :param broadcast: The value to use for the 'broadcast' argument of set_dataset().  See the ARTIQ documentation.  
+                          If set to None or omitted, the value of the classes 'broadcast' attribute is used instead.
         :type broadcast: Boolean
-        :param persist: When setting the dataset, this value of the persist argument is used. see ARTIQ documentation.
+        :param persist: The value to use for the 'persist' argument of set_dataset().  See the ARTIQ documentation.  
+                        If set to None or omitted, the value of the classes 'persist' attribute is used instead.
         :type persist: Boolean
-        :param save: When setting the dataset, this value of the save argument is used. see ARTIQ documentation.
+        :param archive: The value to use for the 'archive' argument of set_dataset().  See the ARTIQ documentation.  
+                        If set to None or omitted, the value of the classes 'archive' attribute is used instead.
+        :type archive: Boolean
+        :param mirror: If set to True, the dataset will always be set to the mirror namespace regardless of the value set for the 
+                       'which' argument or the value of the classes 'mirror' attribute.
+        :type mirror: Boolean
+        :param save: (Deprecated) This value is used for the 'save' argument of set_dataset().  See the ARTIQ documentation.  
+                     If set to None or omitted, the value of the classes 'save' attribute is used for this argument.
         :type save: Boolean
         """
 
@@ -222,14 +232,16 @@ class Model(HasEnvironment):
             persist = self.persist
         if save is None:
             save = self.save
+        if archive is None:
+            archive = self.archive
 
         # set the main dataset
         if which == 'both' or which == 'main':
-            self.set_dataset(self.key(key), value, broadcast=broadcast, persist=persist, save=save)
+            self.set_dataset(self.key(key), value, broadcast=broadcast, persist=persist, archive=archive, save=save)
 
         # set the mirror dataset
         if mirror or (self.mirror and (which in ['both', 'mirror'])):
-            self.set_dataset(self.key(key, mirror=True), value, broadcast=True, persist=True, save=True)
+            self.set_dataset(self.key(key, mirror=True), value, broadcast=True, persist=True, archive=True)
 
     def get_default(self, key, archive=False):
         """Get the dataset that contains default values for the dataset specified by key.

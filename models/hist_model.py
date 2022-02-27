@@ -52,23 +52,23 @@ class HistModel(Model):
                 self.aggregate_bins[i] = 0
                 self.mirror_aggregate_bins[i] = 0
 
-    def init_datasets(self, broadcast=None, persist=None, save=None):
+    def init_datasets(self, broadcast=None, persist=None, archive=None, save=None):
         """Initialize all datasets"""
-        self.set('bin_boundaries', self.bin_boundaries, broadcast=broadcast, persist=persist, save=save, mirror=True)
-        self.set('x_units', self.x_units, broadcast=broadcast, persist=persist, save=save)
-        self.set('x_label', self.x_label, broadcast=broadcast, persist=persist, save=save)
-        self.set('y_label', self.y_label, broadcast=broadcast, persist=persist, save=save)
-        self.set('plot_title', self.plot_title, broadcast=broadcast, persist=persist, save=save)
-        self.set('bins', self.bins, broadcast=broadcast, persist=persist, save=save)
+        self.set('bin_boundaries', self.bin_boundaries, broadcast=broadcast, persist=persist, archive=archive, mirror=True, save=save)
+        self.set('x_units', self.x_units, broadcast=broadcast, persist=persist, archive=archive, save=save)
+        self.set('x_label', self.x_label, broadcast=broadcast, persist=persist, archive=archive, save=save)
+        self.set('y_label', self.y_label, broadcast=broadcast, persist=persist, archive=archive, save=save)
+        self.set('plot_title', self.plot_title, broadcast=broadcast, persist=persist, archive=archive, save=save)
+        self.set('bins', self.bins, broadcast=broadcast, persist=persist, archive=archive, save=save)
 
         if self.aggregate:
             self.set('aggregate_bin_boundaries', self.bin_boundaries, which='mirror', mirror=True)
-            self.set('aggregate_bin_boundaries', self.bin_boundaries, broadcast=broadcast, persist=persist, save=save,
-                     which='main', mirror=False)
+            self.set('aggregate_bin_boundaries', self.bin_boundaries, broadcast=broadcast, persist=persist, archive=archive,
+                     which='main', mirror=False, save=save)
             self.set('aggregate_bins', self.mirror_aggregate_bins, which='mirror', mirror=True)
-            self.set('aggregate_bins', self.aggregate_bins, broadcast=broadcast, persist=persist, save=save, which='main', mirror=False)
+            self.set('aggregate_bins', self.aggregate_bins, broadcast=broadcast, persist=persist, archive=archive, which='main', mirror=False, save=save)
 
-    def mutate(self, values, broadcast=None, persist=None, save=None):
+    def mutate(self, values, broadcast=None, persist=None, archive=None, save=None):
         """Bin each value and mutate the bins dataset"""
         if self.aggregate:
             self.mirror_aggregate_bins = self.get('aggregate_bins', mirror=True)
@@ -78,14 +78,14 @@ class HistModel(Model):
                 self.bin_value(val)
         else:
             self.bin_value(values)
-        self.set_bins(broadcast=broadcast, persist=persist, save=save)
+        self.set_bins(broadcast=broadcast, persist=persist, archive=archive, save=save)
 
     @portable
-    def set_bins(self, broadcast=None, persist=None, save=None):
-        self.set('bins', self.bins, broadcast=broadcast, persist=persist, save=save)
+    def set_bins(self, broadcast=None, persist=None, archive=None, save=None):
+        self.set('bins', self.bins, broadcast=broadcast, persist=persist, archive=archive, save=save)
         if self.aggregate:
-            self.set('aggregate_bins', self.aggregate_bins, broadcast=broadcast, persist=persist, save=save, which='main')
-            self.set('aggregate_bins', self.mirror_aggregate_bins, broadcast=broadcast, persist=persist, save=save, which='mirror', mirror=True)
+            self.set('aggregate_bins', self.aggregate_bins, broadcast=broadcast, persist=persist, archive=archive, which='main', save=save)
+            self.set('aggregate_bins', self.mirror_aggregate_bins, broadcast=broadcast, persist=persist, archive=archive, which='mirror', mirror=True, save=save)
 
     @portable
     def bin_value(self, value):

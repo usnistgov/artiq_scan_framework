@@ -179,9 +179,10 @@ class ScanModel(Model):
     # datasets
     namespace = ""                     #: Dataset key under which all datasets are created
     mirror_namespace = 'current_scan'  #: Dataset key under which all datasets are mirrored -- datasets under this key are plotted by the current scan applet
-    broadcast = False                  #: If True all datasets besides the main fit dataset are broadcast when created
-    persist = False                    #: If True all datasets besides the main fit dataset are persisted
-    save = True                        #: If True all datasets besides the main fit dataset are save to the hdf5 file
+    broadcast = False                  #: If True, all datasets besides the main fit dataset are broadcast when created
+    persist = False                    #: If True, all datasets besides the main fit dataset are persisted
+    save = None                        #: (deprecated) If True, all datasets besides the main fit dataset are save to the hdf5 file
+    archive = True                     #: If True, all datasets besides the main fit dataset are save to the hdf5 file
 
     # settings
     mirror = True                #: If False datasets will not be mirrored to the mirror_namespace
@@ -251,7 +252,8 @@ class ScanModel(Model):
                                mirror_namespace=self.mirror_namespace,
                                broadcast=self.broadcast,
                                persist=self.persist,
-                               save=self.save
+                               save=self.save,
+                               archive=self.archive
                                )
         self.stat_model = Model(self,
                                 bind=False,
@@ -259,7 +261,8 @@ class ScanModel(Model):
                                 mirror_namespace=self.mirror_namespace,
                                 broadcast=self.broadcast,
                                 persist=self.persist,
-                                save=self.save
+                                save=self.save,
+                                archive=self.archive
                                 )
 
         # for monitoring histograms of each scan point
@@ -272,7 +275,8 @@ class ScanModel(Model):
                                         x_label="PMT Counts",
                                         broadcast=self.broadcast,
                                         persist=self.persist,
-                                        save=self.save
+                                        save=self.save,
+                                        archive=self.archive
                                         )
 
         self.defaults_model = Model(self,
@@ -375,7 +379,7 @@ class ScanModel(Model):
             self.stat_model.write('nbins')
             self.stat_model.write('bins')
             self.stat_model.init('hist', shape=shape + [self.nbins], varname='hist', fill_value=0, dtype=np.int32)
-            self.hist_model.init_datasets(broadcast=self.broadcast, persist=self.persist, save=self.save)
+            self.hist_model.init_datasets(broadcast=self.broadcast, persist=self.persist, archive=self.archive, save=self.save)
 
         # initialize fits
         self.fit_model.init('fitline', plot_shape)
@@ -819,7 +823,7 @@ class ScanModel(Model):
 
         :param value: value of the main fit that will be saved.
         """
-        self.set(self.main_fit_ds, value, which='main', broadcast=True, persist=True, save=True)
+        self.set(self.main_fit_ds, value, which='main', broadcast=True, persist=True, archive=True)
 
     def get_fit(self, name, use_fit_result=False, i=None):
         """Helper method.  Fetches the value of fit param that was found during the last fit performed.
@@ -1001,7 +1005,7 @@ class ScanModel(Model):
         elif rule == 'soft':
             FitModel.validate(self, self.validators)
 
-    def save_fit(self, fitparam, dskey, broadcast=False, persist=False, save=True):
+    def save_fit(self, fitparam, dskey, broadcast=False, persist=False, archive=True, save=None):
         """Helper method.  Saves the specified fit param to the datasets under the model's namespace.
 
         :param fitparam: Name of the fit param to save
@@ -1015,7 +1019,7 @@ class ScanModel(Model):
         fitval = self.fit.fitresults[fitparam]
 
         # save it to a dataset
-        self.set(dskey, fitval, which='main', broadcast=broadcast, persist=persist, save=save)
+        self.set(dskey, fitval, which='main', broadcast=broadcast, persist=persist, archive=archive, save=save)
 
         # record what's been saved
         if broadcast is True:

@@ -54,10 +54,10 @@ class M1Model(ScanModel):
     namespace = "example_5.m1"
     fit_function = curvefits.Power
 
-    # Note: All datasets will be broadcast, saved, and persisted in this example
+    # Note: All datasets will be broadcast, archived, and persisted in this example
     broadcast = True
     persist = True
-    save = True
+    archive = True
 
 
 class M2Model(ScanModel):
@@ -66,4 +66,4 @@ class M2Model(ScanModel):
 
     broadcast = True
     persist = True
-    save = True
+    archive = True
