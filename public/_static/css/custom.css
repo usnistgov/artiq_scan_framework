@@ -17,3 +17,9 @@
 .wy-nav-content-wrap {
     margin-top: 45px;
 }
+#ln-blackout {
+	z-index: 200;
+}
+#ln-messageHolder {
+	z-index: 200;
+}
