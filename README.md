@@ -382,7 +382,7 @@ submitting pull requests to us.
 2. Kyle S. McKay, NIST and University of Colorado - Scan framework design and user specifications. 
 3. Daniel H. Slichter, NIST - Analysis subpackage and curve fitting routines.
 
-See also the list of [contributors](https://github.com/usnistgov/scan_framework/contributors) who participated in 
+See also the list of [contributors](AUTHORS.md) who participated in 
 this project.
  
 ## Copyright
