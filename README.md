@@ -381,9 +381,9 @@ submitting pull requests to us.
 1. Philip D. Kent, NIST and University of Colorado - Scan framework architecture and development.
 2. Kyle S. McKay, NIST and University of Colorado - Scan framework design and user specifications. 
 3. Daniel H. Slichter, NIST - Analysis subpackage and curve fitting routines.
+4. Bryce Bullock, NIST and University of Colorado - Development of feature additions.
 
-See also the list of [contributors](AUTHORS.md) who participated in 
-this project.
+See also the list of [contributors](AUTHORS.md) who participated in this project.
  
 ## Copyright
 Also see the [LICENSE.md](LICENSE.md) and [LICENSES directory](LICENSES)
