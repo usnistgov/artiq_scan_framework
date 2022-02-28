@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scan_framework.applets.plot &mdash; NIST Scan Framework For ARTIQ 2.1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+<script async type="text/javascript" id="_fed_an_ua_tag" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c">
+</script>
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">  
+  <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+  <!--<script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>-->
+  <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />  
+  <script type="text/javascript">
+	  function link_is_external(link_element) {
+	      return (link_element.host !== window.location.host);
+	  }
+	  (function ($) {
+	      $.fn.leaveNotice = function (opt) {
+	          var defaults = {
+	              siteName: "NIST",
+	              exitMessage:
+	                  "<h2><strong>Thank you for visiting {SITENAME}.</strong></h2><p>We hope your visit was informative.</p><p>We have provided this link to a non-NIST site because it has information that may be of interest to our users. NIST does not necessarily endorse the views expressed or the facts presented on this site. Further, NIST does not endorse any commercial products that may be advertised or available on this site.</p>",
+	              preLinkMessage: "<div class='setoff'><p>You will now be directed to:<br/>{URL}</p></div>",
+	              linkString: "",
+	              newWindow: false,
+	              timeOut: 1e4,
+	              overlayId: "ln-blackout",
+	              messageBoxId: "ln-messageBox",
+	              messageHolderId: "ln-messageHolder",
+	              linkId: "ln-link",
+	              displayUrlLength: 50,
+	              overlayAlpha: 0.3,
+	          };
+	          var options = $.extend(defaults, opt);
+	          return this.each(function () {
+				  if(link_is_external(this)) {
+		              el = $(this);
+					  $(this).unbind();
+		              var url = el.attr("href");
+		              var ulen = options.displayUrlLength;
+		              if (url.length >= ulen) {
+		                  var suffix = "...";
+		              } else {
+		                  var suffix = "";
+		              }
+		              var shortUrl = url.substr(0, ulen) + suffix;
+		              var title = el.attr("title");
+		              if (title === undefined || title == "") {
+		                  var linkText = shortUrl;
+		              } else {
+		                  var linkText = title;
+		              }
+		              options.timeOut = options.newWindow ? 0 : options.timeOut;
+		              el.click(function (event) {
+						  event.preventDefault();
+		                  $("body").append('<div id="' + options.overlayId + '"></div>');
+		                  $("body").append('<div id="' + options.messageHolderId + '"><div id="' + options.messageBoxId + '"></div></div>');
+		                  if (options.overlayAlpha !== false) {
+		                      $("#" + options.overlayId).css("opacity", options.overlayAlpha);
+		                  }
+		                  preFilteredContent = options.exitMessage + options.preLinkMessage;
+		                  msgContent = preFilteredContent.replace(/\{URL\}/g, '<a id="' + options.linkId + '" href="' + url + '" title="' + url + '"' + options.linkString + ">" + linkText + "</a>");
+		                  msgContent = msgContent.replace(/\{SITENAME\}/g, options.siteName);
+		                  if (options.timeOut > 0) {
+		                      msgContent += '<p id="ln-cancelMessage"><a href="#close" id="ln-cancelLink">Cancel</a> or press the ESC key.</p>';
+		                  } else {
+		                      msgContent += '<p id="ln-cancelMessage">Click the link above to continue or <a href="#close" id="ln-cancelLink">Cancel</a></p>';
+		                  }
+		                  $("#" + options.messageBoxId).append(msgContent);
+		                  if (options.timeOut > 0) {
+		                      leaveIn = setTimeout(function () {
+		                          $("#ln-cancelMessage").html("<em>Loading...</em>");
+		                          window.location.href = url;
+		                      }, options.timeOut);
+		                  } else {
+		                      leaveIn = false;
+		                  }
+		                  if (options.newWindow) {
+		                      $("a#" + options.linkId)
+		                          .attr("target", "_blank")
+		                          .click(function () {
+		                              closeDialog(options, leaveIn);
+		                          });
+		                  }
+		                  $("#ln-cancelLink").click(function () {
+		                      closeDialog(options, leaveIn);
+		                      return false;
+		                  });
+		                  $(document).bind("keyup", function (e) {
+		                      if (e.which == 27) {
+		                          closeDialog(options, leaveIn);
+		                      }
+		                  });
+		                  $(window).unload(function () {
+		                      closeDialog(options, leaveIn);
+		                  });
+		                  return false;
+		              });
+				  }
+	          });
+	      };
+	      function closeDialog(options, timer) {
+	          if (options.timeOut > 0) {
+	              clearTimeout(timer);
+	          }
+	          $("#" + options.overlayId + ", #" + options.messageHolderId).fadeOut("fast", function () {
+	              $("#" + options.overlayId + ", #" + options.messageHolderId).remove();
+	          });
+	          $(document).unbind("keyup");
+	      }
+	  })(jQuery);
+	  
+  	$(function(){
+  	  $('a').leaveNotice();
+  	});
+  </script>
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
+          </a>
+              <div class="version">
+                2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installing.html">Installing the NIST scan framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scans.html">Creating scan experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Using models for data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scans_ref.html">Scans references and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models_ref.html">Models reference and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Curve fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../applets.html">Applets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">NIST Scan Framework For ARTIQ</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>scan_framework.applets.plot</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scan_framework.applets.plot</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Base class for plot applets used in the NIST scan framework</span>
+<span class="kn">import</span> <span class="nn">artiq.applets.simple</span> <span class="k">as</span> <span class="nn">plot_xy_parent</span>
+<span class="kn">import</span> <span class="nn">pyqtgraph</span>
+
+
+<div class="viewcode-block" id="SimpleApplet"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.SimpleApplet">[docs]</a><span class="k">class</span> <span class="nc">SimpleApplet</span><span class="p">(</span><span class="n">plot_xy_parent</span><span class="o">.</span><span class="n">SimpleApplet</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SimpleApplet.__init__"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.SimpleApplet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">main_widget_class</span><span class="p">,</span> <span class="n">cmd_description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">default_update_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">main_widget_class</span><span class="p">,</span> <span class="n">cmd_description</span><span class="p">,</span> <span class="n">default_update_delay</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_datasets</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SimpleApplet.add_datasets"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.SimpleApplet.add_datasets">[docs]</a>    <span class="k">def</span> <span class="nf">add_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="Plot"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot">[docs]</a><span class="k">class</span> <span class="nc">Plot</span><span class="p">(</span><span class="n">pyqtgraph</span><span class="o">.</span><span class="n">PlotWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for plot applets.  Provides a basic framework for plot applets.  When data has changed, dataset values</span>
+<span class="sd">    are loaded, reshaped (optional), validated, cleaned, and plotted.&quot;&quot;&quot;</span>
+    <span class="n">style</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;background&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;w&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;foreground&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;k&#39;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>  <span class="c1">#: default colors are white background with black foreground</span>
+
+<div class="viewcode-block" id="Plot.get_style"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot.get_style">[docs]</a>    <span class="k">def</span> <span class="nf">get_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method to get a style value using a dotted key.  For example, self.style[&#39;background&#39;][&#39;color&#39;] can</span>
+<span class="sd">        be returned by passing key=&#39;background.color&#39;&quot;&quot;&quot;</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">entry</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="p">)]</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">entry</span></div>
+
+<div class="viewcode-block" id="Plot.__init__"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">pyqtgraph</span><span class="p">)</span>
+        <span class="n">pyqtgraph</span><span class="o">.</span><span class="n">PlotWidget</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Plot.set_config"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot.set_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pyqtgraph</span><span class="p">):</span>
+        <span class="n">pyqtgraph</span><span class="o">.</span><span class="n">setConfigOption</span><span class="p">(</span><span class="s1">&#39;background&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">[</span><span class="s1">&#39;background&#39;</span><span class="p">][</span><span class="s1">&#39;color&#39;</span><span class="p">])</span>
+        <span class="n">pyqtgraph</span><span class="o">.</span><span class="n">setConfigOption</span><span class="p">(</span><span class="s1">&#39;foreground&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">[</span><span class="s1">&#39;foreground&#39;</span><span class="p">][</span><span class="s1">&#39;color&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Plot.data_changed"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot.data_changed">[docs]</a>    <span class="k">def</span> <span class="nf">data_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Data changed handler.  load, reshape, validate, clean, and then plot the new data.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reshape</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error reshaping&quot;</span><span class="p">)</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Plot.load"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load the data from datasets&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Plot.reshape"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot.reshape">[docs]</a>    <span class="k">def</span> <span class="nf">reshape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reshape data into the correct dimension&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Plot.clean"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clean the data so it can be plotted&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Plot.validate"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validate the data can be plotted&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Plot.draw"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot the data&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Plot._load"><a class="viewcode-back" href="../../../applets/api.html#scan_framework.applets.plot.Plot._load">[docs]</a>    <span class="k">def</span> <span class="nf">_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">ds_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method to load a single dataset value and assign it to an attribute of self.</span>
+
+<span class="sd">        Falls back to an explicit value being specified in arguments or a given default value when the</span>
+<span class="sd">        dataset doesn&#39;t exist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">argval</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">argval</span><span class="p">,</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="p">))</span>
+        <span class="n">ds_found</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">ds_found</span><span class="p">:</span>
+            <span class="c1"># get value from dataset</span>
+            <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">argval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ds_only</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">argval</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">default</span>
+
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lost ion detection and reloading &mdash; NIST Scan Framework For ARTIQ 2.1.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Using models for data processing" href="../models.html" />
+    <link rel="prev" title="2D Scans" href="2d_scans.html" /> 
+<script async type="text/javascript" id="_fed_an_ua_tag" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c">
+</script>
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">  
+  <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+  <!--<script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>-->
+  <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />  
+  <script type="text/javascript">
+	  function link_is_external(link_element) {
+	      return (link_element.host !== window.location.host);
+	  }
+	  (function ($) {
+	      $.fn.leaveNotice = function (opt) {
+	          var defaults = {
+	              siteName: "NIST",
+	              exitMessage:
+	                  "<h2><strong>Thank you for visiting {SITENAME}.</strong></h2><p>We hope your visit was informative.</p><p>We have provided this link to a non-NIST site because it has information that may be of interest to our users. NIST does not necessarily endorse the views expressed or the facts presented on this site. Further, NIST does not endorse any commercial products that may be advertised or available on this site.</p>",
+	              preLinkMessage: "<div class='setoff'><p>You will now be directed to:<br/>{URL}</p></div>",
+	              linkString: "",
+	              newWindow: false,
+	              timeOut: 1e4,
+	              overlayId: "ln-blackout",
+	              messageBoxId: "ln-messageBox",
+	              messageHolderId: "ln-messageHolder",
+	              linkId: "ln-link",
+	              displayUrlLength: 50,
+	              overlayAlpha: 0.3,
+	          };
+	          var options = $.extend(defaults, opt);
+	          return this.each(function () {
+				  if(link_is_external(this)) {
+		              el = $(this);
+					  $(this).unbind();
+		              var url = el.attr("href");
+		              var ulen = options.displayUrlLength;
+		              if (url.length >= ulen) {
+		                  var suffix = "...";
+		              } else {
+		                  var suffix = "";
+		              }
+		              var shortUrl = url.substr(0, ulen) + suffix;
+		              var title = el.attr("title");
+		              if (title === undefined || title == "") {
+		                  var linkText = shortUrl;
+		              } else {
+		                  var linkText = title;
+		              }
+		              options.timeOut = options.newWindow ? 0 : options.timeOut;
+		              el.click(function (event) {
+						  event.preventDefault();
+		                  $("body").append('<div id="' + options.overlayId + '"></div>');
+		                  $("body").append('<div id="' + options.messageHolderId + '"><div id="' + options.messageBoxId + '"></div></div>');
+		                  if (options.overlayAlpha !== false) {
+		                      $("#" + options.overlayId).css("opacity", options.overlayAlpha);
+		                  }
+		                  preFilteredContent = options.exitMessage + options.preLinkMessage;
+		                  msgContent = preFilteredContent.replace(/\{URL\}/g, '<a id="' + options.linkId + '" href="' + url + '" title="' + url + '"' + options.linkString + ">" + linkText + "</a>");
+		                  msgContent = msgContent.replace(/\{SITENAME\}/g, options.siteName);
+		                  if (options.timeOut > 0) {
+		                      msgContent += '<p id="ln-cancelMessage"><a href="#close" id="ln-cancelLink">Cancel</a> or press the ESC key.</p>';
+		                  } else {
+		                      msgContent += '<p id="ln-cancelMessage">Click the link above to continue or <a href="#close" id="ln-cancelLink">Cancel</a></p>';
+		                  }
+		                  $("#" + options.messageBoxId).append(msgContent);
+		                  if (options.timeOut > 0) {
+		                      leaveIn = setTimeout(function () {
+		                          $("#ln-cancelMessage").html("<em>Loading...</em>");
+		                          window.location.href = url;
+		                      }, options.timeOut);
+		                  } else {
+		                      leaveIn = false;
+		                  }
+		                  if (options.newWindow) {
+		                      $("a#" + options.linkId)
+		                          .attr("target", "_blank")
+		                          .click(function () {
+		                              closeDialog(options, leaveIn);
+		                          });
+		                  }
+		                  $("#ln-cancelLink").click(function () {
+		                      closeDialog(options, leaveIn);
+		                      return false;
+		                  });
+		                  $(document).bind("keyup", function (e) {
+		                      if (e.which == 27) {
+		                          closeDialog(options, leaveIn);
+		                      }
+		                  });
+		                  $(window).unload(function () {
+		                      closeDialog(options, leaveIn);
+		                  });
+		                  return false;
+		              });
+				  }
+	          });
+	      };
+	      function closeDialog(options, timer) {
+	          if (options.timeOut > 0) {
+	              clearTimeout(timer);
+	          }
+	          $("#" + options.overlayId + ", #" + options.messageHolderId).fadeOut("fast", function () {
+	              $("#" + options.overlayId + ", #" + options.messageHolderId).remove();
+	          });
+	          $(document).unbind("keyup");
+	      }
+	  })(jQuery);
+	  
+  	$(function(){
+  	  $('a').leaveNotice();
+  	});
+  </script>
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
+          </a>
+              <div class="version">
+                2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installing the NIST scan framework</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../scans.html">Creating scan experiments</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html">Getting Started with Scans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statistics.html">Processing and handling of scan data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_features.html">Core scan features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_tracking.html">Relative scan ranges and auto tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time_freq_scans.html">Time &amp; frequency scans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multiple_measurements.html">Performing multiple measurements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calculations.html">Performing calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="warmup_points.html">Running warmup points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monitor_histograms.html">Monitor histograms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2d_scans.html">2D Scans</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Lost ion detection and reloading</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lost-ion-re-loading">Lost Ion Re-Loading</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Using models for data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scans_ref.html">Scans references and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models_ref.html">Models reference and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analysis.html">Curve fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../applets.html">Applets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NIST Scan Framework For ARTIQ</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../scans.html">Creating scan experiments</a> &raquo;</li>
+      <li>Lost ion detection and reloading</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/scans/lost_ion.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="lost-ion-detection-and-reloading">
+<h1>Lost ion detection and reloading<a class="headerlink" href="#lost-ion-detection-and-reloading" title="Permalink to this headline">¶</a></h1>
+<p>If the ion is lost during a scan, the last two data points collected are thrown out, the scan is paused, and the
+<code class="code docutils literal notranslate"><span class="pre">load_ion</span></code> experiment is scheduled.  After the <code class="code docutils literal notranslate"><span class="pre">load_ion</span></code> experiment completes, the scan is resumed two scan points
+before the point at which it failed.  This feature must be selectively enabled in the scan by setting</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">enable_reloading</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>in the scan.</p>
+<div class="section" id="lost-ion-re-loading">
+<h2>Lost Ion Re-Loading<a class="headerlink" href="#lost-ion-re-loading" title="Permalink to this headline">¶</a></h2>
+<p>Ion’s can be automatically loaded by creating a sub-component similar to the loading sub-component in
+<code class="code docutils literal notranslate"><span class="pre">examples/loading.py</span></code> In that sub-component, presence of an ion is determined by thresholding PMT
+counts and loading will stop after a given number of seconds if an ion could not be loaded.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To use lost ion detection and automatic reloading, inherit from the <a class="reference internal" href="api.html#scan_framework.scans.extensions.ReloadingScan" title="scan_framework.scans.extensions.ReloadingScan"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReloadingScan</span></code></a>
+class, create a loading library that implements the <code class="xref py py-class docutils literal notranslate"><span class="pre">LoadingInterface</span></code>
+interface, and set <code class="code docutils literal notranslate"><span class="pre">self.loading</span></code> to an instance of the loading library in the scan:</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">loading</span> <span class="o">=</span> <span class="n">Loading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>During a scan, the data collected for each scan point is analyzed by functions provided by the <code class="code docutils literal notranslate"><span class="pre">ReloadingScan</span></code> class
+to determine if an ion is still present in the trap.  This preliminary analysis state looks for the presence or absence
+of an ion by thresholding PMT counts returned by the scan’s <code class="code docutils literal notranslate"><span class="pre">measure()</span></code> method.  If more than two successive scan
+points fail this analysis stage, a separate measurement is performed by the <code class="code docutils literal notranslate"><span class="pre">ion_present()</span></code> method of the loading
+sub-component to determine if the ion is present (typically by also thresholding PMT counts).  The ion is considered to
+be lost if this final stage fails (<code class="code docutils literal notranslate"><span class="pre">ion_present()</span></code> returns <code class="code docutils literal notranslate"><span class="pre">False</span></code>).  When the ion is considered lost, the
+scan will be paused, and a new ion will be loaded by calling the <code class="code docutils literal notranslate"><span class="pre">schedule_load_ion()</span></code> method of the loading
+sub-component.  If loading succeeds, the scan will resume at two scan points prior to the point that
+originally failed ion detection.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="2d_scans.html" class="btn btn-neutral float-left" title="2D Scans" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../models.html" class="btn btn-neutral float-right" title="Using models for data processing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

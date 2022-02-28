@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scan_framework.models.model &mdash; NIST Scan Framework For ARTIQ 2.1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+<script async type="text/javascript" id="_fed_an_ua_tag" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c">
+</script>
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">  
+  <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+  <!--<script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>-->
+  <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />  
+  <script type="text/javascript">
+	  function link_is_external(link_element) {
+	      return (link_element.host !== window.location.host);
+	  }
+	  (function ($) {
+	      $.fn.leaveNotice = function (opt) {
+	          var defaults = {
+	              siteName: "NIST",
+	              exitMessage:
+	                  "<h2><strong>Thank you for visiting {SITENAME}.</strong></h2><p>We hope your visit was informative.</p><p>We have provided this link to a non-NIST site because it has information that may be of interest to our users. NIST does not necessarily endorse the views expressed or the facts presented on this site. Further, NIST does not endorse any commercial products that may be advertised or available on this site.</p>",
+	              preLinkMessage: "<div class='setoff'><p>You will now be directed to:<br/>{URL}</p></div>",
+	              linkString: "",
+	              newWindow: false,
+	              timeOut: 1e4,
+	              overlayId: "ln-blackout",
+	              messageBoxId: "ln-messageBox",
+	              messageHolderId: "ln-messageHolder",
+	              linkId: "ln-link",
+	              displayUrlLength: 50,
+	              overlayAlpha: 0.3,
+	          };
+	          var options = $.extend(defaults, opt);
+	          return this.each(function () {
+				  if(link_is_external(this)) {
+		              el = $(this);
+					  $(this).unbind();
+		              var url = el.attr("href");
+		              var ulen = options.displayUrlLength;
+		              if (url.length >= ulen) {
+		                  var suffix = "...";
+		              } else {
+		                  var suffix = "";
+		              }
+		              var shortUrl = url.substr(0, ulen) + suffix;
+		              var title = el.attr("title");
+		              if (title === undefined || title == "") {
+		                  var linkText = shortUrl;
+		              } else {
+		                  var linkText = title;
+		              }
+		              options.timeOut = options.newWindow ? 0 : options.timeOut;
+		              el.click(function (event) {
+						  event.preventDefault();
+		                  $("body").append('<div id="' + options.overlayId + '"></div>');
+		                  $("body").append('<div id="' + options.messageHolderId + '"><div id="' + options.messageBoxId + '"></div></div>');
+		                  if (options.overlayAlpha !== false) {
+		                      $("#" + options.overlayId).css("opacity", options.overlayAlpha);
+		                  }
+		                  preFilteredContent = options.exitMessage + options.preLinkMessage;
+		                  msgContent = preFilteredContent.replace(/\{URL\}/g, '<a id="' + options.linkId + '" href="' + url + '" title="' + url + '"' + options.linkString + ">" + linkText + "</a>");
+		                  msgContent = msgContent.replace(/\{SITENAME\}/g, options.siteName);
+		                  if (options.timeOut > 0) {
+		                      msgContent += '<p id="ln-cancelMessage"><a href="#close" id="ln-cancelLink">Cancel</a> or press the ESC key.</p>';
+		                  } else {
+		                      msgContent += '<p id="ln-cancelMessage">Click the link above to continue or <a href="#close" id="ln-cancelLink">Cancel</a></p>';
+		                  }
+		                  $("#" + options.messageBoxId).append(msgContent);
+		                  if (options.timeOut > 0) {
+		                      leaveIn = setTimeout(function () {
+		                          $("#ln-cancelMessage").html("<em>Loading...</em>");
+		                          window.location.href = url;
+		                      }, options.timeOut);
+		                  } else {
+		                      leaveIn = false;
+		                  }
+		                  if (options.newWindow) {
+		                      $("a#" + options.linkId)
+		                          .attr("target", "_blank")
+		                          .click(function () {
+		                              closeDialog(options, leaveIn);
+		                          });
+		                  }
+		                  $("#ln-cancelLink").click(function () {
+		                      closeDialog(options, leaveIn);
+		                      return false;
+		                  });
+		                  $(document).bind("keyup", function (e) {
+		                      if (e.which == 27) {
+		                          closeDialog(options, leaveIn);
+		                      }
+		                  });
+		                  $(window).unload(function () {
+		                      closeDialog(options, leaveIn);
+		                  });
+		                  return false;
+		              });
+				  }
+	          });
+	      };
+	      function closeDialog(options, timer) {
+	          if (options.timeOut > 0) {
+	              clearTimeout(timer);
+	          }
+	          $("#" + options.overlayId + ", #" + options.messageHolderId).fadeOut("fast", function () {
+	              $("#" + options.overlayId + ", #" + options.messageHolderId).remove();
+	          });
+	          $(document).unbind("keyup");
+	      }
+	  })(jQuery);
+	  
+  	$(function(){
+  	  $('a').leaveNotice();
+  	});
+  </script>
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
+          </a>
+              <div class="version">
+                2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installing.html">Installing the NIST scan framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scans.html">Creating scan experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Using models for data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scans_ref.html">Scans references and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models_ref.html">Models reference and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Curve fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../applets.html">Applets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">NIST Scan Framework For ARTIQ</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>scan_framework.models.model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scan_framework.models.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">artiq.language.environment</span> <span class="kn">import</span> <span class="n">NoDefault</span>
+<span class="kn">from</span> <span class="nn">artiq.language</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<div class="viewcode-block" id="Model"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model">[docs]</a><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">HasEnvironment</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class for dataset handling&quot;&quot;&quot;</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">mirror_namespace</span> <span class="o">=</span> <span class="s2">&quot;current&quot;</span>
+    <span class="n">mirror</span> <span class="o">=</span> <span class="kc">False</span>              <span class="c1">#: Set to True to enable dataset mirroring or False to disable dataset mirroring.</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">validators</span> <span class="o">=</span> <span class="p">{}</span>             <span class="c1">#: Dictionary containing definitions all fit validations</span>
+    <span class="n">broadcast</span> <span class="o">=</span> <span class="kc">True</span>            <span class="c1">#: If true the default behavior is to broadcast datasets when they are created.</span>
+    <span class="n">persist</span> <span class="o">=</span> <span class="kc">True</span>              <span class="c1">#: If true the default behavior is to persist datasets when they are created.</span>
+    <span class="n">save</span> <span class="o">=</span> <span class="kc">True</span>                 <span class="c1">#: If true the default behavior is to archive datasets to the hdf5 file when they are created.</span>
+    <span class="n">default_fallback</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="Model.build"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build the model.</span>
+
+<span class="sd">        :param namespace: Tokened namespace of the model.  All dataset keys passed to get(), set(),</span>
+<span class="sd">                          mutate(), and exists() are prefixed with the namespace.</span>
+<span class="sd">        :param mirror_namespace: Tokened namespace of the mirror.  All changes to datasets through set() and</span>
+<span class="sd">                                 mutate() are mirrored under this namespace.</span>
+<span class="sd">        :param bind: Map the namespace and mirror namespace and bind future calls to them.  If set to False,</span>
+<span class="sd">                     bind should be called manually.</span>
+<span class="sd">        :param mirror: If True, all datasets set or mutated will be mirrored to the mirror namespace.  Can</span>
+<span class="sd">                       be disabled by setting model.mirror = False after model is built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;logger&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;Model&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mirror_namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror_namespace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_errors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">bind</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span></div>
+
+    <span class="c1"># --- namespace binding methods</span>
+
+<div class="viewcode-block" id="Model.bind"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.bind">[docs]</a>    <span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Map the namespace and mirror namespace from the model&#39;s current attribute values</span>
+<span class="sd">        and bind all future dataset access to those namespaces&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_namespace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mirror_namespace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mirror_namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_namespace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mirror_namespace</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Model.map_namespace"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.map_namespace">[docs]</a>    <span class="k">def</span> <span class="nf">map_namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Replace tokens in the provided namespace with model attributes of the same name.</span>
+<span class="sd">        If there is not a model attribute for a token it is omited.</span>
+<span class="sd">        Example: model.build_namespace(&quot;raman.%temp.%transition&quot;) will return &quot;raman.m1_rsb&quot;</span>
+<span class="sd">        if model.transition is set to &quot;m1_rsb&quot; but model.temp does not exist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="n">namespace</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="n">_namespace</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;%&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">_namespace</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_namespace</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_namespace</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.key"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.key">[docs]</a>    <span class="k">def</span> <span class="nf">key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prefix key with the namespace and return the prefixed key.</span>
+<span class="sd">        :param mirror: Set to True to return key prefixed with the mirror namespace instead.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mirror</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror_namespace</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror_namespace</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">key</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">key</span>
+        <span class="k">return</span> <span class="n">key</span></div>
+
+<div class="viewcode-block" id="Model.default_key"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.default_key">[docs]</a>    <span class="k">def</span> <span class="nf">default_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the dataset key where default values for the dataset identified by key are stored.</span>
+<span class="sd">        For example, if key is raman.rsb.frequency, the key raman.rsb.defaults.frequency will be returned.</span>
+
+<span class="sd">        :param key: Key of the datset whose default values are needed.</span>
+<span class="sd">        :returns: Key of the data set that contains the default values for key.</span>
+<span class="sd">        :rtype: string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;defaults&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Model.init"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.init">[docs]</a>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">init_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+             <span class="n">broadcast</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set a dataset with the specified shape and initializes its values to the specified fill_value.</span>
+<span class="sd">        A local member variable of the model can also be initialized to the same value as the dataset.  This</span>
+<span class="sd">        is useful when using methods like mutate() which updates the local variable with values as the associated</span>
+<span class="sd">        dataset is mutated.</span>
+
+<span class="sd">        :param key: The datsaet key.  This key will be prefixed with the namespace automatically</span>
+<span class="sd">        :type key: String</span>
+<span class="sd">        :param shape: The shape of the data.  See numpy.full.</span>
+<span class="sd">        :type shape: Integer or tuple</span>
+<span class="sd">        :param fill_value: Initialize the each element of the dataset to this value.  See numpy.full.</span>
+<span class="sd">        :type fill_value: Any data time</span>
+<span class="sd">        :param dtype: The datatype of each element of the dataset.  See numpy.full.</span>
+<span class="sd">        :type dtype: Numpy datatype</span>
+<span class="sd">        :param init_local: Set to True to also set a member variable of the model which contains the a copy of the</span>
+<span class="sd">                           data that is written to the dataset.  The variables name defaults to the key parameter</span>
+<span class="sd">                           if none is provided.</span>
+<span class="sd">        :type init_local: Boolean</span>
+<span class="sd">        :param varname: The name of the variable which will contain a local copy of the dataset.</span>
+<span class="sd">        :param broadcast: When setting the dataset, this value of the broadcast argument is used. see ARTIQ</span>
+<span class="sd">                          documentation.</span>
+<span class="sd">        :type broadcast: Boolean</span>
+<span class="sd">        :param persist: When setting the dataset, this value of the persist argument is used. see ARTIQ documentation.</span>
+<span class="sd">        :type persist: Boolean</span>
+<span class="sd">        :param save: When setting the dataset, this value of the save argument is used. see ARTIQ documentation.</span>
+<span class="sd">        :type save: Boolean</span>
+<span class="sd">        :param which:  [&#39;both&#39;, &#39;main&#39;, or &#39;mirror&#39;] Set to &#39;both&#39; (default) to set the datasets under both the model</span>
+<span class="sd">                       namespace and mirror namespace, set to &#39;main&#39; to set only the dataset under the model namespace,</span>
+<span class="sd">                       set to &#39;mirror&#39; to set only the dataset under the mirror namespace.</span>
+<span class="sd">        :type which: String</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># default variable name to key</span>
+        <span class="k">if</span> <span class="n">varname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">varname</span> <span class="o">=</span> <span class="n">key</span>
+
+        <span class="c1"># the initialized value</span>
+        <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">fill_value</span>
+
+        <span class="c1"># initialize the local variable</span>
+        <span class="k">if</span> <span class="n">init_local</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># set the dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">which</span><span class="p">,</span> <span class="n">broadcast</span><span class="p">,</span> <span class="n">persist</span><span class="p">,</span> <span class="n">save</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.load"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NoDefault</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Assign the value stored in a dataset to an attribute of the model.</span>
+<span class="sd">        :param key: The dataset&#39;s key.</span>
+<span class="sd">        :param varname: The name of the model attribute.  Defaults to the value of the key argument.</span>
+<span class="sd">        :param default: Default value to use if the datset doesn&#39;t exist.</span>
+<span class="sd">        :param mirror: Set to True to load the value of the datset stored under the mirror namespace instead.</span>
+<span class="sd">        :param archive: Set to True to archive the dataset value to the hdf5 file for the current experiment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">varname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">varname</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">mirror</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Model.write"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">broadcast</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set a dataset with the value of an attribute of the model.</span>
+
+<span class="sd">        :param key: Key of the dataset to set.</span>
+<span class="sd">        :param varname: The name of the model attribute.  Defaults to the value of the key argument.</span>
+<span class="sd">        :param which: Set to &#39;both&#39; (default) to set the datasets stored under</span>
+<span class="sd">                      both the model namespace and mirror namespace, set to &#39;main&#39; to set only the dataset</span>
+<span class="sd">                      stored under the model namespace, set to &#39;mirror&#39; to set only the dataset stored under</span>
+<span class="sd">                      the mirror namespace.</span>
+<span class="sd">        :type which: String [&#39;both&#39;, &#39;main&#39;, or &#39;mirror&#39;]</span>
+<span class="sd">        :param broadcast: When setting the dataset, this value of the broadcast argument is used. see ARTIQ</span>
+<span class="sd">                          documentation.</span>
+<span class="sd">        :param persist: When setting the dataset, this value of the persist argument is used. see ARTIQ documentation.</span>
+<span class="sd">        :param save: When setting the dataset, this value of the save argument is used. see ARTIQ 1documentation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># default variable name to key</span>
+        <span class="k">if</span> <span class="n">varname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">varname</span> <span class="o">=</span> <span class="n">key</span>
+
+        <span class="c1"># fetch local value</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">)</span>
+
+        <span class="c1"># set local value to it&#39;s dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">which</span><span class="p">,</span> <span class="n">broadcast</span><span class="p">,</span> <span class="n">persist</span><span class="p">,</span> <span class="n">save</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.set"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">broadcast</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the dataset with the specified key to the specified value.  By default, the dataset is also</span>
+<span class="sd">          set under the mirror namespace.</span>
+
+<span class="sd">        :param key: The datsaet key.  This key will be prefixed with the namespace automatically.</span>
+<span class="sd">        :type key: String</span>
+<span class="sd">        :param value: The value to write to the dataset.</span>
+<span class="sd">        :type value: Any datatype</span>
+<span class="sd">        :param which: Set to &#39;both&#39; (default) to set the datasets under</span>
+<span class="sd">                      both the model namespace and mirror namespace, set to &#39;main&#39; to set only the dataset under</span>
+<span class="sd">                      the model namespace, set to &#39;mirror&#39; to set only the dataset under the mirror namespace.</span>
+<span class="sd">        :type which: String [&#39;both&#39;, &#39;main&#39;, or &#39;mirror&#39;]</span>
+<span class="sd">        :param broadcast: When setting the dataset, this value of the broadcast argument is used. see ARTIQ</span>
+<span class="sd">                          documentation.</span>
+<span class="sd">        :type broadcast: Boolean</span>
+<span class="sd">        :param persist: When setting the dataset, this value of the persist argument is used. see ARTIQ documentation.</span>
+<span class="sd">        :type persist: Boolean</span>
+<span class="sd">        :param save: When setting the dataset, this value of the save argument is used. see ARTIQ documentation.</span>
+<span class="sd">        :type save: Boolean</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># write all lists an numpy arrays</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># default these to class settings</span>
+        <span class="k">if</span> <span class="n">broadcast</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">broadcast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span>
+        <span class="k">if</span> <span class="n">persist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">persist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">persist</span>
+        <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">save</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save</span>
+
+        <span class="c1"># set the main dataset</span>
+        <span class="k">if</span> <span class="n">which</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span> <span class="ow">or</span> <span class="n">which</span> <span class="o">==</span> <span class="s1">&#39;main&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="n">value</span><span class="p">,</span> <span class="n">broadcast</span><span class="o">=</span><span class="n">broadcast</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="n">persist</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">save</span><span class="p">)</span>
+
+        <span class="c1"># set the mirror dataset</span>
+        <span class="k">if</span> <span class="n">mirror</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mirror</span> <span class="ow">and</span> <span class="p">(</span><span class="n">which</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="s1">&#39;mirror&#39;</span><span class="p">])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">value</span><span class="p">,</span> <span class="n">broadcast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.get_default"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.get_default">[docs]</a>    <span class="k">def</span> <span class="nf">get_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the dataset that contains default values for the dataset specified by key.</span>
+<span class="sd">        :param key: Key of the dataset whose default dataset will be returned.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_key</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.get"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NoDefault</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default_fallback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the value of a dataset that is stored under the model namespace or the mirror namespace.</span>
+<span class="sd">        :param key: The dataset key.  The key is automatically prefixed with either the model or mirror namespace.</span>
+<span class="sd">        :param default: The default value to return if the dataset does not exist.</span>
+<span class="sd">        :param default_fallback: If True and no value for the default argument is provided, attempt to</span>
+<span class="sd">        use the default value stored in the default dataset for the specified key.  If no default dataset exists,</span>
+<span class="sd">        and the main dataset do not exist, a KeyError exception is thrown.</span>
+<span class="sd">        :param mirror: Set to True to get the value of the datset stored under the mirror namespace</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                <span class="n">vals</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">mirror</span><span class="p">,</span> <span class="n">default_fallback</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">vals</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_fallback</span> <span class="ow">or</span> <span class="n">default_fallback</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">)</span> <span class="ow">and</span> <span class="n">default</span> <span class="o">==</span> <span class="n">NoDefault</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">default</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_default</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">default</span> <span class="o">=</span> <span class="n">NoDefault</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">mirror</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="c1"># display warning when dataset does not exist as opposed to halting execution</span>
+            <span class="k">if</span> <span class="n">warn</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Dataset </span><span class="si">{}</span><span class="s1"> does not exist.  Returning None for dataset.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">warn</span> <span class="o">!=</span> <span class="s1">&#39;silent&#39;</span><span class="p">:</span>
+                <span class="k">raise</span>
+        <span class="k">return</span> <span class="n">val</span></div>
+
+<div class="viewcode-block" id="Model.mutate"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.mutate">[docs]</a>    <span class="k">def</span> <span class="nf">mutate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prefix key with the namespace and call self.mutate_dataset() using the prefixed key.</span>
+<span class="sd">        Prefix key with the mirror namespace and call self.mutate_dataset() using the prefixed key</span>
+<span class="sd">        (if mirroring is enabled).</span>
+
+<span class="sd">        :param which [&#39;both&#39;, &#39;main&#39;, or &#39;mirror&#39;]:  Set to &#39;both&#39; (default) to mutate the datasets under</span>
+<span class="sd">         both the model namespace and mirror namespace, set to &#39;main&#39; to mutate only the dataset under the model</span>
+<span class="sd">         namespace, set to &#39;mirror&#39; to set only the dataset under the mirror namespace.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">update_local</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">varname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">varname</span> <span class="o">=</span> <span class="n">key</span>
+
+            <span class="c1"># update local variable</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">):</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">)</span>
+                <span class="n">var</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">which</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span> <span class="ow">or</span> <span class="n">which</span> <span class="o">==</span> <span class="s1">&#39;main&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mutate_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror</span> <span class="ow">and</span> <span class="p">(</span><span class="n">which</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span> <span class="ow">or</span> <span class="n">which</span> <span class="o">==</span> <span class="s1">&#39;mirror&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mutate_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.exists"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return true if a dataset with the specified key exists under the model namespace.</span>
+<span class="sd">        :param key: Key of the dataset, this will be automatically prefixed with the model namespace.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Model.create"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create dataset if it doesn&#39;t already exist&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.setattr"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.setattr">[docs]</a>    <span class="k">def</span> <span class="nf">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NoDefault</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the contents of a dataset under the model namespace as a class attribute. The name of the</span>
+<span class="sd">        dataset and the name of the attribute are the same.&quot;&quot;&quot;</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">))</span></div>
+
+    <span class="c1"># --- validation helpers</span>
+<div class="viewcode-block" id="Model._get_validation_func"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model._get_validation_func">[docs]</a>    <span class="k">def</span> <span class="nf">_get_validation_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+        <span class="c1"># get the validation function</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;validate_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">method</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span></div>
+
+<div class="viewcode-block" id="Model._call_validation_method"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model._call_validation_method">[docs]</a>    <span class="k">def</span> <span class="nf">_call_validation_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_validation_func</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.validate_greater_than"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.validate_greater_than">[docs]</a>    <span class="k">def</span> <span class="nf">validate_greater_than</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">min_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return False if value &lt;= min\_ and add a validation error for the field.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="n">min_</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sval</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">smin</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">min_</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validation_errors</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> of </span><span class="si">{1}</span><span class="s2"> is not greater than </span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">sval</span><span class="p">,</span> <span class="n">smin</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Model.validate_less_than"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.validate_less_than">[docs]</a>    <span class="k">def</span> <span class="nf">validate_less_than</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">max_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return False if value &gt;= max\_ and add a validation error for the field.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="n">max_</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sval</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">smax</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">max_</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validation_errors</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> of </span><span class="si">{1}</span><span class="s2"> is not less than </span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">sval</span><span class="p">,</span> <span class="n">smax</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Model.validate_between"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.validate_between">[docs]</a>    <span class="k">def</span> <span class="nf">validate_between</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">min_</span><span class="p">,</span> <span class="n">max_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return False if value is not between min\_ and max\_ and add a validation error for the field.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">min_</span> <span class="o">&lt;=</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="n">max_</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sval</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">smin</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">min_</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">smax</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">max_</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validation_errors</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> of </span><span class="si">{1}</span><span class="s2"> is not between </span><span class="si">{2}</span><span class="s2"> and </span><span class="si">{3}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">sval</span><span class="p">,</span> <span class="n">smin</span><span class="p">,</span> <span class="n">smax</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Model.validate_max_change"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.validate_max_change">[docs]</a>    <span class="k">def</span> <span class="nf">validate_max_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">max_diff</span><span class="p">,</span> <span class="n">prev_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return False if value has changed by more than max_diff from it&#39;s previous value and add a validation</span>
+<span class="sd">        error for the field.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">-</span> <span class="n">prev_value</span> <span class="o">&gt;</span> <span class="n">max_diff</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sval</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sdiff</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">max_diff</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sprev</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">prev_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validation_errors</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> of </span><span class="si">{1}</span><span class="s2"> has changed by more than </span><span class="si">{2}</span><span class="s2"> from &quot;</span> \
+                                 <span class="s2">&quot;it&#39;s previous value of </span><span class="si">{3}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">sval</span><span class="p">,</span> <span class="n">sdiff</span><span class="p">,</span> <span class="n">sprev</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Model.validate_height"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model.validate_height">[docs]</a>    <span class="k">def</span> <span class="nf">validate_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">series_name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">min_height</span><span class="p">,</span> <span class="n">error_msg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return False if the difference between the max value in data and the min value in data is less than</span>
+<span class="sd">        the specified minimum height and add a validation error for the field.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Validates height of y_max above y_min&quot;&quot;&quot;</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;=</span> <span class="n">min_height</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">error_msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Span of ydata (</span><span class="si">{0}</span><span class="s2">) is less than </span><span class="si">{2}</span><span class="s2">.&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validation_errors</span><span class="p">[</span><span class="n">series_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_msg</span> <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">height</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">series_name</span><span class="p">,</span> <span class="n">min_height</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Model._format"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model._format">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">scaled</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;scales&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">scales</span><span class="p">:</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">scales</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span>
+                <span class="n">unit</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">scales</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;unit&#39;</span><span class="p">]</span>
+                <span class="n">scaled</span> <span class="o">=</span> <span class="n">value</span> <span class="o">/</span> <span class="n">scale</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">Model</span><span class="o">.</span><span class="n">_is_frequency_param</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+                    <span class="n">scale</span> <span class="o">=</span> <span class="n">MHz</span>
+                    <span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;MHz&#39;</span>
+                    <span class="n">scaled</span> <span class="o">=</span> <span class="n">value</span> <span class="o">/</span> <span class="n">scale</span>
+                <span class="k">if</span> <span class="n">Model</span><span class="o">.</span><span class="n">_is_time_param</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+                    <span class="n">scale</span> <span class="o">=</span> <span class="n">us</span>
+                    <span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;us&#39;</span>
+                    <span class="n">scaled</span> <span class="o">=</span> <span class="n">value</span> <span class="o">/</span> <span class="n">scale</span>
+            <span class="n">scaled</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">scaled</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unit</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scaled</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">scaled</span>
+        <span class="k">return</span> <span class="n">unit</span><span class="p">,</span> <span class="n">scaled</span><span class="p">,</span> <span class="n">text</span></div>
+
+<div class="viewcode-block" id="Model._is_frequency_param"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model._is_frequency_param">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_is_frequency_param</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;frequency&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Model._is_time_param"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.model.Model._is_time_param">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_is_time_param</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;pi_time&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scan_framework.models.scan_model &mdash; NIST Scan Framework For ARTIQ 2.1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+<script async type="text/javascript" id="_fed_an_ua_tag" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c">
+</script>
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">  
+  <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+  <!--<script type="text/javascript" src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>-->
+  <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />  
+  <script type="text/javascript">
+	  function link_is_external(link_element) {
+	      return (link_element.host !== window.location.host);
+	  }
+	  (function ($) {
+	      $.fn.leaveNotice = function (opt) {
+	          var defaults = {
+	              siteName: "NIST",
+	              exitMessage:
+	                  "<h2><strong>Thank you for visiting {SITENAME}.</strong></h2><p>We hope your visit was informative.</p><p>We have provided this link to a non-NIST site because it has information that may be of interest to our users. NIST does not necessarily endorse the views expressed or the facts presented on this site. Further, NIST does not endorse any commercial products that may be advertised or available on this site.</p>",
+	              preLinkMessage: "<div class='setoff'><p>You will now be directed to:<br/>{URL}</p></div>",
+	              linkString: "",
+	              newWindow: false,
+	              timeOut: 1e4,
+	              overlayId: "ln-blackout",
+	              messageBoxId: "ln-messageBox",
+	              messageHolderId: "ln-messageHolder",
+	              linkId: "ln-link",
+	              displayUrlLength: 50,
+	              overlayAlpha: 0.3,
+	          };
+	          var options = $.extend(defaults, opt);
+	          return this.each(function () {
+				  if(link_is_external(this)) {
+		              el = $(this);
+					  $(this).unbind();
+		              var url = el.attr("href");
+		              var ulen = options.displayUrlLength;
+		              if (url.length >= ulen) {
+		                  var suffix = "...";
+		              } else {
+		                  var suffix = "";
+		              }
+		              var shortUrl = url.substr(0, ulen) + suffix;
+		              var title = el.attr("title");
+		              if (title === undefined || title == "") {
+		                  var linkText = shortUrl;
+		              } else {
+		                  var linkText = title;
+		              }
+		              options.timeOut = options.newWindow ? 0 : options.timeOut;
+		              el.click(function (event) {
+						  event.preventDefault();
+		                  $("body").append('<div id="' + options.overlayId + '"></div>');
+		                  $("body").append('<div id="' + options.messageHolderId + '"><div id="' + options.messageBoxId + '"></div></div>');
+		                  if (options.overlayAlpha !== false) {
+		                      $("#" + options.overlayId).css("opacity", options.overlayAlpha);
+		                  }
+		                  preFilteredContent = options.exitMessage + options.preLinkMessage;
+		                  msgContent = preFilteredContent.replace(/\{URL\}/g, '<a id="' + options.linkId + '" href="' + url + '" title="' + url + '"' + options.linkString + ">" + linkText + "</a>");
+		                  msgContent = msgContent.replace(/\{SITENAME\}/g, options.siteName);
+		                  if (options.timeOut > 0) {
+		                      msgContent += '<p id="ln-cancelMessage"><a href="#close" id="ln-cancelLink">Cancel</a> or press the ESC key.</p>';
+		                  } else {
+		                      msgContent += '<p id="ln-cancelMessage">Click the link above to continue or <a href="#close" id="ln-cancelLink">Cancel</a></p>';
+		                  }
+		                  $("#" + options.messageBoxId).append(msgContent);
+		                  if (options.timeOut > 0) {
+		                      leaveIn = setTimeout(function () {
+		                          $("#ln-cancelMessage").html("<em>Loading...</em>");
+		                          window.location.href = url;
+		                      }, options.timeOut);
+		                  } else {
+		                      leaveIn = false;
+		                  }
+		                  if (options.newWindow) {
+		                      $("a#" + options.linkId)
+		                          .attr("target", "_blank")
+		                          .click(function () {
+		                              closeDialog(options, leaveIn);
+		                          });
+		                  }
+		                  $("#ln-cancelLink").click(function () {
+		                      closeDialog(options, leaveIn);
+		                      return false;
+		                  });
+		                  $(document).bind("keyup", function (e) {
+		                      if (e.which == 27) {
+		                          closeDialog(options, leaveIn);
+		                      }
+		                  });
+		                  $(window).unload(function () {
+		                      closeDialog(options, leaveIn);
+		                  });
+		                  return false;
+		              });
+				  }
+	          });
+	      };
+	      function closeDialog(options, timer) {
+	          if (options.timeOut > 0) {
+	              clearTimeout(timer);
+	          }
+	          $("#" + options.overlayId + ", #" + options.messageHolderId).fadeOut("fast", function () {
+	              $("#" + options.overlayId + ", #" + options.messageHolderId).remove();
+	          });
+	          $(document).unbind("keyup");
+	      }
+	  })(jQuery);
+	  
+  	$(function(){
+  	  $('a').leaveNotice();
+  	});
+  </script>
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> NIST Scan Framework For ARTIQ
+          </a>
+              <div class="version">
+                2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installing.html">Installing the NIST scan framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scans.html">Creating scan experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Using models for data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scans_ref.html">Scans references and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models_ref.html">Models reference and API docs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Curve fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../applets.html">Applets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">NIST Scan Framework For ARTIQ</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>scan_framework.models.scan_model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scan_framework.models.scan_model</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">artiq.experiment</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scan_framework.models.model</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scan_framework.models.hist_model</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scan_framework.models.fit_model</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">stats</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<div class="viewcode-block" id="ScanModel"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel">[docs]</a><span class="k">class</span> <span class="nc">ScanModel</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An extension of the :class:`~scan_framework.models.model.Model` class that handles initializing and mutating scan</span>
+<span class="sd">    datasets, calculating statistics on scan data, and performing fits on the scan data.  All scan models inherit from</span>
+<span class="sd">    this class.</span>
+
+<span class="sd">    **Functions performed during a scan**</span>
+
+<span class="sd">    The ScanModel class performs the following functions when a scan is run.</span>
+
+<span class="sd">    - Initializes all datasets for a scan.</span>
+<span class="sd">    - Mutates the dataset containing raw counts measured at each scan point.</span>
+<span class="sd">    - Calculates statistics (means, errors, histograms) at each scan point and mutates associated datasets.</span>
+<span class="sd">    - Performs a fit on the mean values using the :mod:`~scan_framework.analysis.curvefits` package and saves all data</span>
+<span class="sd">      generated by the :func:`~scan_framework.analysis.curvefits.Fit.fit_data` method to datasets.</span>
+<span class="sd">    - All statistical and fit data are mirrored to the `current_scan` and `current_hist` namespaces.</span>
+<span class="sd">    - Gives a standardized way of fetching the main fit (e.g. pi_time or res_frequency of a transition)</span>
+
+<span class="sd">    **Organization of datasets**</span>
+
+<span class="sd">    Datasets are organized under the namespace by the following hierarchy.</span>
+
+<span class="sd">    - **&lt;namespace&gt;**  All data is stored under this location which is specified in the child class.</span>
+<span class="sd">        - **&lt;namespace&gt;.stats** Contains statistical data, raw data from the scan, and the list of scan points.</span>
+<span class="sd">            - **&lt;namespace&gt;.points** List of scan points.</span>
+<span class="sd">            - **&lt;namespace&gt;.counts** Raw counts recorded at each scan point and repetition.</span>
+<span class="sd">            - **&lt;namespace&gt;.mean** Mean count values calculated at each scan point.</span>
+<span class="sd">            - **&lt;namespace&gt;.error** Standard deviation of each mean value in the &lt;namespace&gt;.mean array.</span>
+<span class="sd">            - **&lt;namespace&gt;.hist** Binned mean values at each scan point.  Each entry is the histogram at the</span>
+<span class="sd">              corresponding scan point.</span>
+<span class="sd">            - **&lt;namespace&gt;.bins** Defines the bin boundaries for histograms.</span>
+<span class="sd">            - **&lt;namespace&gt;.nbins** The number of bins to use for histograms.</span>
+<span class="sd">        - **&lt;namespace&gt;.fits:** Contains all fit data</span>
+<span class="sd">            - **&lt;namespace&gt;.fits.params** The value of each fitted parameter.</span>
+<span class="sd">            - **&lt;namespace&gt;.fits.guesses** The guess that was used for each fitted parameter.</span>
+<span class="sd">            - **&lt;namespace&gt;.fits.errors** The estimated error in each fitted parameter.</span>
+<span class="sd">            - **&lt;namespace&gt;.fits.fitline** The line of best fit to the data.</span>
+<span class="sd">            - **&lt;namespace&gt;.fits.analysis**  The standard error in the regression and coefficient of determination (R^2) values</span>
+<span class="sd">              of the fit.</span>
+<span class="sd">        - **&lt;namespace&gt;.plots:** Contains all data necessary to plot the scan</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.x:** x data of the plot.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.y:** y data of the plot.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.plot_title:** Title of the plot.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.x_label:** Label of the x-axis.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.y_label:** Label of the y-axis.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.x_units:** Units to display on the x-axis.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.y_units:** Units to display on the y-axis.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.x_scale:** x-axis is scaled by this amount.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.y_scale:** y-axis is scaled by this amount.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.trigger:** Plots are redrawn by :mod:`~scan_framework.applets.plot_xy` only when trigger</span>
+<span class="sd">              is set to 1.</span>
+<span class="sd">            - **&lt;namespace&gt;.plots.fitline:** The line of best fit.</span>
+<span class="sd">        - **&lt;namespace&gt;.%main_fit**</span>
+<span class="sd">          Contains the main fitted parameter of the scan.  `%main_fit` is replaced by the value of</span>
+<span class="sd">          the models &#39;main_fit&#39; attribute  (see dynamic namespaces below).  For example, a microwave frequency scan</span>
+<span class="sd">          might have &#39;main_fit&#39; set to `frequency` and the fitted frequency would be saved to `microwaves.3322.frequency`.</span>
+
+<span class="sd">        - **&lt;namespace&gt;.defaults:**</span>
+<span class="sd">          Contains default values for the main fit which are used when a fitted value does not exist.</span>
+
+<span class="sd">    - **current_scan:**  Namespace under which a mirror of all data generated is stored.  This is used by the current_scan</span>
+<span class="sd">      applet to display results of the current scan.</span>
+
+<span class="sd">    **Dynamic namespace syntax**</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; model = ScanModel(namespace=&quot;raman.%transition.%type&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; model.transition = &#39;m1_rsb&#39;</span>
+<span class="sd">    &gt;&gt;&gt; model.type = &#39;frequency&#39;</span>
+<span class="sd">    &gt;&gt;&gt; model.bind()</span>
+<span class="sd">    &gt;&gt;&gt; print(model.namespace)  # prints &#39;raman.m1_rsb.frequency&#39;</span>
+
+<span class="sd">    %transition and %type are tokens that name an attribute of the model.  After calling self.bind() on the model, the</span>
+<span class="sd">    %transition and %type tokens are replaced by self.transition and self.type and the final namespace is</span>
+<span class="sd">    &quot;raman.m1_rsb.frequency&quot;.  All future datasets will be stored and accessed under the &#39;raman.m1_rsb.frequency&#39; namespace.</span>
+
+<span class="sd">    :param namespace: Dataset key under which all datasets are created, defaults to None</span>
+<span class="sd">    :type namespace: string</span>
+<span class="sd">    :param mirror_namespace: Dataset key under which all datasets are mirrored -- datasets under this key are plotted by the current scan applet, defaults to &#39;current_scan&#39;</span>
+<span class="sd">    :type mirror_namespace: string</span>
+<span class="sd">    :param broadcast: If True all datasets besides the main fit dataset are broadcast when created, defaults to False</span>
+<span class="sd">    :type broadcast: bool, optional</span>
+<span class="sd">    :param persist: If True all datasets besides the main fit dataset are persisted, defaults to False</span>
+<span class="sd">    :type persist: bool, optional</span>
+<span class="sd">    :param save: If True all datasets besides the main fit dataset are archived to the hdf5 file, defaults to True</span>
+<span class="sd">    :type save: bool, optional</span>
+<span class="sd">    :param mirror: If False datasets will not be mirrored to the mirror_namespace, default to True</span>
+<span class="sd">    :type mirror: bool, optional</span>
+
+<span class="sd">    :param enable_histograms: If True, histogram data is generated for plotting by the current scan histogram applet -- this applet displays a histogram of the data collected at each scan point, defaults to True</span>
+<span class="sd">    :type enable_histograms: bool, optional</span>
+<span class="sd">    :param aggregate_histogram: If True, histogram data is generated for plotting by the current scan aggregate histogram applet -- this applet displays a histogram of all data collected, aggregated over all scan points, defaults to True</span>
+<span class="sd">    :type aggregate_histogram: bool, optional</span>
+<span class="sd">    :param disable_validations: If True, no fit validatons will be performed, fits will always be performed and no fit param values will be validated, defaults to False</span>
+<span class="sd">    :type disable_validations: bool, optional</span>
+
+<span class="sd">    :param fit_map: Dictionary of fit param names to dataset name mappings.  Fit params are renamed according to this mapping before the fit is saved to the datasets.  Keys specify to a fit param name and the corresponding value in the dictionary specifies the dataset name.  Defaluts to {}</span>
+<span class="sd">    :type fit_map: dict, optional</span>
+<span class="sd">    :param fit_function: Specifies the fit function that will be used during fitting.  Defaults to None</span>
+<span class="sd">    :type fit_function: :class:`scan_framework.analysis.curvefits.FitFunction`, required if the model performs fits.</span>
+<span class="sd">    :param fit_use_yerr: If set to True a weighted fit will be performed using the calculated error in the measurued value at each scan point (by default this is the standard error of the mean value at each scan point). Defaults to True.</span>
+<span class="sd">    :type fit_use_yerr: bool, optional</span>
+<span class="sd">    :param guess: Dictionary containing initial guesses for the fit params.  Keys specify fit params and the corresponding value gives the numerical guess.  Defaults to {}</span>
+<span class="sd">    :type guess: dict, optional</span>
+<span class="sd">    :param man_bounds: Dictionary containing manual bounds for each fit param.  Keys specify fit params and the corresponding value is a list specifying the bounds -- see :class:`scan_framework.analysis.curvefits.Fit` for more details.  Defaults to {}</span>
+<span class="sd">    :type man_bounds: dict, optional</span>
+<span class="sd">    :param man_scale: Dictionary containing manual scales for each fit param.  Keys specify fit params and the corresponding value is a float specifying the scale -- see :class:`scan_framework.analysis.curvefits.Fit` for more details.  Defaults to {}</span>
+<span class="sd">    :type man_scale: dict, optional</span>
+<span class="sd">    :param hold: Dictionary containing held values for each fit param.  Keys specify fit params and the corresponding value is a float specifying the held fit param value -- see :class:`scan_framework.analysis.curvefits.Fit` for more details, defaults to None</span>
+<span class="sd">    :type hold: dict, optional</span>
+<span class="sd">    :param main_fit: Dataset name for the main fit param -- this name is automatically prefixed by self.namespace to give the full dataset name.  Defaults to None</span>
+<span class="sd">    :type main_fit: string, optional</span>
+<span class="sd">    :param fits_to_save: Any fit param specified in this dictionary will broadcast, persisted, and saved to the datasets.  The format of this dictionary is the same as fit_map, with keys specifying fit param names and values specifiying the corresponding dataset name.  Defaults to {}</span>
+<span class="sd">    :type fits_to_save: dict, optional</span>
+
+<span class="sd">    :param validators: Dictionary containing validation rules of all soft fit validations that will be performed, defaults to None</span>
+<span class="sd">    :type validators: dict, optional</span>
+<span class="sd">    :param strong_validators: Dictionary containing validation rules of all strong fit validations that will be performed, defaults to None</span>
+<span class="sd">    :type strong_validators: dict, optional</span>
+<span class="sd">    :param pre_validators: Dictionary containing validation rules of all all pre-fit validations validations that will be performed, defaults to None</span>
+<span class="sd">    :type pre_validators: dict, optional</span>
+
+<span class="sd">    :param fit_performed: Set to true by the Scan class if fit&#39;s have been performed, defaults to None</span>
+<span class="sd">    :type fit_performed: bool</span>
+<span class="sd">    :param fit_valid: Set to True by the Scan class if the fit passed validations, False if it failed any validations, None if validations haven&#39;t been performed.  Default to None</span>
+<span class="sd">    :type fit_valid: bool</span>
+<span class="sd">    :param fit_valid_pre: Set to True by the Scan class if the fit passed pre-validation, False if it falied, None if pre-validation has not yet been performed.  Defaults to None</span>
+<span class="sd">    :type fit_valid_pre: bool</span>
+<span class="sd">    :param fit_valid_soft: Set to True by the Scan class if the fit passed soft-validation, False if it falied, None if soft-validation has not yet been performed.  Defaults to None</span>
+<span class="sd">    :type fit_valid_soft: bool</span>
+<span class="sd">    :param fit_valid_strong: Set to True by the Scan class if the fit passed strong-validation, False if it falied, None if strong-validation has not yet been performed.  Defaults to None</span>
+<span class="sd">    :type fit_valid_strong: bool</span>
+<span class="sd">    :param _fit_saved: Set to True by the Scan class after the main fit has been broadcast, saved, and persisted to the datasets.  Defaults to None</span>
+<span class="sd">    :type _fit_saved: bool</span>
+<span class="sd">    :param fits_set: Dictionary of fit params that were set to the datasets during fitting -- keys specify the full dataset key and the corresponding value is set to the fitted parameter value, defaults to {}</span>
+<span class="sd">    :type fits_set: dict</span>
+<span class="sd">    :param fits_saved: Dictionary of fit params that were broadcast, persisted, and saved to the datasets during fitting -- keys specify the full dataset key and the corresponding value is set to the fitted parameter value, defaults to {}</span>
+<span class="sd">    :type fits_saved: dict</span>
+
+
+<span class="sd">    :param x_label: Label of the x-axis for the current scan plot, defaults to &quot;&quot;</span>
+<span class="sd">    :type x_label: string, optional</span>
+<span class="sd">    :param y_label: Label of the y-axis for the current scan plot, defaults to &quot;&quot;</span>
+<span class="sd">    :type y_label: string, optional</span>
+<span class="sd">    :param x_scale: Scale of the x-axis for the current scan plot, defaults to 1</span>
+<span class="sd">    :type x_scale: float, optional</span>
+<span class="sd">    :param y_scale: Scale of the y-axis for the current scan plot, defaults to 1</span>
+<span class="sd">    :type y_scale: float, optional</span>
+<span class="sd">    :param x_units: Unit of the x-axis for the current scan plot, defaults to &quot;&quot;</span>
+<span class="sd">    :type x_units: string, optional</span>
+<span class="sd">    :param y_units: Unit of the y-axis for the current scan plot, defaults to &quot;&quot;</span>
+<span class="sd">    :type y_units: string, optional</span>
+<span class="sd">    :param plot_title: Title of the current scan plot, defaults to &quot;&quot;</span>
+<span class="sd">    :type plot_title: string, optional</span>
+
+
+<span class="sd">    :param counts: Contains the value returned by each call to the Scan measure method() -- contains a value for each scan point, repeat, and pass.</span>
+<span class="sd">    :type counts: Numpy ndarray</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># MARKED FOR REMOVAL</span>
+    <span class="n">default_fit</span> <span class="o">=</span> <span class="kc">None</span>          <span class="c1"># apparently no longer used, MARKED FOR REMOVAL</span>
+    <span class="n">enable_debugging</span> <span class="o">=</span> <span class="kc">False</span>    <span class="c1"># apparently no longer used, MARKED FOR REMOVAL</span>
+    <span class="n">x_offset</span> <span class="o">=</span> <span class="mf">0.0</span>              <span class="c1"># may no longer be used, MARKED FOR REMOVAL</span>
+    <span class="n">subspace</span> <span class="o">=</span> <span class="p">{}</span>               <span class="c1"># apparently no longer used, MARKED FOR REMOVAL</span>
+
+    <span class="c1"># datasets</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>                     <span class="c1">#: Dataset key under which all datasets are created</span>
+    <span class="n">mirror_namespace</span> <span class="o">=</span> <span class="s1">&#39;current_scan&#39;</span>  <span class="c1">#: Dataset key under which all datasets are mirrored -- datasets under this key are plotted by the current scan applet</span>
+    <span class="n">broadcast</span> <span class="o">=</span> <span class="kc">False</span>                  <span class="c1">#: If True all datasets besides the main fit dataset are broadcast when created</span>
+    <span class="n">persist</span> <span class="o">=</span> <span class="kc">False</span>                    <span class="c1">#: If True all datasets besides the main fit dataset are persisted</span>
+    <span class="n">save</span> <span class="o">=</span> <span class="kc">True</span>                        <span class="c1">#: If True all datasets besides the main fit dataset are save to the hdf5 file</span>
+
+    <span class="c1"># settings</span>
+    <span class="n">mirror</span> <span class="o">=</span> <span class="kc">True</span>                <span class="c1">#: If False datasets will not be mirrored to the mirror_namespace</span>
+    <span class="n">enable_histograms</span> <span class="o">=</span> <span class="kc">True</span>     <span class="c1">#: If True, histogram data is generated for plotting by the current scan histogram applet -- this applet displays a histogram of the data collected at each scan point</span>
+    <span class="n">aggregate_histogram</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1">#: If True, histogram data is generated for plotting by the current scan aggregate histogram applet -- this applet displays a histogram of all data collected, aggregated over all scan points</span>
+    <span class="n">disable_validations</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1">#: If True, no fit validatons will be performed, fits will always be performed and no fit param values will be validated, defaults to False</span>
+
+    <span class="c1"># fitting configuration</span>
+    <span class="n">fit_map</span> <span class="o">=</span> <span class="p">{}</span>         <span class="c1">#: Dictionary of fit param names to dataset name mappings.  Fit params are renamed according to this mapping before the fit is saved to the datasets.  Keys specify to a fit param name and the corresponding value in the dictionary specifies the dataset name.</span>
+    <span class="n">fit_function</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1">#: Specifies the fit function that will be used during fitting</span>
+    <span class="n">fit_use_yerr</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1">#: If set to True a weighted fit will be performed using the calculated error in the measurued value at each scan point (by default this is the standard error of the mean value at each scan point)</span>
+    <span class="n">main_fit</span> <span class="o">=</span> <span class="kc">None</span>      <span class="c1">#: Dataset name for the main fit param -- this name is automatically prefixed by self.namespace to give the full dataset name.</span>
+    <span class="n">fits_to_save</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1">#: Any fit param specified in this dictionary will broadcast, persisted, and saved to the datasets.  The format of this dictionary is the same as fit_map, with keys specifying fit param names and values specifiying the corresponding dataset name.</span>
+    <span class="n">guess</span> <span class="o">=</span> <span class="p">{}</span>           <span class="c1">#: Dictionary containing initial guesses for the fit params.  Keys specify fit params and the corresponding value gives the numerical guess.</span>
+    <span class="n">man_bounds</span> <span class="o">=</span> <span class="p">{}</span>      <span class="c1">#: Dictionary containing manual bounds for each fit param.  Keys specify fit params and the corresponding value is a list specifying the bounds -- see :class:`scan_framework.analysis.curvefits.Fit` for more details.</span>
+    <span class="n">man_scale</span> <span class="o">=</span> <span class="p">{}</span>       <span class="c1">#: Dictionary containing manual scales for each fit param.  Keys specify fit params and the corresponding value is a float specifying the scale -- see :class:`scan_framework.analysis.curvefits.Fit` for more details.</span>
+    <span class="n">hold</span> <span class="o">=</span> <span class="kc">None</span>          <span class="c1">#: Dictionary containing held values for each fit param.  Keys specify fit params and the corresponding value is a float specifying the held fit param value -- see :class:`scan_framework.analysis.curvefits.Fit` for more details, defaults to None</span>
+
+    <span class="c1"># fit validation configuration</span>
+    <span class="n">validators</span> <span class="o">=</span> <span class="kc">None</span>               <span class="c1">#: Dictionary containing definitions all soft fit validations</span>
+    <span class="n">strong_validators</span> <span class="o">=</span> <span class="kc">None</span>        <span class="c1">#: Dictionary containing validation rules of all strong fit validations that will be performed.</span>
+    <span class="n">pre_validators</span> <span class="o">=</span> <span class="kc">None</span>           <span class="c1">#: Dictionary containing validation rules of all all pre-fit validations validations that will be performed</span>
+
+    <span class="c1"># histogram configuration</span>
+    <span class="n">bin_start</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">bin_end</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span>
+
+    <span class="c1"># plot format configuration</span>
+    <span class="n">x_label</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>    <span class="c1">#: Label of the x-axis for the current scan plot.</span>
+    <span class="n">y_label</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>    <span class="c1">#: Label of the y-axis for the current scan plot.</span>
+    <span class="n">x_scale</span> <span class="o">=</span> <span class="mi">1</span>     <span class="c1">#: Scale of the x-axis for the current scan plot.</span>
+    <span class="n">y_scale</span> <span class="o">=</span> <span class="mi">1</span>     <span class="c1">#: Scale of the y-axis for the current scan plot.</span>
+    <span class="n">x_units</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>    <span class="c1">#: Unit of the x-axis for the current scan plot.</span>
+    <span class="n">y_units</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>    <span class="c1">#: Unit of the y-axis for the current scan plot.</span>
+    <span class="n">plot_title</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="c1">#: Title of the current scan plot.</span>
+
+    <span class="c1"># instance variables</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1">#: Contains the value returned by each call to the Scan measure method() -- contains a value for each scan point, repeat, and pass.</span>
+
+    <span class="c1"># state variables</span>
+    <span class="n">fits_set</span> <span class="o">=</span> <span class="p">{}</span>            <span class="c1">#: Set to true by the Scan class if fit&#39;s have been performed</span>
+    <span class="n">fits_saved</span> <span class="o">=</span> <span class="p">{}</span>          <span class="c1">#: Set to True by the Scan class after the fit params have saved to the datasets.</span>
+    <span class="n">fit_performed</span> <span class="o">=</span> <span class="kc">None</span>     <span class="c1">#: Set to true by the Scan class if fit&#39;s have been performed</span>
+    <span class="n">fit_valid</span> <span class="o">=</span> <span class="kc">None</span>         <span class="c1">#: Set to True by the Scan class if the fit passed validations, False if it failed any validations, None if validations haven&#39;t been performed.</span>
+    <span class="n">fit_valid_pre</span> <span class="o">=</span> <span class="kc">None</span>     <span class="c1">#: Set to True by the Scan class if the fit passed pre-validation, False if it falied, None if pre-validation has not yet been performed.</span>
+    <span class="n">fit_valid_soft</span> <span class="o">=</span> <span class="kc">None</span>    <span class="c1">#: Set to True by the Scan class if the fit passed soft-validation, False if it falied, None if soft-validation has not yet been performed.</span>
+    <span class="n">fit_valid_strong</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1">#: Set to True by the Scan class if the fit passed strong-validation, False if it falied, None if strong-validation has not yet been performed.</span>
+    <span class="n">_fit_saved</span> <span class="o">=</span> <span class="kc">None</span>        <span class="c1">#: Set to True by the Scan class after the main fit has been broadcast, saved, and persisted to the datasets.</span>
+
+    <span class="nb">type</span> <span class="o">=</span> <span class="kc">None</span>              <span class="c1">#: Set by the TimeFreqScan class to either &#39;time&#39; or &#39;frequency&#39; to indiciate to the model if it will be processing data from a time scan or from a frequency scan.</span>
+
+<div class="viewcode-block" id="ScanModel.report"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.report">[docs]</a>    <span class="k">def</span> <span class="nf">report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a report string that displays the values of the stat datasets.&quot;&quot;&quot;</span>
+        <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;bins&#39;</span><span class="p">,</span> <span class="s1">&#39;counts&#39;</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;nbins&#39;</span><span class="p">]:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="nb">str</span> <span class="o">+=</span> <span class="s2">&quot;[</span><span class="si">{0}</span><span class="s2">]</span><span class="se">\n</span><span class="s2"> </span><span class="si">{1}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">([</span><span class="s1">&#39;points&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">str</span> <span class="o">+=</span> <span class="s2">&quot;[</span><span class="si">{0}</span><span class="s2">]</span><span class="se">\n</span><span class="s2"> </span><span class="si">{1}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span></div>
+
+<div class="viewcode-block" id="ScanModel.build"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># don&#39;t bind the child model&#39;s to their namespaces yet since our namespace hasn&#39;t been set.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">bind</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">mirror</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mirror</span><span class="p">,</span>
+                               <span class="n">mirror_namespace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mirror_namespace</span><span class="p">,</span>
+                               <span class="n">broadcast</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">,</span>
+                               <span class="n">persist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">,</span>
+                               <span class="n">save</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">save</span>
+                               <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">bind</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                <span class="n">mirror</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mirror</span><span class="p">,</span>
+                                <span class="n">mirror_namespace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mirror_namespace</span><span class="p">,</span>
+                                <span class="n">broadcast</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">,</span>
+                                <span class="n">persist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">,</span>
+                                <span class="n">save</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">save</span>
+                                <span class="p">)</span>
+
+        <span class="c1"># for monitoring histograms of each scan point</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_histograms</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span> <span class="o">=</span> <span class="n">HistModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                        <span class="n">bind</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                        <span class="n">discrete</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                        <span class="n">aggregate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                        <span class="n">mirror</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mirror</span><span class="p">,</span>
+                                        <span class="n">x_label</span><span class="o">=</span><span class="s2">&quot;PMT Counts&quot;</span><span class="p">,</span>
+                                        <span class="n">broadcast</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">,</span>
+                                        <span class="n">persist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">,</span>
+                                        <span class="n">save</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">save</span>
+                                        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaults_model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">bind</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                    <span class="n">mirror</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># bind the scan model and it&#39;s child models to their namespaces</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">bind</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># create a logger and reset the model state.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;scan&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_state</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_saved</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="ScanModel.reset_state"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.reset_state">[docs]</a>    <span class="k">def</span> <span class="nf">reset_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset state variables&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_performed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_saved</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_pre</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_soft</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_strong</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ScanModel.bind"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.bind">[docs]</a>    <span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Bind the scan model to it&#39;s namespace and additional sub-spaces for fits, stats, hists, and defaults.&quot;&quot;&quot;</span>
+
+        <span class="c1"># map and bind the scan model namespace first because child models extend off of our namespace</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span>
+
+        <span class="c1"># now bind the child models to their namespaces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">+</span> <span class="s1">&#39;.fits&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">_mirror_namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror_namespace</span> <span class="o">+</span> <span class="s1">&#39;.fits&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">+</span> <span class="s1">&#39;.stats&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mirror_namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror_namespace</span> <span class="o">+</span> <span class="s1">&#39;.stats&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_histograms</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">+</span> <span class="s1">&#39;.hist&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">mirror_namespace</span> <span class="o">=</span> <span class="s1">&#39;current_hist&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">plot_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_title</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaults_model</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">+</span> <span class="s1">&#39;.defaults&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaults_model</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ScanModel.attach"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.attach">[docs]</a>    <span class="k">def</span> <span class="nf">attach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scan</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Attach a scan to the model.  Gather&#39;s parameters of the scan -- such as scan.nrepeats, scan.npasses,</span>
+<span class="sd">        etc. --  and sets these as attributes of the model.  &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span> <span class="o">=</span> <span class="n">scan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrepeats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">nrepeats</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">nrepeats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nbins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">nbins</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">nbins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">npasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">npasses</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">npasses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_histograms</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_end</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_end</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">bin_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bin_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_end</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">init_bins</span><span class="p">(</span><span class="n">bin_start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_start</span><span class="p">,</span> <span class="n">bin_end</span><span class="o">=</span><span class="n">bin_end</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbins</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.load"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetches the &#39;x&#39;, &#39;means&#39;, &#39;errors&#39;, and &#39;counts&#39; datasets and sets their values to attributes of the model.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_xs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_means</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_errors</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_counts</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ScanModel.init_datasets"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.init_datasets">[docs]</a>    <span class="k">def</span> <span class="nf">init_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">plot_shape</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initializes all datasets pertaining to scans.  This method is called by the scan during the initialization</span>
+<span class="sd">        stage.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_shape</span> <span class="o">=</span> <span class="n">plot_shape</span>
+
+        <span class="c1"># allow below to work on either 1d or 2d scans</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">_dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">shape</span><span class="p">])</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># set experiment rid</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="p">,</span> <span class="s1">&#39;scheduler&#39;</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;The scan has no scheduler attribute.  Did you forget to call super().build()?&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;rid&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">rid</span><span class="p">)</span>
+
+        <span class="c1"># don&#39;t draw plots while initializing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.trigger&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># initialize scan points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">points</span>
+        <span class="c1"># self.stat_model.init(key=&#39;x&#39;, shape=shape, varname=&#39;xs&#39;, init_local=init_local)</span>
+
+        <span class="c1"># initialize plots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_plots</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="n">dimension</span><span class="p">)</span>
+
+        <span class="c1"># initialize stats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;counts&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">npasses</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrepeats</span><span class="p">],</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;means&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;errors&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_histograms</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;nbins&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;bins&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nbins</span><span class="p">],</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">init_datasets</span><span class="p">(</span><span class="n">broadcast</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">)</span>
+
+        <span class="c1"># initialize fits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;fitline&#39;</span><span class="p">,</span> <span class="n">plot_shape</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.init_plots"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.init_plots">[docs]</a>    <span class="k">def</span> <span class="nf">init_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the plot datasets.</span>
+
+<span class="sd">        :param dimension: 0 for initializing dimension 0 plots, 1 for initializing dimension 1 plots&quot;&quot;&quot;</span>
+
+        <span class="c1"># --- 1D Scans ---</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">_dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">dim0_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_shape</span>
+            <span class="n">dim1_shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># --- 2D Scans ---</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dim0_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dim1_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_shape</span>
+
+        <span class="c1"># --- Dimension 0 Plots ---</span>
+        <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;plots.x&#39;</span><span class="p">,</span> <span class="n">dim0_shape</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">init_local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;plots.y&#39;</span><span class="p">,</span> <span class="n">dim0_shape</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">init_local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;plots.y2&#39;</span><span class="p">,</span> <span class="n">dim0_shape</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">init_local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;plots.fitline&#39;</span><span class="p">,</span> <span class="n">dim0_shape</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;fitline&#39;</span><span class="p">,</span> <span class="n">init_local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;plots.error&#39;</span><span class="p">,</span> <span class="n">dim0_shape</span><span class="p">,</span> <span class="n">init_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># labels, etc.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.plot_title&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_title</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.y_label&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.x_label&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.x_scale&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.y_scale&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.x_units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_units</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.y_units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_units</span><span class="p">)</span>
+
+        <span class="c1"># --- Dimension 1 Plots ---</span>
+        <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+            <span class="c1"># data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;plots.dim1.x&#39;</span><span class="p">,</span> <span class="n">dim1_shape</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;dim1_x&#39;</span><span class="p">,</span> <span class="n">init_local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;plots.dim1.y&#39;</span><span class="p">,</span> <span class="n">dim1_shape</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;dim1_y&#39;</span><span class="p">,</span> <span class="n">init_local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="s1">&#39;plots.dim1.fitline&#39;</span><span class="p">,</span> <span class="n">dim1_shape</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;dim1_fitline&#39;</span><span class="p">,</span> <span class="n">init_local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># labels, etc.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.plot_title&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_title</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.y_label&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.x_label&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.x_scale&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.x_scale&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.x_units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_units</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.y_units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_units</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.write_datasets"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.write_datasets">[docs]</a>    <span class="k">def</span> <span class="nf">write_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Writes all internal values to their datasets.  This method is called by the scan when it is resuming from a</span>
+<span class="sd">         pause to restore previous scan values to their datasets.&quot;&quot;&quot;</span>
+
+        <span class="c1"># don&#39;t draw plots while writing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.trigger&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="c1"># write scan points</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;points&#39;</span><span class="p">)</span>
+            <span class="c1">#self.write(&#39;x&#39;, &#39;x&#39;)</span>
+
+            <span class="c1"># write plots</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;plots.x&#39;</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;plots.y&#39;</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;plots.fitline&#39;</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;fitline&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.plot_title&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_title</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.y_label&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.x_label&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.x_scale&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.y_scale&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.x_units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_units</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.y_units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_units</span><span class="p">)</span>
+
+            <span class="c1"># write stats</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;counts&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;means&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;errors&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_histograms</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;nbins&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;bins&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;hist&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">init_datasets</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">dimension</span> <span class="ow">is</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># write scan points</span>
+            <span class="c1">#self.write(&#39;x&#39;, &#39;x&#39;)</span>
+
+            <span class="c1"># write plots</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;plots.dim1.x&#39;</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;dim1_x&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;plots.dim1.y&#39;</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;dim1_y&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;plots.dim1.fitline&#39;</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;dim1_fitline&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.plot_title&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_title</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.y_label&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.x_label&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.x_scale&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.y_scale&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.x_units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_units</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.dim1.y_units&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_units</span><span class="p">)</span>
+
+        <span class="c1"># draw plots when done writting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.trigger&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.mutate_datasets"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.mutate_datasets">[docs]</a>    <span class="k">def</span> <span class="nf">mutate_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generates the mean and standard error of the mean for the measured value at the specified scan point</span>
+<span class="sd">        and mutates the corresponding datasets.  The `points` and `counts` datasets are also mutated with the</span>
+<span class="sd">        specified scan point value and raw values measured at the specified scan point.  If histograms are enabled,</span>
+<span class="sd">        each measured value in `counts` will also be binned and the histogram datasets will be mutated with the</span>
+<span class="sd">        binned values to updated the histogram plots.</span>
+
+<span class="sd">        :param i_point: scan point index</span>
+<span class="sd">        :param point: value of scan point</span>
+<span class="sd">        :param counts: array containing all values returned by the scan&#39;s measure() method during the specified</span>
+<span class="sd">                       scan point</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">_dim</span>
+
+        <span class="c1"># mutate the dataset containing the scan point values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutate_points</span><span class="p">(</span><span class="n">i_point</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+        <span class="c1"># mutate the dataset containing the array of counts measured at each repetition of the scan point</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># mutate the counts dataset</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="p">((</span><span class="n">i_point</span><span class="p">,</span> <span class="n">i_point</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;counts&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># mutate the local counts array (so it can be written when a scan resumes)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">i_point</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)]</span> <span class="o">=</span> <span class="n">counts</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># mutate the counts dataset with counts</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="p">((</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;counts&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># mutate the local counts array (so it can be written when a scan resumes)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)]</span> <span class="o">=</span> <span class="n">counts</span>
+
+        <span class="c1"># calculate the mean</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_mean</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+        <span class="c1"># mutate the dataset containing the mean values at each scan point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutate_means</span><span class="p">(</span><span class="n">i_point</span><span class="p">,</span> <span class="n">mean</span><span class="p">)</span>
+
+        <span class="c1"># calculate the error</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_error</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+        <span class="c1"># mutate the dataset containing the error in the mean at each scan point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutate_errors</span><span class="p">(</span><span class="n">i_point</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+        <span class="c1"># histograms</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_histograms</span><span class="p">:</span>
+
+            <span class="c1"># bin counts and mutate the histogram at the current scan point</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">reset_bins</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+            <span class="c1"># mutate the time series histograms</span>
+            <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># mutate the hist dataset</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">bins</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                <span class="c1"># mutate the local hist array</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">hist</span><span class="p">[</span><span class="n">i_point</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">bins</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># mutate the hist dataset</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="p">((</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">bins</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                <span class="c1"># mutate the local hist array</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">hist</span><span class="p">[</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist_model</span><span class="o">.</span><span class="n">bins</span>
+
+        <span class="k">return</span> <span class="n">mean</span></div>
+
+<div class="viewcode-block" id="ScanModel.mutate_plot"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.mutate_plot">[docs]</a>    <span class="k">def</span> <span class="nf">mutate_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mutate the plots.x and plots.y datasets.  This method is called by the scan to update the plot as the scan</span>
+<span class="sd">        runs.</span>
+
+<span class="sd">        :param i: Scan point index.  Plot datasets are mutated at this index.</span>
+<span class="sd">        :param x: X value to plot</span>
+<span class="sd">        :param y: Y value to plot</span>
+<span class="sd">        :param dim: Which dimension is being plotted.  0 for normal 1D plots.  For 2D plots, dim=1 updates the dimension</span>
+<span class="sd">                    1 plot, dim=0 updates the final dimension 0 plot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">which</span> <span class="o">=</span> <span class="s1">&#39;both&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">which</span> <span class="o">=</span> <span class="s1">&#39;mirror&#39;</span>
+
+        <span class="c1"># --- Mutate Dimension 0 Plot ---</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="c1"># --- 1D Scans ---</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">_dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">i_point</span>
+
+            <span class="c1"># --- 2D Scans ---</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;plots.x&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="n">which</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;plots.y&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">varname</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="n">which</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;plots.error&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="n">which</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Merge Conflict 8/15/18 not sure which is correct</span>
+<span class="c1">#         elif dim is 1:</span>
+<span class="c1">#             self.mutate(&#39;plots.dim1.x&#39;, i, x, which=which)</span>
+<span class="c1">#             self.dim1_x[i] = x</span>
+<span class="c1">#             self.mutate(&#39;plots.dim1.y&#39;, i, y, which=which)</span>
+<span class="c1">#             self.dim1_y[i] = y</span>
+
+        <span class="c1"># --- Mutate Dimension 1 Plot ---</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="p">((</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;plots.dim</span><span class="si">%i</span><span class="s1">.x&#39;</span> <span class="o">%</span> <span class="n">dim</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="n">which</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;plots.dim</span><span class="si">%i</span><span class="s1">.y&#39;</span> <span class="o">%</span> <span class="n">dim</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="n">which</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.get_plot_data"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mirror</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the plots.x and plots.y datasets (always dimension 0)</span>
+
+<span class="sd">        :param mirror: True to pull from the current_scan namespace, False to pull from the actual namespace.&quot;&quot;&quot;</span>
+        <span class="n">x_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;plots.x&#39;</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="n">mirror</span><span class="p">)</span>
+        <span class="n">y_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;plots.y&#39;</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="n">mirror</span><span class="p">)</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;plots.error&#39;</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="n">mirror</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">,</span> <span class="n">errors</span></div>
+
+<div class="viewcode-block" id="ScanModel.mutate_datasets_calc"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.mutate_datasets_calc">[docs]</a>    <span class="k">def</span> <span class="nf">mutate_datasets_calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">calculation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mutates the statistics datasets at a specified scan point using a calculated value</span>
+
+<span class="sd">        :param i_point: index of the current scan point</span>
+<span class="sd">        :param point: value of the current scan point</span>
+<span class="sd">        :param calculation: name of the calculation to perform</span>
+<span class="sd">        :type calculation: string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">value</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">i_point</span><span class="p">,</span> <span class="n">calculation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutate_points</span><span class="p">(</span><span class="n">i_point</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutate_means</span><span class="p">(</span><span class="n">i_point</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutate_errors</span><span class="p">(</span><span class="n">i_point</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ScanModel.mutate_points"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.mutate_points">[docs]</a>    <span class="k">def</span> <span class="nf">mutate_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mutate the &#39;points&#39; dataset with the value of a scan point</span>
+
+<span class="sd">        :param i_point: index of the scan point</span>
+<span class="sd">        :param point: value of the scan point</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">_dim</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">i_point</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">point</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="p">((</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">point</span></div>
+
+<div class="viewcode-block" id="ScanModel.mutate_means"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.mutate_means">[docs]</a>    <span class="k">def</span> <span class="nf">mutate_means</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="n">mean</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;&quot;Mutate the &#39;means&#39; dataset with a mean value calculated at the specified scan point</span>
+
+<span class="sd">        :param i_point: index of the scan point</span>
+<span class="sd">        :param mean: mean of the measured value at the given scan point</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">_dim</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># mutate the mean dataset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># mutate local means array</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">means</span><span class="p">[</span><span class="n">i_point</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># mutate the mean dataset</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="p">((</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># mutate local means array</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">means</span><span class="p">[</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mean</span></div>
+
+<div class="viewcode-block" id="ScanModel.mutate_errors"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.mutate_errors">[docs]</a>    <span class="k">def</span> <span class="nf">mutate_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_point</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;&quot;Mutate the &#39;error&#39; dataset with the error in the mean value calculated at the specified scan point</span>
+
+<span class="sd">        :param i_point: index of the scan point</span>
+<span class="sd">        :param error: error in the mean measured value at the given scan point</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">_dim</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># mutate the error dataset</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">i_point</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># mutate the local errors array</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">errors</span><span class="p">[</span><span class="n">i_point</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># mutate the error dataset</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="p">((</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">update_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># mutate the local errors array</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">errors</span><span class="p">[</span><span class="n">i_point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">error</span></div>
+
+    <span class="c1">#def rewind(self, i_point_start):</span>
+    <span class="c1">#    &quot;&quot;&quot;Set all internal data values to np.nan from i_point_start forward&quot;&quot;&quot;</span>
+    <span class="c1">#    for i_point in range(i_point_start, self._scan.npoints):</span>
+    <span class="c1">#        self.stat_model.means[i_point] = np.nan</span>
+    <span class="c1">#        self.stat_model.errors[i_point] = np.nan</span>
+    <span class="c1">#        self.stat_model.xs[i_point] = np.nan</span>
+
+<div class="viewcode-block" id="ScanModel.get_means"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.get_means">[docs]</a>    <span class="k">def</span> <span class="nf">get_means</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NoDefault</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetches from the datasets and returns the mean values measured at each scan point.  i.e. the</span>
+<span class="sd">        &#39;means&#39; dataset &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">mirror</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.get_means_key"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.get_means_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_means_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the dataset key of the &#39;means&#39; dataset&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">mirror</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the internal value of the &#39;errors&#39; dataset&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">errors</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">xs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the internal value of the &#39;x&#39; dataset&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xs</span>
+
+<div class="viewcode-block" id="ScanModel.get_xs"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.get_xs">[docs]</a>    <span class="k">def</span> <span class="nf">get_xs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NoDefault</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetches from the datasets and returns the list of scan points.  i.e. the</span>
+<span class="sd">        &#39;x&#39; dataset &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">mirror</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.get_xs_key"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.get_xs_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_xs_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NoDefault</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the dataset key of the &#39;x&#39; dataset&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">mirror</span><span class="p">)</span></div>
+
+    <span class="c1"># [loaders]</span>
+<div class="viewcode-block" id="ScanModel.load_counts"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.load_counts">[docs]</a>    <span class="k">def</span> <span class="nf">load_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads the internal counts variable from its dataset&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;counts&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.load_xs"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.load_xs">[docs]</a>    <span class="k">def</span> <span class="nf">load_xs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads the internal xs variable from its dataset&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;xs&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.load_errors"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.load_errors">[docs]</a>    <span class="k">def</span> <span class="nf">load_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads the internal errors variable from its dataset&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;errors&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.load_means"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.load_means">[docs]</a>    <span class="k">def</span> <span class="nf">load_means</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads the internal means variable from its dataset&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;means&#39;</span><span class="p">)</span></div>
+
+    <span class="c1"># [calculators]</span>
+<div class="viewcode-block" id="ScanModel.calc_hist"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.calc_hist">[docs]</a>    <span class="k">def</span> <span class="nf">calc_hist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a histogram of counts</span>
+
+<span class="sd">        :param counts: Array of counts to be binned&quot;&quot;&quot;</span>
+
+        <span class="c1">#hist, bin_edges = np.histogram(counts, **self.hist_args)</span>
+        <span class="n">hist</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nbins</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hist</span><span class="p">):</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hist</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">hist</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">hist</span></div>
+
+<div class="viewcode-block" id="ScanModel.calc_mean"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.calc_mean">[docs]</a>    <span class="k">def</span> <span class="nf">calc_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate mean value of counts.</span>
+
+<span class="sd">        :param counts: Array of counts&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.calc_error"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.calc_error">[docs]</a>    <span class="k">def</span> <span class="nf">calc_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the standard deviation of the mean</span>
+
+<span class="sd">        :param counts: Array of counts&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">sem</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nan_policy</span><span class="o">=</span><span class="s1">&#39;omit&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.calc_amplitude"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.calc_amplitude">[docs]</a>    <span class="k">def</span> <span class="nf">calc_amplitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_current_scan</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the &#39;amplitude&#39; of the means, i.e. the maximum mean value minus the minimum mean value&quot;&quot;&quot;</span>
+        <span class="n">y_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_means</span><span class="p">(</span><span class="n">mirror</span><span class="o">=</span><span class="n">use_current_scan</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_data</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">y_data</span><span class="p">)</span></div>
+
+    <span class="c1"># --fitting</span>
+<div class="viewcode-block" id="ScanModel._map_fit_param"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel._map_fit_param">[docs]</a>    <span class="k">def</span> <span class="nf">_map_fit_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Maps a fit param name to it&#39;s dataset key &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_map</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_map</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">name</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">main_fit_param</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_fit</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">p</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">main_fit_ds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_fit</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">p</span>
+
+<div class="viewcode-block" id="ScanModel.get_main_fit"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.get_main_fit">[docs]</a>    <span class="k">def</span> <span class="nf">get_main_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_fit_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TFloat</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Helper method. Fetches the value of the main fit from its dataset or from the fitresults.</span>
+
+<span class="sd">        :param use_fit_result: If True, the fit param value in the models fit object is returned. Otherwise</span>
+<span class="sd">                               the fir param value will be fetched from the datasets.</span>
+<span class="sd">        value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">use_fit_result</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_fit_param</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Can&#39;t get the main fit.  The &#39;main_fit&#39; attribute needs to be set in the scan model.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">fitresults</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">main_fit_param</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_fit_ds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Can&#39;t get the main fit.  The &#39;main_fit&#39; attribute needs to be set in the scan model.&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">default_fallback</span><span class="p">:</span>
+                <span class="n">default</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaults_model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_fit_ds</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">default</span> <span class="o">=</span> <span class="n">NoDefault</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_fit_ds</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.set_main_fit"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.set_main_fit">[docs]</a>    <span class="k">def</span> <span class="nf">set_main_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method.  Broadcasts, persists, and saves to the datasets the main fit param specified</span>
+<span class="sd">        by the model&#39;s main_fit attribute.</span>
+
+<span class="sd">        :param value: value of the main fit that will be saved.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_fit_ds</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="n">broadcast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.get_fit"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.get_fit">[docs]</a>    <span class="k">def</span> <span class="nf">get_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">use_fit_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method.  Fetches the value of fit param that was found during the last fit performed.</span>
+<span class="sd">        The fit param returned will either be read from the datasets or from the model&#39;s fit object</span>
+<span class="sd">        attribvute.</span>
+
+<span class="sd">        :param name: Name of the fit param</span>
+<span class="sd">        :type name: string</span>
+<span class="sd">        :param use_fit_result: If True, the fit param is fetched from the models&#39; fit object (self.fit) instead</span>
+<span class="sd">                               of from the datasets.</span>
+<span class="sd">        :type use_fit_result: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">use_fit_result</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">fitresults</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_fit_param</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">default_fallback</span><span class="p">:</span>
+                <span class="n">default</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaults_model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">default</span> <span class="o">=</span> <span class="n">NoDefault</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params.&quot;</span><span class="o">+</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.get_fit_data"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.get_fit_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_fit_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_mirror</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method.  Returns the experimental data to use for fitting.&quot;&quot;&quot;</span>
+        <span class="n">x_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="n">use_mirror</span><span class="p">)</span>
+        <span class="n">y_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="n">use_mirror</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span></div>
+
+<div class="viewcode-block" id="ScanModel.get_guess"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.get_guess">[docs]</a>    <span class="k">def</span> <span class="nf">get_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method.  Returns the fit guesses to use for fitting.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">guess</span> <span class="ow">or</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="ScanModel.fit_data"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.fit_data">[docs]</a>    <span class="k">def</span> <span class="nf">fit_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">,</span> <span class="n">errors</span><span class="p">,</span> <span class="n">fit_function</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">set</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">man_bounds</span><span class="o">=</span><span class="p">{},</span> <span class="n">man_scale</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;Perform a fit of the x values, y values, and errors to the specified fit function.</span>
+
+<span class="sd">        :param x_data: X values of the experimental data</span>
+<span class="sd">        :param y_data: Y values of the experimental data</span>
+<span class="sd">        :param errors: Error in each corresponding Y value of the experimental data</span>
+<span class="sd">        :param fit_function: The function being fit to the data points and errors given by x_data, y_data, and errors.</span>
+<span class="sd">        :param guess: Dictionary containing the initial guess for each fit param.  Keys specify fit param names and values</span>
+<span class="sd">                      the initial guess of that fit param.</span>
+<span class="sd">        :type guess: dict</span>
+<span class="sd">        :param validate: If True, fit validations will be performed</span>
+<span class="sd">        :param set: If True, all generated data pertaining to the fit will be saved to the datasets under the model&#39;s namespace</span>
+<span class="sd">        :param save: If True, the main fit will be saved to the datasets, as long as any defined strong validations pass.</span>
+<span class="sd">        :param man_bounds: Dictionary containing the allowed bounds for each fit param.  Keys specify fit param names and values</span>
+<span class="sd">                           are set to a list to specify the bounds of that fit param.</span>
+<span class="sd">        :param man_scale: Dictionary containing the scale of each fit param.  Keys specify fit param names and values</span>
+<span class="sd">                          are set to floats that specify the scale of that fit param.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_sorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span>
+        <span class="n">fit_performed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">saved</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">errormsg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">valid_pre</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">valid_strong</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># update class variables used in validations.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_point</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">x_sorted</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_point</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">x_sorted</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tick</span> <span class="o">=</span> <span class="n">x_sorted</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># don&#39;t validate if validations have been disabled</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">disable_validations</span><span class="p">:</span>
+            <span class="n">validate</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># - pre-validate data</span>
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">valid_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_fit</span><span class="p">(</span><span class="s1">&#39;pre&#39;</span><span class="p">,</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">CantFit</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">valid_pre</span><span class="p">,</span> <span class="n">errormsg</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_pre</span> <span class="o">=</span> <span class="n">valid_pre</span>
+
+        <span class="c1"># - fit</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">validate</span> <span class="ow">or</span> <span class="n">valid_pre</span><span class="p">:</span>
+            <span class="c1"># get data to fit</span>
+            <span class="n">guess</span> <span class="o">=</span> <span class="n">guess</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_guess</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">)</span>
+            <span class="n">hold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hold</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">yerr</span> <span class="o">=</span> <span class="n">errors</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_use_yerr</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="n">FitModel</span><span class="o">.</span><span class="n">fit_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">,</span> <span class="n">fit_function</span><span class="p">,</span> <span class="n">hold</span><span class="o">=</span><span class="n">hold</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="n">guess</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">yerr</span><span class="p">,</span>
+                                  <span class="n">man_bounds</span><span class="o">=</span><span class="n">man_bounds</span><span class="p">,</span> <span class="n">man_scale</span><span class="o">=</span><span class="n">man_scale</span><span class="p">)</span>
+                <span class="n">fit_performed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;ERROR Fit Failed: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+
+        <span class="c1"># - post-validation &amp; save fits</span>
+        <span class="k">if</span> <span class="n">fit_performed</span><span class="p">:</span>
+            <span class="c1"># append x/y dataset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">fitresults</span><span class="p">[</span><span class="s1">&#39;x_dataset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xs_key</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">fitresults</span><span class="p">[</span><span class="s1">&#39;y_dataset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_means_key</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">before_validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">)</span>
+
+            <span class="c1"># - set all fitted params to datasets</span>
+            <span class="k">if</span> <span class="nb">set</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_fits</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+            <span class="c1"># - post-validate the fit</span>
+            <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+                <span class="c1"># - strong validations:</span>
+                <span class="c1">#   * fit params not saved if this fails.</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">valid_strong</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">errormsg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">validate_fit</span><span class="p">(</span><span class="s1">&#39;strong&#39;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">BadFit</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
+                    <span class="n">valid_strong</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">errormsg</span> <span class="o">=</span> <span class="n">msg</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_strong</span> <span class="o">=</span> <span class="n">valid_strong</span>
+
+                <span class="c1"># - soft validations:</span>
+                <span class="c1">#   * fit params *are* saved if this fails</span>
+                <span class="c1">#   * this is not performed if the strong validations failed</span>
+                <span class="k">if</span> <span class="n">valid_strong</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">valid_soft</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">errormsg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">validate_fit</span><span class="p">(</span><span class="s1">&#39;soft&#39;</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">BadFit</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
+                        <span class="n">valid_soft</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">errormsg</span> <span class="o">=</span> <span class="n">msg</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_soft</span> <span class="o">=</span> <span class="n">valid_soft</span>
+
+            <span class="c1"># - save fitted params to datasets</span>
+            <span class="c1"># is it ok to save the fit params?</span>
+            <span class="k">if</span> <span class="n">save</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">validate</span> <span class="ow">or</span> <span class="n">valid_strong</span><span class="p">):</span>
+                <span class="c1"># - save the main fit</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_fit_param</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_fit_ds</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">save_fit</span><span class="p">(</span><span class="n">fitparam</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">main_fit_param</span><span class="p">,</span> <span class="n">dskey</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">main_fit_ds</span><span class="p">,</span> <span class="n">broadcast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">saved</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="c1"># - save other fits</span>
+                <span class="k">for</span> <span class="n">fitparam</span><span class="p">,</span> <span class="n">dskey</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fits_to_save</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">fitparam</span> <span class="ow">and</span> <span class="n">fitparam</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_fit_param</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">save_fit</span><span class="p">(</span><span class="n">fitparam</span><span class="o">=</span><span class="n">fitparam</span><span class="p">,</span> <span class="n">dskey</span><span class="o">=</span><span class="n">dskey</span><span class="p">,</span> <span class="n">broadcast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># store status of fit to class variables.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_performed</span> <span class="o">=</span> <span class="n">fit_performed</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_pre</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_strong</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_soft</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_saved</span> <span class="o">=</span> <span class="n">saved</span>
+
+        <span class="c1"># tell the user about any fit validation errors or warnings that occurred.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_pre</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;SKIP FIT. </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errormsg</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_soft</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;INVALID FIT. </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errormsg</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid_strong</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;INVALID FIT. </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errormsg</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">fit_performed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_valid</span><span class="p">,</span> <span class="n">saved</span><span class="p">,</span> <span class="n">errormsg</span></div>
+
+<div class="viewcode-block" id="ScanModel.before_validate"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.before_validate">[docs]</a>    <span class="k">def</span> <span class="nf">before_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;User callback (runs on host).</span>
+
+<span class="sd">        Executed after a fit was successfully performed by the scan model, but before</span>
+<span class="sd">        fits are validated or saved to the datasets.  This callback allows additional fit parameters</span>
+<span class="sd">        to be calculated from the parameters of the fit function.  e.g. calculating a pi time from</span>
+<span class="sd">        a transition rate.  Any calculated fit parameters will also be validated by any validation</span>
+<span class="sd">        rules that are defined for name of the calculated parameter.</span>
+
+<span class="sd">        :param fit: Fit object for the fit that was just performed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ScanModel.validate_fit"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.validate_fit">[docs]</a>    <span class="k">def</span> <span class="nf">validate_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">x_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># check pre-validation rules</span>
+        <span class="k">if</span> <span class="n">rule</span> <span class="o">==</span> <span class="s1">&#39;pre&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">FitModel</span><span class="o">.</span><span class="n">pre_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                         <span class="n">series</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x_data&#39;</span><span class="p">:</span> <span class="n">x_data</span><span class="p">,</span> <span class="s1">&#39;y_data&#39;</span><span class="p">:</span> <span class="n">y_data</span><span class="p">},</span>
+                                         <span class="n">validators</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_validators</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rule</span> <span class="o">==</span> <span class="s1">&#39;strong&#39;</span><span class="p">:</span>
+            <span class="n">FitModel</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strong_validators</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rule</span> <span class="o">==</span> <span class="s1">&#39;soft&#39;</span><span class="p">:</span>
+            <span class="n">FitModel</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validators</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.save_fit"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.save_fit">[docs]</a>    <span class="k">def</span> <span class="nf">save_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fitparam</span><span class="p">,</span> <span class="n">dskey</span><span class="p">,</span> <span class="n">broadcast</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method.  Saves the specified fit param to the datasets under the model&#39;s namespace.</span>
+
+<span class="sd">        :param fitparam: Name of the fit param to save</span>
+<span class="sd">        :type fitparam: string</span>
+<span class="sd">        :param dskey: Datset key to save the fit param value to</span>
+<span class="sd">        :param broadcast: Indicates if the dataset should be broadcast, defaults to False</span>
+<span class="sd">        :param persist: Indicates if the dataset should be persisted, defaults to False</span>
+<span class="sd">        :param save: Indicates if the dataset should be saved to the hdf5 file, defaults to True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get the fitted param</span>
+        <span class="n">fitval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">fitresults</span><span class="p">[</span><span class="n">fitparam</span><span class="p">]</span>
+
+        <span class="c1"># save it to a dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">dskey</span><span class="p">,</span> <span class="n">fitval</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="n">broadcast</span><span class="o">=</span><span class="n">broadcast</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="n">persist</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">save</span><span class="p">)</span>
+
+        <span class="c1"># record what&#39;s been saved</span>
+        <span class="k">if</span> <span class="n">broadcast</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fits_saved</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">dskey</span><span class="p">)]</span> <span class="o">=</span> <span class="n">fitval</span></div>
+
+<div class="viewcode-block" id="ScanModel.set_fits"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.set_fits">[docs]</a>    <span class="k">def</span> <span class="nf">set_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method.  Set&#39;s all data generated during fitting to datasets under the model&#39;s namespace.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># fitted params</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">_fields</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">params</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;params.</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># guess</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">_fields</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">guess</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;guesses.</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># fitted param errors</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">errs</span><span class="o">.</span><span class="n">_fields</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">errs</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;errors.</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># fitline</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;fitline&#39;</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># this must update the current_scan so fitlines show up in the plots</span>
+            <span class="n">mirror</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirror</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mirror</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;plots.fitline&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">fitline_orig</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mirror</span> <span class="o">=</span> <span class="n">mirror</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">fitline_orig</span><span class="p">)</span>
+
+        <span class="c1"># regression analysis</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;analysis.r2&#39;</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">r2</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;analysis.reg_err&#39;</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">reg_err</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanModel.report_fit"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.report_fit">[docs]</a>    <span class="k">def</span> <span class="nf">report_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method.  Prints fit results to the console&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="c1"># display fitted parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fitted Parameters:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">error</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">_fields</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">errs</span><span class="p">):</span>
+            <span class="n">unit</span><span class="p">,</span> <span class="n">scaled</span><span class="p">,</span> <span class="n">text</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="n">error_unit</span><span class="p">,</span> <span class="n">error_scaled</span><span class="p">,</span> <span class="n">error_text</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> = </span><span class="si">{1}</span><span class="s2"> +/- </span><span class="si">{2}</span><span class="s2"> </span><span class="si">{3}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">scaled</span><span class="p">,</span> <span class="n">error_scaled</span><span class="p">,</span> <span class="n">unit</span><span class="p">))</span>
+
+        <span class="c1"># display regression analysis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;r2 = </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">r2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;reg_err = </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">reg_err</span><span class="p">))</span>
+
+        <span class="c1"># display every fit that was set</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fits_saved</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fits Saved:&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fits_saved</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+                <span class="n">unit</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">scaled</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> set to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">scaled</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># display datasets that we&#39;re updated</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fits_set</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Datasets Updated:&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fits_set</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+                <span class="n">unit</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">scaled</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">_format</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> set to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">scaled</span><span class="p">))</span></div>
+
+    <span class="c1"># --- validation helpers</span>
+<div class="viewcode-block" id="ScanModel.validate_in_scan_range"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.validate_in_scan_range">[docs]</a>    <span class="k">def</span> <span class="nf">validate_in_scan_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">padding_left</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding_right</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return False if the value is outside the range of scan points and add a validation error for the field.</span>
+
+<span class="sd">        :param field: name of the field who&#39;s value will be checked</span>
+<span class="sd">        :param padding_left: increase the allowable range by this amount below the scan point with the smallest value.</span>
+<span class="sd">        Defaults to self._scan.tick which is the difference between adjacent scan points.</span>
+<span class="sd">        :param padding_left: increase the allowable range by this amount above the scan point with the largest value.</span>
+<span class="sd">        Defaults to self._scan.tick which is the difference between adjacent scan points.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">padding_left</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">padding_left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tick</span>
+        <span class="k">if</span> <span class="n">padding_right</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">padding_right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tick</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_between</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span>
+                                     <span class="n">min_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_point</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tick</span><span class="p">,</span>
+                                     <span class="n">max_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_point</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tick</span>
+                                     <span class="p">)</span></div>
+
+    <span class="c1"># --- simulation</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">simulation_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function arguments passed to the fit function when running simulations&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Your model needs to implement the simulation_args property&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ScanModel.simulate"><a class="viewcode-back" href="../../../models/api.html#scan_framework.models.scan_model.ScanModel.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">noise_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">simulation_args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">simulation_args</span> <span class="o">=</span> <span class="n">simulation_args</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_args</span>
+        <span class="k">return</span> <span class="n">FitModel</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">noise_level</span><span class="p">,</span> <span class="n">simulation_args</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
