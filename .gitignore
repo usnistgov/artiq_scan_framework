@@ -4,3 +4,4 @@ __pycache__
 ERB_NOTES
 *.bak
 .DS_Store
+/public
