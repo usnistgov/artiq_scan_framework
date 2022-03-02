@@ -180,3 +180,4 @@ class MultiresultModel(ScanModel):
         i=0
         for simulation_args in simulation_args_array:
             results[i]=models[i].simulate(x,noise_level,simulation_args,results)
+        return results[0]

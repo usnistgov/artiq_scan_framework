@@ -904,7 +904,7 @@ class ScanModel(Model):
             hold = self.hold or {}
             try:
                 yerr = errors if self.fit_use_yerr else None
-                print(x_data,y_data,fit_function,hold,guess,yerr,man_bounds,man_scale)
+                print(x_data)
                 FitModel.fit_data(self, x_data, y_data, fit_function, hold=hold, guess=guess, yerr=yerr,
                                   man_bounds=man_bounds, man_scale=man_scale)
                 fit_performed = True
@@ -1130,6 +1130,6 @@ class ScanModel(Model):
         """Function arguments passed to the fit function when running simulations"""
         raise NotImplementedError('Your model needs to implement the simulation_args property')
 
-    def simulate(self, x, noise_level=0, simulation_args=None):
+    def simulate(self, x,results, noise_level=0, simulation_args=None):
         simulation_args = simulation_args or self.simulation_args
         return FitModel.simulate(self, x, noise_level, simulation_args)
