@@ -216,7 +216,7 @@ class Scan(HasEnvironment):
         if not resume:
 
             # map gui arguments to class variables
-            self.map_arguments()
+            self._private_map_arguments()
 
             self._attach_models()
 
@@ -472,7 +472,7 @@ class Scan(HasEnvironment):
             self._set_counts(mean)
 
     # private: for scan.py
-    def map_arguments(self):
+    def _private_map_arguments(self):
         """Map coarse grained attributes to fine grained options."""
 
         if self.enable_fitting:
@@ -509,7 +509,7 @@ class Scan(HasEnvironment):
     def _init_storage(self):
         """initialize memory to record counts on core device"""
 
-        #: 3D array of counts measured for a given scan point, i.e. nmeasurement*nrepeats*nresults
+        #: 2D array of counts measured for a given scan point, i.e. nmeasurement*nrepeats
         self._data = np.zeros((self.nmeasurements, self.nrepeats),dtype=np.int32)
         self._logger.debug('initialized storage')
 
@@ -824,11 +824,7 @@ class Scan(HasEnvironment):
                 # mutate the stats for this measurement with the data passed from the core device
                 mean = entry['model'].mutate_datasets(i_point, poffset, point, data)
                 self._mutate_plot(entry, i_point, point, mean)
-
-                # keep a record on the host of the data collected for this pass, measurement, and scan point
-                # for i_repetition in range(len(data)):
-                #    self._data.set(pos=[i_measurement, i_point, i_repetition], value=np.int32(data[i_repetition]))
-
+                
     # interface: for child class (optional)
     def analyze(self):
         """Interface method  (optional)

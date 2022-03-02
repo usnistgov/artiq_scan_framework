@@ -237,10 +237,7 @@ class ReloadingScan(Scan):
     """Allows detection of lost ion, pausing scan, reloading ion, and resuming scan"""
 
     # -- settings
-    enable_reloading = True  #: Reload ion when it is lost?
-
-    # -- scan state
-    _lost_ion = False  #: ion has been lost
+    enable_reloading = True  #: Set to False to disable all features of this extension.  Set to True to enable lost ion checking and automated reloading.
 
     # -- loading defaults
     loading_threshold = 1.0
@@ -249,38 +246,23 @@ class ReloadingScan(Scan):
     loading_windows = 2
     loading_repeats = 100
 
-    # -- ion checking & loading
-    measure_background = True
-    perc_of_dark = 90  #: Percentage of dark rate at which background rate is set.
-    perc_of_dark_second = 150  #: Percentage of dark rate at which ion present detection threshold is set.
-    ion_windows = 2  #: Number of lost ion signals seen in data before a detection check is performed
-    ion_threshold = 0.6  #: default value is always overwritten when background is measured
-    ion_second_threshold = 2.0  # default value is always overwritten when background is measured
-    ion_failures = 0
-    check_for_ion = False
-    lose_ion_at = -1
-
     # ====== Scan Interface Methods ======
 
     def _scan_arguments(self):
         if self.enable_reloading:
             self.setattr_argument("check_for_ion", BooleanValue(default=False), 'Reloading')
-        #if self.enable_simulations:
-        #    self.setattr_argument('lose_ion_at', NumberValue(default=-1, ndecimals=0, step=1), group='Simulation')
-
+            
     def _map_arguments(self):
         """Map coarse grained attributes to fine grained options."""
-        if not self.enable_reloading:
+        if self.enable_reloading:
+            if not self.check_for_ion:
+                self.measure_thresholds = False
+        else:
             self.check_for_ion = False
-            self.measure_background = False
-        if not self.check_for_ion:
-            self.measure_background = False
-        if self.simulate_scan:
-            self.measure_background = False
+            self.measure_thresholds = False
 
     def _initialize(self, resume):
         super()._initialize(resume)
-        self._lose_ion_at = self.lose_ion_at
         if self.enable_reloading and not hasattr(self, 'loading'):
             raise Exception(
                 "An instance of the Loading subcomponent needs to be assigned to self.loading to use reloading.")
@@ -288,64 +270,43 @@ class ReloadingScan(Scan):
             # hack so kernel methods can compile, artiq complains that there is no self.loading variable even though
             # the code is unreachable
             self.loading = LoadingInterface(self)
-
-    def _report(self, location='both'):
-        """Print details about the scan"""
-        if location == 'both':
-            self._logger.debug('enable_reloading is {0}'.format(self.enable_reloading))
-
-    def _reset_state(self, resume):
-        self._lost_ion = False
-        self.ion_failures = 0
+            
+        if self.enable_reloading and not hasattr(self, 'ion_checker'):
+            raise Exception(
+                "An instance of an IonChecker subcomponent needs to be assigned to self.ion_checker to use reloading.")
+        if not hasattr(self, 'loading'):
+            # hack so kernel methods can compile, artiq complains that there is no self.ion_checker variable even though
+            # the code is unreachable
+            self.ion_checker = IonChecker(self, logger=self.logger, loading=self.loading)
 
     @portable
     def _before_loop(self, resume):
-        if self.simulate_scan:
-            if resume:
-                self._lose_ion_at = -1
-
-        if self.measure_background and not resume:
-            # check if ion is present before measuring background
-            if self._check_ion_experiment(repeats=2):
-                # measure the background
-                self.logger.debug('> measuring background.')
-                self._measure_ion_threshold()
-            # no ion is present, can't measure background
-            else:
-                self.logger.warning("Can't measure background because no ion is present.")
-                self._lost_ion = True
-                self._schedule_load_ion()
-                raise Paused
-        else:
-            self.logger.debug('Skipping background measurement.')
+        try:
+            self.ion_checker.initialze(resume)
+        except LoadIon:
+            self._schedule_load_ion()
+            raise Paused
 
     @portable
     def _analyze_data(self, i_point, last_pass, last_point):
-        # lost ion?
+        
         if self.check_for_ion:
-            # force a detection check on the very last scan point as data based checks can fail
-            # to signal an ion lost at the end of a scan
-            if last_pass and last_point:
-                force_detection_check = True
-            else:
-                force_detection_check = False
+            try:
+                # iterate over scan points in the same order as is done in scan.py
+                for i_measurement in range(self.nmeasurements):
+                    self.ion_checker.ion_present(self._data[i_measurement], self.nrepeats, last_point=(last_pass and last_point)) 
+            except LostIon:
+                # rewind to the earliest scan point where the ion could have been lost.
+                self._rewind(num_points=self.ion_checker.rewind_num_points)
 
-            if not self._check_ion(i_point, force_detection_check=force_detection_check):
-                # rewind to the scan point where the ion was first lost.
-                self._rewind(num_points=self.ion_windows)
-
-                # set state
-                self._lost_ion = True
-
-                # schedule ion reload
-                self.logger.error("Lost ion.")
+                # Schedule an experiment to load an ion.
+                self.logger.error("Ion lost, reloading...")
                 self._schedule_load_ion()
 
                 # break main loop in scan.py
                 raise Paused
-
-    def _state_string(self):
-        return "lost_ion=%s" % self._lost_ion
+            except IonPresent:
+                pass
 
     # ====== Local Methods ======
     def _schedule_load_ion(self):
@@ -365,82 +326,3 @@ class ReloadingScan(Scan):
             # schedule the load ion experiment
             self.logger.warning("Scheduling ion reload.")
             self.loading.schedule_load_ion(due_date=time(), synchronous=True)
-
-    @kernel
-    def _measure_ion_threshold(self):
-        """Measure dark rate and  set self._ion_threshold to a percentage of the measured rate"""
-        dark_rate = self.loading.measure_dark_rate()
-        self.ion_threshold = (self.perc_of_dark / 100.0) * dark_rate
-        self.ion_second_threshold = (self.perc_of_dark_second / 100.0) * dark_rate
-
-        self.logger.debug("dark_rate measured at")
-        self.logger.debug(dark_rate)
-        self.logger.debug("ion_threshold set to")
-        self.logger.debug(self.ion_threshold)
-        self.logger.debug("ion_second_threshold set to")
-        self.logger.debug(self.ion_second_threshold)
-
-    @portable
-    def _check_ion(self, i_point, force_detection_check=False):
-        """Return true if ion is present"""
-        if force_detection_check:
-            do_detection_check = True
-
-        # -- data based checks:
-        # analyze data and signal for a detection based check after n successive failures
-        else:
-            do_detection_check = False
-            for i_measurement in range(self.nmeasurements):
-                if not self._check_ion_data(i_measurement, i_point):
-                    self.ion_failures += 1
-                    if self.ion_failures == self.ion_windows:
-                        do_detection_check = True
-                        break
-                else:
-                    self.ion_failures = 0
-
-        # -- detection based check:
-        # check for ion via detection
-        if do_detection_check:
-            self.logger.debug("")
-            self.ion_failures = 0
-            if self._check_ion_experiment():
-                present = True
-            else:
-                present = False
-        else:
-            present = True
-        return present
-
-    @portable
-    def _check_ion_data(self, i_measurement, i_point):
-        """Return true if data collected indicates that the ion is still present"""
-        #offset = self._data.address(pos=[i_measurement, i_point])
-        #offset =
-        #offset = offset + i_pass * self.nrepeats
-        sum_ = 0.0
-        for i in range(self.nrepeats):
-            sum_ += self._data[self._idx][i_measurement][self.nrepeats*self._i_pass + i]
-        mean = sum_ / self.nrepeats
-        if mean >= self.ion_threshold:
-            present = True
-        else:
-            present = False
-
-        # lose ion at
-        #if self.simulate_scan and not self._resuming:
-        #    if i_pass * self.npoints + i_point >= self._lose_ion_at - 1:
-        #        present = False
-        return present
-
-    @portable
-    def _check_ion_experiment(self, repeats=1):
-        """Return true if the loading.ion_present experiment indicates that the ion is still present"""
-        #if self.simulate_scan:
-        #    if i_pass * self.npoints + i_point == self._lose_ion_at:
-        #        return False
-        #    else:
-        #        return True
-        self.logger.debug(">>> calling loading.ion_present() with ion threshold set to ")
-        self.logger.debug(self.ion_second_threshold)
-        return self.loading.ion_present(repeats, threshold=self.ion_second_threshold)

@@ -2,6 +2,9 @@
 __pycache__
 /docs/_build
 ERB_NOTES
-*.bak
 .DS_Store
+._.DS_Store
+*.bak
 /public
+nist-pages
+/public_old

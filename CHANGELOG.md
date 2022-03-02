@@ -18,8 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### New features added
 - New continous scan feature added: scans can be run continuously and only stop when a user terminates the scan. 
-- New infinite logging for continous scans feature added: all data collected during continous scan can be logged to an hdf5 file.
-
+- New infinite logging for continous scans feature added: all data collected during continuous scan can be logged to an hdf5 file.
 
 ## [2.0.2] - 2022-02-09
 
@@ -29,9 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.1] - 2021-07-27
 
 - Fixed outdated unittests to work in ARTIQ version 3
-- The mutate_datasets(), _set_counts(), & _calculate_all() scan callbacks are now asynchronouse (fire and forget) 
-  remote procedure calls.
+- The mutate_datasets(), _set_counts(), & _calculate_all() scan callbacks are now asynchronouse (fire and forget) remote procedure calls.
 - Added ability to plot a fitline in the histogram plotting applet
+
 
 ## [2.0.0] - 2021-07-13
 
@@ -41,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changes from previous in-house version of the artiq\_ions scan class:
 - The previous alias of "fitting" for analysis.curvefits has been renamed to "curvefits".  Adding 
-  "from scan_framework import *" now imports the analysis.curvefits submodule with the alias of curvefits. 
+  "from scan_framework import *" now imports the analysis.curvefits submodule with the alias of curvefits.
 - The 'frequency_center' attribute has been replaced by '_x_offset' attribute
 - TimeFrequencyScan renamed to TimeFreqScan
 - FrequencyScan renamed to FreqScan
