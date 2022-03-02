@@ -7,3 +7,6 @@ ERB_NOTES
 *.bak
 /public
 .DS_Store
+nist-pages
+/public
+/public_old

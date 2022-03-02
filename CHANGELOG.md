@@ -5,13 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [2.1.0] - 2022-02-27
 
 ### New features added
 - New continous scan feature added: scans can be run continuously and only stop when a user terminates the scan. 
 - New infinite logging for continous scans feature added: all data collected during continous scan can be logged to an hdf5 file.
-
 
 ## [2.0.2] - 2022-02-09
 
@@ -24,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The mutate_datasets(), _set_counts(), & _calculate_all() scan callbacks are now asynchronouse (fire and forget) remote procedure calls.
 - Added ability to plot a fitline in the histogram plotting applet
 
+
 ## [2.0.0] - 2021-07-13
 
 ### Added
@@ -33,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changes from previous in-house version of the artiq\_ions scan class:
 - The previous alias of "fitting" for analysis.curvefits has been renamed to "curvefits".  Adding 
-  "from scan_framework import *" now imports the analysis.curvefits submodule with the alias of curvefits. 
+  "from scan_framework import *" now imports the analysis.curvefits submodule with the alias of curvefits.
 - The 'frequency_center' attribute has been replaced by '_x_offset' attribute
 - TimeFrequencyScan renamed to TimeFreqScan
 - FrequencyScan renamed to FreqScan
@@ -57,4 +56,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 8. Search all files in your repository for "freq\_start" and "freq\_stop", remove these sections and instead set the 'start' and 'stop' keys of the 'frequencies' dictionary argument of self.scan\_arguments().
 9. Search all files in your repository for "pulse\_time\_default", remove these sections and instead set the 'default' key of the 'pulse\_time' dictionary argument of self.scan\_arguments().
 10. Search all files in your repository for "self.scan_arguments(".  Remove each result that uses the 'loc' argument and instead explicitly indicate which scan arguments should not be rendered by setting their corresponding arguments to False.  For example, if you want to add the npasses, nrepeats, and nbins arguments to the gui in one location and then add the fit_options later in your code, make two calls to self.scan\_arguments().  First call self.scan_arguments(fit_options=False), then later call self.scan_arguments(npasses=False, nrepeats=False, nbins=False)
-
