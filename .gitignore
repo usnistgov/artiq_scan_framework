@@ -5,3 +5,4 @@ ERB_NOTES
 .DS_Store
 ._.DS_Store
 *.bak
+/public
