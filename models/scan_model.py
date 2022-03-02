@@ -1055,10 +1055,10 @@ class ScanModel(Model):
             key = "{0}.{1}".format(i, key)
         else:
             # this must update the current_scan so fitlines show up in the plots
-            mirror = self.mirror
-            self.mirror = True
+            #mirror = self.mirror
+            #self.mirror = True
             self.set('plots.fitline', self.fit.fitline_orig)
-            self.mirror = mirror
+            #self.mirror = mirror
 
         self.fit_model.set(key, self.fit.fitline_orig)
 
