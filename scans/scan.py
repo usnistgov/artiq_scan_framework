@@ -184,7 +184,7 @@ class Scan(HasEnvironment):
         if not resume:
 
             # map gui arguments to class variables
-            self.map_arguments()
+            self._private_map_arguments()
 
             self._attach_models()
 
@@ -439,7 +439,7 @@ class Scan(HasEnvironment):
             self._set_counts(mean)
 
     # private: for scan.py
-    def map_arguments(self):
+    def _private_map_arguments(self):
         """Map coarse grained attributes to fine grained options."""
 
         if self.enable_fitting:

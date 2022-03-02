@@ -244,11 +244,12 @@ class XYPlot(parent.Plot):
                 pass_pen = self.get_style('plot.pass_pen')
                 pass_size = self.get_style('plot.pass_size')
                 pass_symbol = self.get_style('plot.pass_symbol')
-                if self.pass_y is not None:
+                if self.pass_y is not None and type(self.pass_y) != str:
                     try:
                         for pi, py in enumerate(self.pass_y):
                             pass_brush = pyqtgraph.mkBrush(color=self.get_style('plot.pass_color', pi))
-                            self.plot(x, py, pen=pass_pen, symbol=pass_symbol, symbolSize=pass_size, symbolBrush=pass_brush, symbolPen=None, name=name)
+                            if x.shape[0] == py.shape[0]:
+                                self.plot(x, py, pen=pass_pen, symbol=pass_symbol, symbolSize=pass_size, symbolBrush=pass_brush, symbolPen=None, name=name)
                     except TypeError:
                         pass
 
