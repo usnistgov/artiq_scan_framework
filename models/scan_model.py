@@ -497,9 +497,11 @@ class ScanModel(Model):
         :param counts: array containing all values returned by the scan's measure() method during the specified
                        scan point
         """
+        if len(counts.shape)==2:
+            counts=counts[0]
         dim = self._scan._dim
         # mutate the dataset containing the scan point values
-        self.mutate_points(i_point, point) #TODO this shouldn't need to be called every time, does this slow down the rpc?
+        self.mutate_points(i_point, point)
         # mutate the dataset containing the array of counts measured at each repetition of the scan point
         if dim == 1:
             # mutate the counts dataset with counts at point i_point,poffset:poffset+len(counts)
@@ -556,7 +558,7 @@ class ScanModel(Model):
                 # mutate the local hist array
                 self.stat_model.hist[i_point[0], i_point[1]] = self.hist_model.bins
 
-        return mean
+        return mean,error
 
     def mutate_plot(self, i_point, x, y, error=None, dim=None):
         """Mutate the plots.x and plots.y datasets.  This method is called by the scan to update the plot as the scan
@@ -622,7 +624,7 @@ class ScanModel(Model):
         self.mutate_points(i_point, point)
         self.mutate_means(i_point, value)
         self.mutate_errors(i_point, error)
-        return value
+        return value,error
 
     def mutate_points(self, i_point, point):
         """Mutate the 'points' dataset with the value of a scan point
@@ -902,6 +904,7 @@ class ScanModel(Model):
             hold = self.hold or {}
             try:
                 yerr = errors if self.fit_use_yerr else None
+                print(x_data,y_data,fit_function,hold,guess,yerr,man_bounds,man_scale)
                 FitModel.fit_data(self, x_data, y_data, fit_function, hold=hold, guess=guess, yerr=yerr,
                                   man_bounds=man_bounds, man_scale=man_scale)
                 fit_performed = True

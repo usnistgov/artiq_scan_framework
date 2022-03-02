@@ -619,9 +619,9 @@ class Scan(HasEnvironment):
         #     value = model.mutate_datasets_calc(i_point, point, calculation)
         #     if 'mutate_plot' in entry and entry['mutate_plot']:
         #         self._mutate_plot(entry, i_point, point, value)
-        value = model.mutate_datasets_calc(i_point, point, calculation)
+        value,error = model.mutate_datasets_calc(i_point, point, calculation)
         if 'mutate_plot' in entry and entry['mutate_plot']:
-            self._mutate_plot(entry, i_point, point, value)
+            self._mutate_plot(entry, i_point, point, value,error)
 
     # ------------------- Interface Methods ---------------------
 
@@ -653,7 +653,6 @@ class Scan(HasEnvironment):
 
             # initialize the scan
             self._initialize(resume)
-            
             # run the scan
             if not self.fit_only:
                 if resume:
@@ -813,17 +812,15 @@ class Scan(HasEnvironment):
         :param data: List of integers containing the values returned by :code:`measure()` at each repetition of the current scan point.
         """
         self.measurement = measurement
-
         for entry in self._model_registry:
             # model registered for this measurement
             if entry['measurement'] and entry['measurement'] == measurement:
                 # grab the model for the measurement from the registry
                 # if measurement in self._model_registry['measurements']:
                 #    entry = self._model_registry['measurements'][measurement]
-
                 # mutate the stats for this measurement with the data passed from the core device
-                mean = entry['model'].mutate_datasets(i_point, poffset, point, data)
-                self._mutate_plot(entry, i_point, point, mean)
+                mean,error = entry['model'].mutate_datasets(i_point, poffset, point, data)
+                self._mutate_plot(entry, i_point, point, mean,error)
 
                 # keep a record on the host of the data collected for this pass, measurement, and scan point
                 # for i_repetition in range(len(data)):
@@ -957,7 +954,7 @@ class Scan(HasEnvironment):
 
                         # perform the fit
                         self._logger.debug('performing fit on model \'{0}\''.format(entry['name']))
-                        fit_performed, valid, main_fit_saved, errormsg = self._fit(entry, save, use_mirror, dimension, i)
+                        fit_performed, valid, main_fit_saved, errormsg = self._fit(entry,model, save, use_mirror, dimension, i)
 
                         entry['fit_valid'] = valid
 
@@ -996,7 +993,7 @@ class Scan(HasEnvironment):
         pass
 
     # interface: for extensions (required)
-    def _mutate_plot(self, entry, i_point, data, mean):
+    def _mutate_plot(self, entry, i_point, data, mean,error):
         raise NotImplementedError()
 
     # interface: for extensions (required)
@@ -1789,20 +1786,20 @@ class Scan1D(Scan):
         # (these are used on the core to map the flat idx index to the 2D point index)
         self._i_points = np.array(range(self.npoints), dtype=np.int64)
 
-    def _mutate_plot(self, entry, i_point, point, mean):
+    def _mutate_plot(self, entry, i_point, point, mean,error):
         model = entry['model']
 
         # mutate plot x/y datasets
-        model.mutate_plot(i_point=i_point, x=point, y=mean)
+        model.mutate_plot(i_point=i_point, x=point, y=mean,error=error)
 
         # tell the current_scan applet to redraw itself
         model.set('plots.trigger', 1, which='mirror')
         model.set('plots.trigger', 0, which='mirror')
 
-    def _fit(self, entry, save, use_mirror, dimension, i):
+    def _fit(self, entry, model, save, use_mirror, dimension, i):
         """Perform the fit"""
 
-        model = entry['model']
+        #model = entry['model']
         x_data, y_data = model.get_fit_data(use_mirror)
 
         # for validation methods
@@ -1899,7 +1896,7 @@ class Scan2D(Scan):
             (i1, i2) for i1 in range(self._shape[0]) for i2 in range(self._shape[1])
         ], dtype=np.int64)
 
-    def _mutate_plot(self, entry, i_point, point, mean):
+    def _mutate_plot(self, entry, i_point, point, mean,error):
         """Mutates datasets for dimension 0 plots and dimension 1 plots"""
         if entry['dimension'] == 1:
             dim1_model = entry['model']
@@ -1919,7 +1916,7 @@ class Scan2D(Scan):
             # first store the point & mean to the dim1 plot x/y datasets
             # the value of the fitted parameter is plotted as the y value
             # at the current dimension-0 x value (i.e. x0)
-            dim1_model.mutate_plot(i_point=i_point, x=point[1], y=mean, error=None, dim=1)
+            dim1_model.mutate_plot(i_point=i_point, x=point[1], y=mean, error=error, dim=1)
 
 
 
@@ -1930,7 +1927,7 @@ class Scan2D(Scan):
                 # perform a fit over the dimension 1 data
                 fit_performed = False
                 try:
-                    fit_performed, fit_valid, saved, errormsg = self._fit(entry,
+                    fit_performed, fit_valid, saved, errormsg = self._fit(entry,dim1_model,
                                                                               save=None,
                                                                               use_mirror=None,
                                                                               dimension=1,
@@ -1969,9 +1966,9 @@ class Scan2D(Scan):
             dim1_model.set('plots.trigger', 1, which='mirror')
             dim1_model.set('plots.trigger', 0, which='mirror')
 
-    def _fit(self, entry, save, use_mirror, dimension, i):
+    def _fit(self, entry, model, save, use_mirror, dimension, i):
         """Performs fits on dimension 0 and dimension 1"""
-        model = entry['model']
+        #model = entry['model']
         # dimension 1 fits
         if dimension == 1:
             # perform a fit on the completed dim1 plot and mutate the dim0 x/y datasets
@@ -2150,12 +2147,12 @@ class ContinuousScan(HasEnvironment):
         
         parent.continuous_index=0.0
 
-    def _mutate_plot(self, entry, i_point, point, mean):
+    def _mutate_plot(self, entry, i_point, point, mean,error):
         parent=self.parent
         model = entry['model']
         i_point = int(point % parent.continuous_plot)
         # mutate plot x/y datasets
-        model.mutate_plot(i_point=i_point, x=point, y=mean)
+        model.mutate_plot(i_point=i_point, x=point, y=mean,error=error)
 
         # tell the current_scan applet to redraw itself
         model.set('plots.trigger', 1, which='mirror')
