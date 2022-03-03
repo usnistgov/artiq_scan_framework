@@ -39,9 +39,6 @@ class Scan(HasEnvironment):
     listed in order of execution.  (see the 'Scan Callbacks' section for additional information)
     """
     # -- kernel invariants
-    ###nresults version
-    #kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements', 'nresults',
-    #                     'do_fit', 'save_fit', 'fit_only'}
     kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements', 'nresults',
                          'do_fit', 'save_fit', 'fit_only','nresults_array','nmeasureresults'}
 
@@ -69,6 +66,10 @@ class Scan(HasEnvironment):
 
     # Feature: auto tracking
     enable_auto_tracking = True   #: Auto center the scan range around the last fitted value.
+
+    # Feature: Scan simulating
+    simulate_scan = False         #: Set to true to disable certain callbacks that run on the core device.  This is used when simulating a scan without a core device, i.e. for debugging/testing purposes.
+    enable_simulations = False    #: Turn on GUI arguments for simulating scans.
 
     # Feature: host scans
     run_on_core = True            #: Set to False to run scans entirely on the host and not on the core device.
@@ -98,10 +99,12 @@ class Scan(HasEnvironment):
 
         # initialize variables
         
-        self.nresults_array=[]
-        self.nmeasureresults=0
-        self.nresults=1
-        self._measure_results = [0]
+        #multiresult models use the below initializations
+        self.nresults_array=[] #list of number of results for each measurement
+        self.nmeasureresults=0 #total number of measurement results (sum of above list)
+        self.nresults=1 #maximum number of results for any measurement, default to 1
+        self._measure_results = [0] #array of measure results sized by default to 1, otherwise sized to the maximum number of results for any measurement.
+        
         
         self.nmeasurements = 0
         self.npoints = 0
@@ -197,6 +200,10 @@ class Scan(HasEnvironment):
                 self._measure_results=[0 for _ in range(self.nresults)]
                 #Override the do_measure function to call measure(point,results) to give a results list (_measure_results) to output results
                 self.do_measure=self.do_measure_nresults
+            #check simulation, if true set run_on_host true and overwrite do_measure with simulate_measure
+            if self.simulate_scan:
+                self.run_on_core=False
+                self.do_measure=self.simulate_measure
                 
             # load scan points
             self._load_points()
@@ -238,7 +245,7 @@ class Scan(HasEnvironment):
             self._attach_to_models()
 
             # initialize simulations (needs self._x_offset/self.frequency_center)
-            #self._init_simulations()
+            self._init_simulations()
 
             # display scan info
             if self.enable_reporting:
@@ -322,7 +329,10 @@ class Scan(HasEnvironment):
             # callback
             self._before_loop(resume)
             # callback
-            self.initialize_devices()
+            if not self.simulate_scan:
+                # callback
+                self.initialize_devices()
+
             
             # iterate of passes
             while self._i_pass < npasses:
@@ -1128,6 +1138,12 @@ class Scan(HasEnvironment):
                                                        step=0.001,
                                                        fit_param=fit_param,
                                                        param_index=None))
+        if self.enable_simulations:
+            group = 'Simulation'
+            self.setattr_argument('simulate_scan', BooleanValue(default=False), group=group)
+            self.setattr_argument('noise_level', NumberValue(default=1, ndecimals=2, step=0.1), group=group)
+            self.setattr_argument('debug', NumberValue(default=0, ndecimals=0, scale=1, step=1), group=group)
+            
         self._scan_arguments()
 
     # helper: for child class
@@ -1376,6 +1392,7 @@ class Scan(HasEnvironment):
             - runs anytime _run_scan_core() or _run_scan_host() is called
             - runs on the host or the core device
             - called after the 'before_scan' callback
+            - does not run if self.simulate_scan == True
         """
         pass
 
