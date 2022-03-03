@@ -904,7 +904,6 @@ class ScanModel(Model):
             hold = self.hold or {}
             try:
                 yerr = errors if self.fit_use_yerr else None
-                print(x_data)
                 FitModel.fit_data(self, x_data, y_data, fit_function, hold=hold, guess=guess, yerr=yerr,
                                   man_bounds=man_bounds, man_scale=man_scale)
                 fit_performed = True
