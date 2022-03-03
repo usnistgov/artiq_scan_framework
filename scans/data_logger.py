@@ -1,6 +1,6 @@
 import time, os
 import h5py
-from sipyco import pyon
+from artiq.protocols import pyon
 from artiq import __version__ as artiq_version
 
 
