@@ -465,7 +465,7 @@ class ScanModel(Model):
                 self.stat_model.write('hist')
                 self.hist_model.init_datasets()
 
-        elif dimension is 1:
+        elif dimension == 1:
             # write scan points
             #self.write('x', 'x')
 
@@ -1130,5 +1130,5 @@ class ScanModel(Model):
         raise NotImplementedError('Your model needs to implement the simulation_args property')
 
     def simulate(self, x,results, noise_level=0, simulation_args=None):
-        simulation_args = simulation_args or self.simulation_args
+        simulation_args = simulation_args or self.simulation_args()
         return FitModel.simulate(self, x, noise_level, simulation_args)

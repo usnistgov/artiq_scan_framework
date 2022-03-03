@@ -46,7 +46,6 @@ class MultiresultModel(ScanModel):
       enabling multiresult_data=True (true by default, useful for calculations)
     - mutate_datasets/mutate_plots overridden assuming to take in arrays or lists of data respectively and call the function for each submodel. However,
       mutate_plots also checks for single data values assumed to be calculations of the multiresult model.
-    - simulation_args,simulate overridden to return simulation arguments for every submodel as a list and set array of results for a given measurement
     
     **Model/ScanModel functions not overriden here**
     
@@ -58,6 +57,7 @@ class MultiresultModel(ScanModel):
       only, you should additionally register that submodel seperately as a calculation.
     - auto_tracking currently assumes you have a main_fit for this multiresult model, i.e. from a calculation. If you would like to track a result from a submodel,
       register that submodel again with auto_tracking=True so that it is clear what model you would like to autotrack.
+    - simulation_args,simulate not overridden, these are looped over in the scan.py definitions of simulate_measure and init_simulations because lists of dictionaries for _simulation_results not functional
     
     **Organization of datasets**
 
@@ -168,16 +168,3 @@ class MultiresultModel(ScanModel):
         else:
             ###calculation has been done and y is a single float, mutate plot of the multiresult_model. Assuming multiresult_data is True
             super().mutate_plot(i_point,x,y,error,dim)
-    
-    # --- simulation
-    @property
-    def simulation_args(self):
-        """Function arguments passed to the fit function when running simulations"""
-        return [model.simulation_args for model in self.models]
-
-    def simulate(self, x, results, noise_level=0, simulation_args=None):
-        simulation_args_array = simulation_args or self.simulation_args
-        i=0
-        for simulation_args in simulation_args_array:
-            results[i]=models[i].simulate(x,noise_level,simulation_args,results)
-        return results[0]

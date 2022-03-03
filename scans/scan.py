@@ -68,7 +68,7 @@ class Scan(HasEnvironment):
     enable_auto_tracking = True   #: Auto center the scan range around the last fitted value.
 
     # Feature: Scan simulating
-    simulate_scan = False         #: Set to true to disable certain callbacks that run on the core device.  This is used when simulating a scan without a core device, i.e. for debugging/testing purposes.
+    simulate_scan = None         #: Set to true to disable certain callbacks that run on the core device.  This is used when simulating a scan without a core device, i.e. for debugging/testing purposes.
     enable_simulations = False    #: Turn on GUI arguments for simulating scans.
 
     # Feature: host scans
@@ -111,7 +111,8 @@ class Scan(HasEnvironment):
         self.nbins = None
         self.nrepeats = None
         self._x_offset = None
-        self.debug = 0
+        #self.debug = 0
+        self.debug = None
         
         self.continuous_scan=None
 
@@ -549,12 +550,19 @@ class Scan(HasEnvironment):
             # measurement models...
             if entry['measurement']:
                 # make a copy of simulation args to speed up simulations (don't have to recompute at each scan point)
-                try:
-                    entry['model']._simulation_args = entry['model'].simulation_args
-                    self._logger.debug('initialized model {0} simulation args to {1}'.format(entry['model'].__class__,
-                                                                                            entry['model']._simulation_args))
-                except NotImplementedError:
-                    pass
+                model=entry['model']
+                if hasattr(model,"models"):
+                    ###if hasattr models this is a multiresult model and will loop through all models in that multiresult model
+                    models=model.models
+                else:
+                    ###else normal model, just make this an array so the for loop below behaves and only loops for the singular model
+                    models=[model]
+                for model in models:
+                    try:
+                        model._simulation_args = model.simulation_args()
+                        self._logger.debug('initialized model {0} simulation args to {1}'.format(model.__class__, model._simulation_args))
+                    except NotImplementedError:
+                        pass
 
         self._logger.debug('initialized simulations')
 
@@ -1286,22 +1294,28 @@ class Scan(HasEnvironment):
         self._loop(resume)
 
     # helper: for child class
-    def simulate_measure(self, point, measurement):
+    def simulate_measure(self, point):
+        measurement=self.measurement
         for entry in self._model_registry:
             if entry['measurement'] and entry['measurement'] == measurement:
                 model = entry['model']
-                #model = self._model_registry['measurements'][measurement]['model']
-                #if multiresult model, simulation_args will be a list of simulations args for each submodel
-                if hasattr(model, '_simulation_args'):
-                    simulation_args = model._simulation_args
+                if hasattr(model,"models"):
+                    ###if hasattr models this is a multiresult model and will loop through all models in that multiresult model
+                    models=model.models
                 else:
-                    simulation_args = model.simulation_args
-                # self._logger.debug('simulating measurement')
-                # self._logger.debug('simulation_args = {0}'.format(simulation_args))
-                #if multiresult model model.simulate will loop through the array of simulation_args and set measure_results array with points,
-                #and return the first index to set _measure_results[0]. If normal model with only one result will simply ignore self._measure_results and return
-                #one vaule
-                self._measure_results[0]=model.simulate(point,self._measure_results, self.noise_level, simulation_args)
+                    ###else normal model, just make this an array so the for loop below behaves and only loops for the singular model
+                    models=[model]
+                i=0
+                for model in models:
+                    if hasattr(model, '_simulation_args'):
+                        simulation_args = model._simulation_args
+                    else:
+                        simulation_args = model.simulation_args()
+                    #if multiresult model model.simulate will loop through the array of simulation_args and set measure_results array with points,
+                    #and return the first index to set _measure_results[0]. If normal model with only one result will simply ignore self._measure_results and return
+                    #one vaule
+                    self._measure_results[i]=model.simulate(point,self._measure_results, self.noise_level, simulation_args)
+                    i+=1
         return None
 
     # -------------------- Callbacks --------------------
