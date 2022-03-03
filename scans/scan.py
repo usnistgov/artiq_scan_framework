@@ -42,8 +42,8 @@ class Scan(HasEnvironment):
     ###nresults version
     #kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements', 'nresults',
     #                     'do_fit', 'save_fit', 'fit_only'}
-    kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements',
-                         'do_fit', 'save_fit', 'fit_only'}
+    kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements', 'nresults',
+                         'do_fit', 'save_fit', 'fit_only','nresults_array','nmeasureresults'}
 
     # ------------------- Configuration Attributes ---------------------
     # These are set by the child scan class to enable/disable features and control how the scan is run.
@@ -98,11 +98,10 @@ class Scan(HasEnvironment):
 
         # initialize variables
         
-        ###nresults version
-        #self._measure_results = []
-        #self.nresults = 1 #Number of results to return per measurement
-        #self.result_names=None
-        #self.nresults = None
+        self.nresults_array=[]
+        self.nmeasureresults=0
+        self.nresults=1
+        self._measure_results = [0]
         
         self.nmeasurements = 0
         self.npoints = 0
@@ -170,10 +169,6 @@ class Scan(HasEnvironment):
     def _initialize(self, resume):
         """Initialize the scan"""
         self._logger.debug("_initialize()")
-        
-        ###nresults version
-        #if self.nresults is not None and self.result_names is None:
-        #    self.result_names = ["result_{0}".format(i) for i in range(self.nresults)]
 
         # initialize state variables
         self._paused = False
@@ -183,6 +178,7 @@ class Scan(HasEnvironment):
         self._logger.debug("executing prepare_scan callback")
 
         if not resume:
+            ###This is run first call of _initialize (resume=False), override and initialize anything needed at start of experiment
             if self.continuous_scan:
                 #Set _load_points,_loop,_mutate_plot, _offset_points to be continuous versions
                 self._load_points=ContinuousScan(self,self)._load_points
@@ -190,12 +186,18 @@ class Scan(HasEnvironment):
                 self._mutate_plot=ContinuousScan(self,self)._mutate_plot
                 self._offset_points=ContinuousScan(self,self)._offset_points
                 if self.continuous_save:
+                    #Save all continuous data collected to an external hdf file with a resizeable array appended every time the 
+                    #points loop is filled
                     self.continuous_logger=DataLogger(self)
                 else:
                     self.continuous_logger=None
-            ###nresults version
-            #self._measure_results = [0 for _ in range(self.nresults)]
-            
+            #Check if nresults is greater than one, resize the _measure_results array to account for the maximum number of results for any individual measurement
+            self.nresults=max(self.nresults_array)
+            if self.nresults>1:
+                self._measure_results=[0 for _ in range(self.nresults)]
+                #Override the do_measure function to call measure(point,results) to give a results list (_measure_results) to output results
+                self.do_measure=self.do_measure_nresults
+                
             # load scan points
             self._load_points()
             self._logger.debug('loaded points')
@@ -424,24 +426,25 @@ class Scan(HasEnvironment):
                 self.before_measure(measure_point, self.measurement)
                 self.lab_before_measure(measure_point, self.measurement)
                 
-                count=self.do_measure(measure_point)
-                self._data[i_measurement][i_repeat] = count
-                counts += count
+                self.do_measure(measure_point)
+                for i_result in range(self.nresults_array[i_measurement]):
+                    count=self._measure_results[i_result]
+                    self._data[i_measurement][i_result][i_repeat] = count
+                    counts += count
 
                 # callback
                 self.after_measure(measure_point, self.measurement)
                 self.lab_after_measure(measure_point, self.measurement)
 
         # update the dataset used to monitor counts
-        #mean = counts / (nrepeats*nmeasurements*self.nresults)
-        mean = counts / (nrepeats*nmeasurements)
+        mean = counts / (nrepeats*self.nmeasureresults)
 
         # cost: 18 ms per point
         # mutate dataset values
         if self.enable_mutate:
             for i_measurement in range(nmeasurements):
-                # get data for model, only send newly generated data array 0:nrepeats
-                data = self._data[i_measurement]
+                # get data for model, only send this measurement, and only the nresults for this measurement
+                data = self._data[i_measurement][0:self.nresults_array[i_measurement]]
 
                 # get the name of the measurement
                 measurement = self.measurements[i_measurement]
@@ -510,7 +513,7 @@ class Scan(HasEnvironment):
         """initialize memory to record counts on core device"""
 
         #: 3D array of counts measured for a given scan point, i.e. nmeasurement*nrepeats*nresults
-        self._data = np.zeros((self.nmeasurements, self.nrepeats),dtype=np.int32)
+        self._data = np.zeros((self.nmeasurements, self.nresults,self.nrepeats),dtype=np.int32)
         self._logger.debug('initialized storage')
 
     # private: for scan.py
@@ -619,9 +622,9 @@ class Scan(HasEnvironment):
         #     value = model.mutate_datasets_calc(i_point, point, calculation)
         #     if 'mutate_plot' in entry and entry['mutate_plot']:
         #         self._mutate_plot(entry, i_point, point, value)
-        value = model.mutate_datasets_calc(i_point, point, calculation)
+        value,error = model.mutate_datasets_calc(i_point, point, calculation)
         if 'mutate_plot' in entry and entry['mutate_plot']:
-            self._mutate_plot(entry, i_point, point, value)
+            self._mutate_plot(entry, i_point, point, value,error)
 
     # ------------------- Interface Methods ---------------------
 
@@ -653,7 +656,6 @@ class Scan(HasEnvironment):
 
             # initialize the scan
             self._initialize(resume)
-            
             # run the scan
             if not self.fit_only:
                 if resume:
@@ -813,17 +815,15 @@ class Scan(HasEnvironment):
         :param data: List of integers containing the values returned by :code:`measure()` at each repetition of the current scan point.
         """
         self.measurement = measurement
-
         for entry in self._model_registry:
             # model registered for this measurement
             if entry['measurement'] and entry['measurement'] == measurement:
                 # grab the model for the measurement from the registry
                 # if measurement in self._model_registry['measurements']:
                 #    entry = self._model_registry['measurements'][measurement]
-
                 # mutate the stats for this measurement with the data passed from the core device
-                mean = entry['model'].mutate_datasets(i_point, poffset, point, data)
-                self._mutate_plot(entry, i_point, point, mean)
+                mean,error = entry['model'].mutate_datasets(i_point, poffset, point, data)
+                self._mutate_plot(entry, i_point, point, mean,error)
 
                 # keep a record on the host of the data collected for this pass, measurement, and scan point
                 # for i_repetition in range(len(data)):
@@ -940,44 +940,50 @@ class Scan(HasEnvironment):
                 # registered fit models
                 if entry['fit']:
                     model = entry['model']
-
-                    # callback
-                    if self.before_fit(model) is not False:
-
-                        # what's the correct data source?
-                        #   When fitting only (no scan is performed) the fit is performed on data from the last
-                        #   scan that ran, which is assumed to be in the 'current_scan' namespace.
-                        #   Otherwise, the fit is performed on data in the model's namespace.
-                        use_mirror = model.mirror is True and self.fit_only
-                        save = self.save_fit
-
-                        # dummy values, these are only used in 2d scans
-                        dimension = 0
-                        i = 0
-
-                        # perform the fit
-                        self._logger.debug('performing fit on model \'{0}\''.format(entry['name']))
-                        fit_performed, valid, main_fit_saved, errormsg = self._fit(entry, save, use_mirror, dimension, i)
-
-                        entry['fit_valid'] = valid
-
-                        # tell current scan to plot data...
-                        model.set('plots.trigger', 1, which='mirror')
-                        model.set('plots.trigger', 0, which='mirror')
-
-                        # params not saved warning occurred
-                        if save and not main_fit_saved:
-                            self.logger.warning("Fitted params not saved.")
-
+                    if hasattr(model,"fit_models"):
+                        ###if hasattr fit_models this is a multiresult model and will loop through all fit models in that multiresult model
+                        models=model.fit_models
+                    else:
+                        ###else normal model, just make this an array so the for loop below behaves and only loops for the singular model
+                        models=[model]
+                    for model in models:
                         # callback
-                        self._main_fit_saved = main_fit_saved
-                        self._fit_valid = valid
-                        if fit_performed:
-                            self.after_fit(entry['fit'], valid, main_fit_saved, model)
-
-                    # print the fitted parameters...
-                    if self.enable_reporting and fit_performed:
-                        self.report_fit(model)
+                        if self.before_fit(model) is not False:
+    
+                            # what's the correct data source?
+                            #   When fitting only (no scan is performed) the fit is performed on data from the last
+                            #   scan that ran, which is assumed to be in the 'current_scan' namespace.
+                            #   Otherwise, the fit is performed on data in the model's namespace.
+                            use_mirror = model.mirror is True and self.fit_only
+                            save = self.save_fit
+    
+                            # dummy values, these are only used in 2d scans
+                            dimension = 0
+                            i = 0
+    
+                            # perform the fit
+                            self._logger.debug('performing fit on model \'{0}\''.format(entry['name']))
+                            fit_performed, valid, main_fit_saved, errormsg = self._fit(entry, model,save, use_mirror, dimension, i)
+    
+                            entry['fit_valid'] = valid
+    
+                            # tell current scan to plot data...
+                            model.set('plots.trigger', 1, which='mirror')
+                            model.set('plots.trigger', 0, which='mirror')
+    
+                            # params not saved warning occurred
+                            if save and not main_fit_saved:
+                                self.logger.warning("Fitted params not saved.")
+    
+                            # callback
+                            self._main_fit_saved = main_fit_saved
+                            self._fit_valid = valid
+                            if fit_performed:
+                                self.after_fit(entry['fit'], valid, main_fit_saved, model)
+    
+                        # print the fitted parameters...
+                        if self.enable_reporting and fit_performed:
+                            self.report_fit(model)
 
     # interface: for extensions (required)
     def _write_datasets(self, entry):
@@ -996,7 +1002,7 @@ class Scan(HasEnvironment):
         pass
 
     # interface: for extensions (required)
-    def _mutate_plot(self, entry, i_point, data, mean):
+    def _mutate_plot(self, entry, i_point, data, mean,error):
         raise NotImplementedError()
 
     # interface: for extensions (required)
@@ -1020,10 +1026,11 @@ class Scan(HasEnvironment):
     @portable
     def do_measure(self, point):
         """Provides a way for subclasses to override the method signature of the measure method."""
-        ###nresults version
-        #result= self.measure(point)
-        #self._measure_results[0] = result
-        return self.measure(point)
+        self._measure_results[0]=self.measure(point)
+    @portable
+    def do_measure_nresults(self, point):
+        """Provides a way for subclasses to override the method signature of the measure method."""
+        self.measure(point,self._measure_results)
 
     # ------------------- Helper Methods ---------------------
     # helper: for child class
@@ -1125,7 +1132,7 @@ class Scan(HasEnvironment):
 
     # helper: for child class
     def register_model(self, model_instance, measurement=None, fit=None, calculation=None,
-                       init_datasets=True, **kwargs):
+                       init_datasets=True,nresults=1, **kwargs):
         """Register a model with the scan.  Models can be registered as a measurement model, fit model,
         calculation model, or combinations of these.
 
@@ -1209,7 +1216,8 @@ class Scan(HasEnvironment):
             'measurement': measurement,
             'fit': fit,
             'calculation': calculation,
-            'name': model_instance.__class__.__name__
+            'name': model_instance.__class__.__name__,
+            'nresults':nresults
         }
 
         # tack on any additional user defined settings
@@ -1241,6 +1249,8 @@ class Scan(HasEnvironment):
 
         if measurement and measurement not in self.measurements:
             self.measurements.append(measurement)
+            self.nresults_array.append(nresults)
+            self.nmeasureresults+=nresults
 
     # helper method: for scan.py or child class
     @kernel
@@ -1282,14 +1292,17 @@ class Scan(HasEnvironment):
             if entry['measurement'] and entry['measurement'] == measurement:
                 model = entry['model']
                 #model = self._model_registry['measurements'][measurement]['model']
+                #if multiresult model, simulation_args will be a list of simulations args for each submodel
                 if hasattr(model, '_simulation_args'):
                     simulation_args = model._simulation_args
                 else:
                     simulation_args = model.simulation_args
                 # self._logger.debug('simulating measurement')
                 # self._logger.debug('simulation_args = {0}'.format(simulation_args))
-                value = model.simulate(point, self.noise_level, simulation_args)
-                return value
+                #if multiresult model model.simulate will loop through the array of simulation_args and set measure_results array with points,
+                #and return the first index to set _measure_results[0]. If normal model with only one result will simply ignore self._measure_results and return
+                #one vaule
+                self._measure_results[0]=model.simulate(point,self._measure_results, self.noise_level, simulation_args)
         return None
 
     # -------------------- Callbacks --------------------
@@ -1779,6 +1792,7 @@ class Scan1D(Scan):
 
         # flattened 1D array of scan points (these are looped over on the core)
         self._points_flat = np.array(points, dtype=np.float64)
+        #edge case to help artiq compiler. Doesn't like looping through an empty array so always have a least warmup_points=[0], if nwarmup_points=0
         if self.nwarmup_points:
             self._warmup_points = np.array(warmup_points, dtype=np.float64)
         else:
@@ -1789,20 +1803,20 @@ class Scan1D(Scan):
         # (these are used on the core to map the flat idx index to the 2D point index)
         self._i_points = np.array(range(self.npoints), dtype=np.int64)
 
-    def _mutate_plot(self, entry, i_point, point, mean):
+    def _mutate_plot(self, entry, i_point, point, mean,error):
         model = entry['model']
 
         # mutate plot x/y datasets
-        model.mutate_plot(i_point=i_point, x=point, y=mean)
+        model.mutate_plot(i_point=i_point, x=point, y=mean,error=error)
 
         # tell the current_scan applet to redraw itself
         model.set('plots.trigger', 1, which='mirror')
         model.set('plots.trigger', 0, which='mirror')
 
-    def _fit(self, entry, save, use_mirror, dimension, i):
+    def _fit(self, entry, model, save, use_mirror, dimension, i):
         """Perform the fit"""
 
-        model = entry['model']
+        #model = entry['model']
         x_data, y_data = model.get_fit_data(use_mirror)
 
         # for validation methods
@@ -1862,6 +1876,7 @@ class Scan2D(Scan):
             warmup_points = list(self._warmup_points)
         warmup_points = [p for p in warmup_points]
         self.nwarmup_points = np.int32(len(warmup_points))
+        #edge case to help artiq compiler. Doesn't like looping through an empty array so always have a least warmup_points=[0], if nwarmup_points=0
         if self.nwarmup_points:
             self._warmup_points = np.array(warmup_points, dtype=np.float64)
         else:
@@ -1899,7 +1914,7 @@ class Scan2D(Scan):
             (i1, i2) for i1 in range(self._shape[0]) for i2 in range(self._shape[1])
         ], dtype=np.int64)
 
-    def _mutate_plot(self, entry, i_point, point, mean):
+    def _mutate_plot(self, entry, i_point, point, mean,error):
         """Mutates datasets for dimension 0 plots and dimension 1 plots"""
         if entry['dimension'] == 1:
             dim1_model = entry['model']
@@ -1919,7 +1934,7 @@ class Scan2D(Scan):
             # first store the point & mean to the dim1 plot x/y datasets
             # the value of the fitted parameter is plotted as the y value
             # at the current dimension-0 x value (i.e. x0)
-            dim1_model.mutate_plot(i_point=i_point, x=point[1], y=mean, error=None, dim=1)
+            dim1_model.mutate_plot(i_point=i_point, x=point[1], y=mean, error=error, dim=1)
 
 
 
@@ -1930,7 +1945,7 @@ class Scan2D(Scan):
                 # perform a fit over the dimension 1 data
                 fit_performed = False
                 try:
-                    fit_performed, fit_valid, saved, errormsg = self._fit(entry,
+                    fit_performed, fit_valid, saved, errormsg = self._fit(entry,dim1_model,
                                                                               save=None,
                                                                               use_mirror=None,
                                                                               dimension=1,
@@ -1969,9 +1984,9 @@ class Scan2D(Scan):
             dim1_model.set('plots.trigger', 1, which='mirror')
             dim1_model.set('plots.trigger', 0, which='mirror')
 
-    def _fit(self, entry, save, use_mirror, dimension, i):
+    def _fit(self, entry, model, save, use_mirror, dimension, i):
         """Performs fits on dimension 0 and dimension 1"""
-        model = entry['model']
+        #model = entry['model']
         # dimension 1 fits
         if dimension == 1:
             # perform a fit on the completed dim1 plot and mutate the dim0 x/y datasets
@@ -2150,12 +2165,12 @@ class ContinuousScan(HasEnvironment):
         
         parent.continuous_index=0.0
 
-    def _mutate_plot(self, entry, i_point, point, mean):
+    def _mutate_plot(self, entry, i_point, point, mean,error):
         parent=self.parent
         model = entry['model']
         i_point = int(point % parent.continuous_plot)
         # mutate plot x/y datasets
-        model.mutate_plot(i_point=i_point, x=point, y=mean)
+        model.mutate_plot(i_point=i_point, x=point, y=mean,error=error)
 
         # tell the current_scan applet to redraw itself
         model.set('plots.trigger', 1, which='mirror')
