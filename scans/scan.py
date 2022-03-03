@@ -831,7 +831,7 @@ class Scan(HasEnvironment):
             self.logger.warning("Scan terminated.")
             self._terminated = True
             #Scan has ended, append remaining data collected to external hdf file if continuous scan saving enabled
-            if self.continuous_logger:
+            if self.continuous_save:
                 first_pass=self.continuous_points>=int(self.continuous_index)
                 ContinuousScan(self,self).continuous_logging(self,self.continuous_logger,first_pass)
 
@@ -2130,7 +2130,7 @@ class ContinuousScan(HasEnvironment):
                parent.continuous_index+=1
                if parent._idx == parent.continuous_points:
                    parent._idx =0
-                   if parent.continuous_logger:
+                   if parent.continuous_save:
                        first_pass=parent.continuous_points==int(parent.continuous_index)
                        self.continuous_logging(parent,parent.continuous_logger,first_pass)
        except Paused:
