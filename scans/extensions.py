@@ -92,7 +92,7 @@ class TimeFreqScan(Scan):
         super().scan_arguments(npasses=npasses, nrepeats=nrepeats, nbins=nbins, fit_options=fit_options, guesses=guesses)
 
         # create remaining scan arguments for time and frequency scans
-        if frequencies is not False:
+        if frequencies != False:
             self.setattr_argument('frequencies', Scannable(
                 default=RangeScan(
                     start=frequencies['start'],
@@ -107,11 +107,11 @@ class TimeFreqScan(Scan):
         # auto tracking is disabled...
         # ask user for the frequency center
         if not self.enable_auto_tracking:
-            if self.frequency_center is None:
+            if self.frequency_center == None:
                 if frequency_center != False:
                     self.setattr_argument('frequency_center', NumberValue(**frequency_center), group='Scan Range')
 
-            if self.pulse_time is None:
+            if self.pulse_time == None:
                 if pulse_time != False:
                     self.setattr_argument('pulse_time', NumberValue(**pulse_time), group='Scan Range')
         self.setattr_argument('times', Scannable(
@@ -133,7 +133,7 @@ class TimeFreqScan(Scan):
 
         # tell scan to offset x values by the frequency_center
         # this is done even when not auto-tracking in case the user has manually set frequency_center
-        if self.scan == 'frequency' and self.frequency_center is not None:
+        if self.scan == 'frequency' and self.frequency_center != None:
             self._x_offset = self.frequency_center
             self._logger.debug("set _x_offset to frequency_center value of {0}".format(self.frequency_center))
 
@@ -150,10 +150,10 @@ class TimeFreqScan(Scan):
 
     def __load_frequency_center(self):
         # frequency or pulse time manually set in the scan, state that in the debug logs
-        if self.frequency_center is not None:
+        if self.frequency_center != None:
             self.logger.debug("frequency_center manually set to {0}".format(self.frequency_center))
 
-        if self.pulse_time is not None:
+        if self.pulse_time != None:
             self.logger.debug("pulse_time manually set to {0}".format(self.pulse_time))
 
         # the frequency center is auto loaded from the fits by this class...
@@ -166,13 +166,13 @@ class TimeFreqScan(Scan):
                     fitted_freq, fitted_time = self._get_main_fits(model)
 
                     # hasn't been set yet, ok to auto load
-                    if self.frequency_center is None:
+                    if self.frequency_center == None:
                         # set frequency center from saved fit values
                         self.frequency_center = fitted_freq
                         self._logger.debug("auto set frequency_center to {0} from fits".format(fitted_freq))
 
                     # hasn't been set yet, ok to auto load
-                    if self.pulse_time is None:
+                    if self.pulse_time == None:
                         # set pulse time from saved fit values
                         self.pulse_time = fitted_time
                         self._logger.debug("auto set pulse_time to {0} from fits".format(fitted_time))
@@ -212,24 +212,35 @@ class TimeFreqScan(Scan):
         # time scan
         if self.scan == 'time':
             pulse_time = point
-            return self.measure(pulse_time, self.frequency_center)
+            self._measure_results[0]= self.measure(pulse_time, self.frequency_center)
 
         # frequency scan
         if self.scan == 'frequency':
-            return self.measure(self.pulse_time, point)
-        return 0
+            self._measure_results[0]= self.measure(self.pulse_time, point)
+    @portable
+    def do_measure_nresults(self,point):
+        # time scan
+        if self.scan == 'time':
+            pulse_time = point
+            #multiresult model used in this scan, fill your results into the _measure_results list passed in the third argument of self.measure
+            self.measure(pulse_time, self.frequency_center,self._measure_results)
+
+        # frequency scan
+        if self.scan == 'frequency':
+            #multiresult model used in this scan, fill your results into the _measure_results list passed in the third argument of self.measure
+            self.measure(self.pulse_time, point,self._measure_results)
 
     def report(self, location='both'):
         super().report(location)
         if location == 'bottom':
             self.logger.info("Type: %s scan" % self.scan)
             if self.scan == 'frequency':
-                if self.frequency_center is not None:
+                if self.frequency_center != None:
                     self.logger.info('Frequency Center: %f MHz' % (self.frequency_center / MHz))
-                if self.pulse_time is not None:
+                if self.pulse_time != None:
                     self.logger.info("Pulse Time: %f us" % (self.pulse_time / us))
             if self.scan == 'time':
-                if self.frequency_center is not None:
+                if self.frequency_center != None:
                     self.logger.info('Frequency: %f MHz' % (self.frequency_center / MHz))
 
 

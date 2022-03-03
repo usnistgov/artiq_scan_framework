@@ -367,6 +367,9 @@ class Scan(HasEnvironment):
             self._i_point = i_points[self._idx]
 
             # repeat measurement on scan point
+            # first two arguments are point because point (value in the scan points array) is assumed to be the same as measure point (value you would like to
+            # pass to the measure method). This is different for a continuous scan  that uses the first point as the number of scan points run, and the second as
+            # the value that the measure function should use.
             self._repeat_loop(point, point, self._i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
                               last_point=False, last_pass=last_pass)
             self._idx += 1
@@ -606,11 +609,6 @@ class Scan(HasEnvironment):
     def _calculate(self, i_point, point, calculation, entry):
         """Perform calculations on collected data after each scan point"""
         model = entry['model']
-        ###nresults version possibly
-        # for i_result in range(self.nresults):
-        #     value = model.mutate_datasets_calc(i_point, point, calculation)
-        #     if 'mutate_plot' in entry and entry['mutate_plot']:
-        #         self._mutate_plot(entry, i_point, point, value)
         value,error = model.mutate_datasets_calc(i_point, point, calculation)
         if 'mutate_plot' in entry and entry['mutate_plot']:
             self._mutate_plot(entry, i_point, point, value,error)
@@ -1006,11 +1004,16 @@ class Scan(HasEnvironment):
     # interface: for extensions (optional)
     @portable
     def do_measure(self, point):
-        """Provides a way for subclasses to override the method signature of the measure method."""
+        """Provides a way for subclasses to override the method signature of the measure method. You MUST return the result of the measuerment into 
+        the self._measure_results array. If you only have one value to return, do _measure_results[0]=self.measure(point). If you have multiple results for
+        a single measurement, iterate through the array for each result, while only calling measure once, ideally passing _measure_results as an array to modify"""
         self._measure_results[0]=self.measure(point)
     @portable
     def do_measure_nresults(self, point):
-        """Provides a way for subclasses to override the method signature of the measure method."""
+        """Provides a way for subclasses to override the method signature of the measure method. You MUST return the result of the measuerment into 
+        the self._measure_results array. If you only have one value to return, do _measure_results[0]=self.measure(point). If you have multiple results for
+        a single measurement, iterate through the array for each result, while only calling measure once, ideally passing _measure_results as an array to modify"""
+        #multiresult model used in this scan, fill your results into the _measure_results list passed in the second argument of self.measure
         self.measure(point,self._measure_results)
 
     # ------------------- Helper Methods ---------------------
@@ -1867,7 +1870,8 @@ class Scan1D(Scan):
 
 class Scan2D(Scan):
     """Extension of the :class:`~scan_framework.scans.scan.Scan` class for 2D scans.  All 2D scans should inherit from
-        this class."""
+        this class. Beware that 2D scans have not thoroughly been tested, especially with new features as of version 3 of the scan_framework,
+        namely continuous_scans and multiresult models have not been tested with 2D scans."""
     hold_plot = False
 
     def __init__(self, managers_or_parent, *args, **kwargs):
@@ -2135,17 +2139,22 @@ class ContinuousScan(HasEnvironment):
            # callback
            parent.initialize_devices()
            
-           poffset=0
+           poffset=0 #not used since there are no passes in continuous scan, just dummy variable
            while True:
                if not resume or parent._idx==0:
                    parent.before_pass(parent._i_pass)
                parent._repeat_loop(parent.continuous_index,parent.continuous_measure_point,parent._idx,nrepeats,nmeasurements,measurements,poffset,ncalcs)
                parent._idx+=1
                parent.continuous_index+=1
+               #_idx is the index for accessing the points array, which gets overwritten after continuous_points scan points
                if parent._idx == parent.continuous_points:
+                   #start overwritting scan points, keep track of number of points still in continuous_index however
                    parent._idx =0
                    if parent.continuous_save:
-                       first_pass=parent.continuous_points==int(parent.continuous_index)
+                       #save data to external hdf file after getting to end of index before overwriting it
+                       #first_pass happens if number of points (continuous_index) is less than or equal to the size of the points array (continuous_points)
+                       #need to know first pass to init the dataset in the external hdf file
+                       first_pass=parent.continuous_points>=int(parent.continuous_index)
                        self.continuous_logging(parent,parent.continuous_logger,first_pass)
        except Paused:
            parent._paused = True
@@ -2194,9 +2203,10 @@ class ContinuousScan(HasEnvironment):
         parent=self.parent
         if x_offset != None:
             parent.continuous_measure_point += x_offset
+    @rpc(flags={"async"})
     def continuous_logging(self,parent,logger,first_pass):
         for entry in parent._model_registry:
-            # model registered for this measurement
+            # look at every model, and if it's a measurement append it to external hdf dataset
             if entry['measurement']:
                 model = entry['model']
                 if hasattr(model,"models"):
