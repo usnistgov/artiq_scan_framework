@@ -893,20 +893,23 @@ class Scan(HasEnvironment):
     # interface: for child class
     def _get_fit_guess(self, fit_function):
         """Maps GUI arguments to fit guesses.  """
-        guess = {}
-        signature = inspect.getargspec(getattr(fit_function, 'value')).args
-        # map gui arguments to fit guesses
-        for key in self._fit_guesses.keys():
-            g = self._fit_guesses[key]
-            if g['use']:
-                # generic fit guess gui arguments specified by position in the fit function signature
-                if g['fit_param'] is None and g['param_index'] is not None:
-                    i = g['param_index']
-                    if i < len(signature):
-                        g['fit_param'] = signature[i]
-                if g['fit_param'] is not None:
-                    guess[g['fit_param']] = g['value']
-        return guess
+        if fit_function:
+            guess = {}
+            signature = inspect.getargspec(getattr(fit_function, 'value')).args
+            # map gui arguments to fit guesses
+            for key in self._fit_guesses.keys():
+                g = self._fit_guesses[key]
+                if g['use']:
+                    # generic fit guess gui arguments specified by position in the fit function signature
+                    if g['fit_param'] is None and g['param_index'] is not None:
+                        i = g['param_index']
+                        if i < len(signature):
+                            g['fit_param'] = signature[i]
+                    if g['fit_param'] is not None:
+                        guess[g['fit_param']] = g['value']
+            return guess
+        else:
+            return None
 
     # interface: for child class (optional)
     def _analyze(self):
