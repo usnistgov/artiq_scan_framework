@@ -111,7 +111,7 @@ class FitModel(Model):
             value = c
 
         noise = (2.0 * np.random.random() - 1.0) * noise_level
-        return int(abs(value + noise))
+        return round(abs(value + noise))
 
     @staticmethod
     def reg_err(y, fitline):
