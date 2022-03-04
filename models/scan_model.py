@@ -1053,6 +1053,8 @@ class ScanModel(Model):
         if i != None:
             key = "{0}.{1}".format(i, key)
         else:
+            ####modified 3/3/2022, not sure what edge case necessitated overriding mirror of plots.fitline, but now not overridden so
+            ####multiple fits can be done and only mirror one of them to the current scan
             # this must update the current_scan so fitlines show up in the plots
             #mirror = self.mirror
             #self.mirror = True
