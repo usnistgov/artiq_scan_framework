@@ -199,14 +199,14 @@ $python -m scan_framework.applets.plot_xy_ntrace_white
 ```
 
 ## Documentation
-Full documentation is available at https://stylus.ipages.nist.gov/scan_framework/
+Full documentation is available at https://pages.nist.gov/artiq_scan_framework/
 
 Detailed APIs are also available:
 TODO: Update Links
-1. [API for scans](https://stylus.ipages.nist.gov/scan_framework/scans/api.html)
-2. [API for models](https://stylus.ipages.nist.gov/scan_framework/models_ref.html)
-3. [API for applets](https://stylus.ipages.nist.gov/scan_framework/applets/api.html)
-4. [API for curve fitting](https://stylus.ipages.nist.gov/scan_framework/analysis/api.html)
+1. [API for scans](https://pages.nist.gov/artiq_scan_framework/scans/api.html)
+2. [API for models](https://pages.nist.gov/artiq_scan_framework/models_ref.html)
+3. [API for applets](https://pages.nist.gov/artiq_scan_framework/applets/api.html)
+4. [API for curve fitting](https://pages.nist.gov/artiq_scan_framework/analysis/api.html)
 
 ### Scan framework settings
 Framework features can be enabled or disabled in the `build()` method of your scan class
