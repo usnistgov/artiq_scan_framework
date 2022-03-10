@@ -17,7 +17,7 @@ and helps avoid incorrect fit parameters from being saved and later used in an e
 philosophy of convention over configuration: datasets are stored for analysis and plotting in a standardize way which
 removes much of the data handling that needs to performed by the writer of a scan.   
 
-Please refer to https://stylus.ipages.nist.gov/scan_framework/ for the full scan framework documentation including 
+Please refer to https://pages.nist.gov/artiq_scan_framework/ for the full scan framework documentation including 
 many worked examples and a full API listing.  The following gives a broad overview of the most import aspects of 
 the scan framework.
 
