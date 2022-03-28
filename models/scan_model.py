@@ -307,15 +307,15 @@ class ScanModel(Model):
         self.fit_model._namespace = self.namespace + '.fits'
         self.fit_model._mirror_namespace = self.mirror_namespace + '.fits'
         self.fit_model.bind()
-        self.stat_model.namespace = self.namespace + '.stats'
-        self.stat_model.mirror_namespace = self.mirror_namespace + '.stats'
+        self.stat_model._namespace = self.namespace + '.stats'
+        self.stat_model._mirror_namespace = self.mirror_namespace + '.stats'
         self.stat_model.bind()
         if self.enable_histograms:
-            self.hist_model.namespace = self.namespace + '.hist'
-            self.hist_model.mirror_namespace = 'current_hist'
+            self.hist_model._namespace = self.namespace + '.hist'
+            self.hist_model._mirror_namespace = 'current_hist'
             self.hist_model.plot_title = self.plot_title
             self.hist_model.bind()
-        self.defaults_model.namespace = self.namespace + '.defaults'
+        self.defaults_model._namespace = self.namespace + '.defaults'
         self.defaults_model.bind()
 
     def attach(self, scan):

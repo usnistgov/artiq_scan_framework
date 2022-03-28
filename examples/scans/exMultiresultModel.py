@@ -179,6 +179,7 @@ class Example14Model(ScanModel):
                 'alpha': 3,
                 'y0':0
             }
+    @property
     def simulation_args(self):
         # Use `x^2` to the `be_ions result` measurement simulation
         if self.mmnt_name == 'be_ions':

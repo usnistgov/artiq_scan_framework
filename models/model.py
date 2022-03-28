@@ -409,12 +409,12 @@ class Model(HasEnvironment):
 
     @staticmethod
     def _is_frequency_param(param):
-        if 'frequency' in param:
+        if 'freq' in param:
             return True
         return False
 
     @staticmethod
     def _is_time_param(param):
-        if 'pi_time' in param:
+        if 'pi_t' in param:
             return True
         return False

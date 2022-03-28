@@ -137,6 +137,7 @@ class Scan(HasEnvironment):
         self._points = None
         self._warmup_points = None
         self.warming_up = False
+        self._check_pause = False
 
         # this stores "flat" idx point index when a scan is paused.  the idx index is then restored from
         # this variable when the scan resumes.
@@ -182,7 +183,11 @@ class Scan(HasEnvironment):
             if self.continuous_scan:
                 self._init_continuous()
             #Check if nresults is greater than one, resize the _measure_results array to account for the maximum number of results for any individual measurement
-            self.nresults=max(self.nresults_array)
+            if self.nresults_array:
+                self.nresults=max(self.nresults_array)
+            else:
+                self.nresults_array=[1]
+                self.nmeasureresults=1
             if self.nresults>1:
                 self._measure_results=[0 for _ in range(self.nresults)]
                 #Override the do_measure function to call measure(point,results) to give a results list (_measure_results) to output results
@@ -387,19 +392,17 @@ class Scan(HasEnvironment):
     @portable
     def _repeat_loop(self, point, measure_point, i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
                      last_point=False, last_pass=False):
-
-        # check for higher priority experiment or termination requested
-        if self.enable_pausing:
-
-            # cost: 3.6 ms
-            check_pause = self.scheduler.check_pause()
-            if check_pause:
-                # yield
-                raise Paused
+        # see if check for higher priority experiment or termination requested raised at end of previous _repeat_loop. Do this so blocking rpc (the check_pause call)
+        # isn't blocked by the quickly sent async rpc's called afterwords. Also allows user to manually set _check_pause status themselves and not lose deadtime when they
+        # have slack on last pass
+        if self._check_pause:
+            # yield
+            self._check_pause=False #reset for when scan restarts
+            raise Paused
 
         # dynamically offset the scan point
         measure_point = self.offset_point(i_point, measure_point)
-
+        
         # callback
         self.set_scan_point(i_point, measure_point)
 
@@ -418,6 +421,7 @@ class Scan(HasEnvironment):
                 
                 self.do_measure(measure_point)
                 for i_result in range(self.nresults_array[i_measurement]):
+
                     count=self._measure_results[i_result]
                     self._data[i_measurement][i_result][i_repeat] = count
                     counts += count
@@ -425,11 +429,15 @@ class Scan(HasEnvironment):
                 # callback
                 self.after_measure(measure_point, self.measurement)
                 self.lab_after_measure(measure_point, self.measurement)
-
         # update the dataset used to monitor counts
         mean = counts / (nrepeats*self.nmeasureresults)
-
-        # cost: 18 ms per point
+        
+        if self.enable_pausing:
+            # cost: 3.6 ms slack, is blocking. Call on your last loop when you have 3.6ms slack and disable pausing to 
+            #still check pausing but remove this delay
+            self._check_pause = self.scheduler.check_pause()
+            
+        # cost: 18 ms per point, around 100us slack as async rpc, can block other rpc calls though
         # mutate dataset values
         if self.enable_mutate:
             for i_measurement in range(nmeasurements):
@@ -441,24 +449,19 @@ class Scan(HasEnvironment):
 
                 # rpc to host to send data to the model
                 self.mutate_datasets(i_point, poffset, measurement, point, data)
-
         # perform calculations
         if ncalcs > 0:
             # rpc to host
             self._calculate_all(i_point, measure_point)
-
         # analyze data
         self._analyze_data(i_point, last_pass, last_point)
-
         # callback
         self.after_scan_point(i_point, measure_point)
         self._after_scan_point(i_point, measure_point, mean)
-
-        # rpc to host
+        # async rpc to host loses about 20us slack can block other rpc calls though
         if self.enable_count_monitor:
             # cost: 2.7 ms
             self._set_counts(mean)
-
     # private: for scan.py
     def map_arguments(self):
         """Map coarse grained attributes to fine grained options."""
@@ -562,7 +565,7 @@ class Scan(HasEnvironment):
                     models=[model]
                 for model in models:
                     try:
-                        model._simulation_args = model.simulation_args()
+                        model._simulation_args = model.simulation_args
                         self._logger.debug('initialized model {0} simulation args to {1}'.format(model.__class__, model._simulation_args))
                     except NotImplementedError:
                         pass
@@ -912,7 +915,7 @@ class Scan(HasEnvironment):
             #
             #If self.save_fit is true, the main fit is broadcast to the ARTIQ master,
             #persisted and saved.  If self.save_fit is False, the main fit is not broadcasted or persisted but is saved
-            #so that it can still be retrieved using normal get_datset methods before the experiment has completed.
+            #so that it can still be retrieved using normal get_dataset methods before the experiment has completed.
 
             # for every registered model...
             for entry in self._model_registry:
@@ -1276,6 +1279,9 @@ class Scan(HasEnvironment):
         """
         if self.enable_timing:
             self._timeit('compile')
+        if self.enable_pausing:
+            # cost: 3.6 ms slack, is blocking. This just checks at start of experiment if you wanted to pause before running experiment
+            self._check_pause = self.scheduler.check_pause()
         self._logger.debug("running scan on core device")
         self.lab_before_scan_core()
         self._loop(resume)
@@ -1313,7 +1319,7 @@ class Scan(HasEnvironment):
                     if hasattr(model, '_simulation_args'):
                         simulation_args = model._simulation_args
                     else:
-                        simulation_args = model.simulation_args()
+                        simulation_args = model.simulation_args
                     #if multiresult model model.simulate will loop through the array of simulation_args and set measure_results array with points,
                     #and return the first index to set _measure_results[0]. If normal model with only one result will simply ignore self._measure_results and return
                     #one vaule
