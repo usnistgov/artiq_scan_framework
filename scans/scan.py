@@ -1,6 +1,6 @@
 from artiq.experiment import *
 import numpy as np
-from time import time, sleep
+import time
 import inspect
 import cProfile, pstats
 from scan_framework.scans.data_logger import DataLogger
@@ -236,7 +236,8 @@ class Scan(HasEnvironment):
             self._attach_to_models()
 
             # initialize simulations (needs self._x_offset/self.frequency_center)
-            self._init_simulations()
+            if self.simulate_scan:
+                self._init_simulations()
 
             # display scan info
             if self.enable_reporting:
@@ -586,7 +587,7 @@ class Scan(HasEnvironment):
     # private: for scan.py
     def _timeit(self, event):
         if event == 'compile':
-            elapsed = time() - self._profile_times['before_compile']
+            elapsed = time.time() - self._profile_times['before_compile']
             self._logger.warning('core scan compiled in {0} sec'.format(elapsed))
 
     # private: for scan.py
@@ -657,7 +658,7 @@ class Scan(HasEnvironment):
                 if self.run_on_core:
                     if self.enable_timing:
                         self._profile_times = {
-                            'before_compile': time()
+                            'before_compile': time.time()
                         }
                     self._logger.debug("compiling core scan...")
                     self._run_scan_core(resume)
@@ -1264,7 +1265,6 @@ class Scan(HasEnvironment):
             self.measurements.append(measurement)
             self.nresults_array.append(nresults)
             self.nmeasureresults+=nresults
-
     # helper method: for scan.py or child class
     @kernel
     def _run_scan_core(self, resume=False):
