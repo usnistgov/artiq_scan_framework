@@ -60,8 +60,9 @@ class Plot(pyqtgraph.PlotWidget):
             else:
                 if self.validate() is not False:
                     self.clean()
-                    self.clear()
+                    #self.clear()
                     self.draw()
+                    self.started=True
 
     def load(self, data):
         """Load the data from datasets"""
