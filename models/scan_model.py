@@ -217,6 +217,8 @@ class ScanModel(Model):
     x_units = ''    #: Unit of the x-axis for the current scan plot.
     y_units = ''    #: Unit of the y-axis for the current scan plot.
     plot_title = '' #: Title of the current scan plot.
+    data_legend = ''
+    fit_legend = ''
 
     # instance variables
     counts = None  #: Contains the value returned by each call to the Scan measure method() -- contains a value for each scan point, repeat, and pass.
@@ -411,6 +413,9 @@ class ScanModel(Model):
             self.set('plots.y_scale', self.y_scale)
             self.set('plots.x_units', self.x_units)
             self.set('plots.y_units', self.y_units)
+            self.set('plots.fit_legend',self.fit_legend)
+            self.set('plots.data_legend',self.data_legend)
+            
 
         # --- Dimension 1 Plots ---
         elif dimension == 1:

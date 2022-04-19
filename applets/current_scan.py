@@ -13,7 +13,7 @@ class CurrentScanApplet(SimpleApplet):
         #this is the applet class that is called when artiq creates the applet. It uses as argument main_widget_class which it creates as a widget object and then calls only
         #data_changed(self, data, mods) on that object (main_widget_class) to update the dataset
         super().__init__(main_widget_class, cmd_description, default_update_delay)
-        self.n_namespaces= 10 #max number of arguments to applet command (number of curves to plot)
+        self.n_namespaces= 6 #max number of arguments to applet command (number of curves to plot)
         self.add_datasets() #create arguments expected from artiq applet call
     def add_datasets(self):
         ###add namespaces, up to n namespace locations to pull from and get plot data/fits. plots is added for you for all arguments, so give e.g. current_scan not current_scan.plots
@@ -25,6 +25,8 @@ class CurrentScanApplet(SimpleApplet):
             self.add_dataset("ns"+str(i), str(i)+"th namespace location of items under scan_framework conventions",required=False) #requires --ns(i) argument before in applet command        
         #allow disable cursor argument
         self.add_dataset("cursor","set true/false if you want cursor or not",required=False)
+        #allow disable legend argument
+        self.add_dataset("legend","set true/false if you want legend or not",required=False)
     def args_init(self):
         self.args = self.argparser.parse_args()
         self.generate_namespace_args()
@@ -45,7 +47,7 @@ class CurrentScanApplet(SimpleApplet):
         #generate args unique from all namespaces
         
         #list of items to import from each namespace (in this case most all are prepended by .plots.)
-        plot_items=['x','y','error','fitline','trigger']#could add x/y scale/unit to all of these possibly
+        plot_items=['x','y','error','fitline','trigger','fit_legend','data_legend']#could add x/y scale/unit to all of these possibly
         for i in range(self.n_namespaces):
             ns_string='ns'+str(i)
             namespace=getattr(self.args,ns_string)
@@ -94,7 +96,7 @@ class XYPlot(parent.Plot):
             'color': 'k'
         },
         'fit': {
-            'pen': pg.mkPen(color='r', width=4)
+            'pen': [pg.mkPen(color='r', width=4),pg.mkPen(color='b', width=4),pg.mkPen(color='g', width=4),pg.mkPen(color='m', width=4),pg.mkPen(color='c', width=4),pg.mkPen(color='y', width=4)]
         },
         'plot': {
             'symbol': ['o',  't', 'd', 's', 'd'],
@@ -119,8 +121,8 @@ class XYPlot(parent.Plot):
         }
     }  #: Specifies the style of the plot.
     started = False
-    xs=[0]#needed to avoid first cursor init call error
-    ys=[0]
+    xs=[[0]]#needed to avoid first cursor init call error
+    ys=[[0]]
     def __init__(self, args):
         #set self.args and get max_curves (number of arguments passed in artiq applet commands)
         super().__init__(args)
@@ -128,10 +130,15 @@ class XYPlot(parent.Plot):
         self.max_curves=self.args.n_namespaces
         self.n_curves=self.max_curves #this is modified based on number of matching rid plots
         
+        #create list of curves/error bars/legend objects for max number of curves
+        self.curve_objs=[self.plot() for i in range(self.max_curves)] #access curve n object by self.curve_obs[n]
+        self.fit_objs=[self.plot() for i in range(self.max_curves)] #access fit n object by self.fit_obs[n]
+        self.error_objs=[pg.ErrorBarItem() for i in range(self.max_curves)]#create error bars item list
+        for error_obj in self.error_objs:
+            self.addItem(error_obj) #add error bar item
+        
         #create cursor if desired
-        self.cursor_enabled=self.args.cursor
-        if self.cursor_enabled==None:
-            self.cursor_enabled=True
+        self.cursor_enabled=not self.args.cursor=="False" #by default enable cursor, only disable it if cursor argument == "False"
         if self.cursor_enabled:        
             self.vLine = pg.InfiniteLine(angle=90, movable=False)#create cursor (vertical line)
             self.cursor_text=pg.TextItem()#create text for coordinate of cursor at data point
@@ -139,13 +146,18 @@ class XYPlot(parent.Plot):
             self.addItem(self.vLine, ignoreBounds=True) #add cursor item
             self.vb=self.getPlotItem().vb #getting viewbox to convert between Q coordinates from mouse to coordinate on plot
             self.proxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)#used to call update whenever mouse moved over plot
+            self.click_proxy=pg.SignalProxy(self.scene().sigMouseClicked, slot=self.clicked) 
+                
+        #create legend obj if max_curves>1
+        if self.max_curves>1:
+            self.enable_legend= not self.args.legend=="False"
+            if self.enable_legend:
+                self.legend=self.addLegend() #sets self.legend=LegendItem object
+                self.legend_data_labels=['' for i in range(self.max_curves)]
+                self.legend_fit_labels=['' for i in range(self.max_curves)]
+        else:
+            self.enable_legend=False
         
-        #create list of curves/error bars/legend objects for max number of curves
-        self.curve_objs=[self.plot() for i in range(self.max_curves)] #access curve n object by self.curve_obs[n]
-        self.fit_objs=[self.plot() for i in range(self.max_curves)] #access fit n object by self.fit_obs[n]
-        self.error_objs=[pg.ErrorBarItem() for i in range(self.max_curves)]#create error bars item list
-        for error_obj in self.error_objs:
-            self.addItem(error_obj) #add error bar item
     def _load_plots(self, data, key, ds_only=True, default=None):
         """Helper method to load a single dataset value and return it. Lists of args therefore not passable
 
@@ -174,9 +186,9 @@ class XYPlot(parent.Plot):
         #always load and plot everything if first starting up plot, after which started=True,
         #then only load data/plot if one of the plots is triggered
         self.triggers=[self._load_plots(data,'ns%i_trigger'%i,default=0) for i in range(self.n_curves)]
-        self.trigger=sum(self.triggers)
+        trigger=sum(self.triggers)
 
-        if self.started and not self.trigger:
+        if self.started and not trigger:
             return False
 
         """Load the one time data and set it as attribute of XYPlot"""
@@ -186,18 +198,32 @@ class XYPlot(parent.Plot):
         self._load(data, 'y_scale', default=1)
         self._load(data,'rid',default=None)
         
-        #get number of curves to import by checking how many mach first rid
-        self.rids=[self._load_plots(data,'ns%i_rid'%i) for i in range(self.max_curves)]
-        self.n_curves=0 
-        print(self.rids,self.started)
+        #get number of curves to import by checking how many match first rid
+        self.rids=[self._load_plots(data,'ns%i_rid'%i) for i in range(self.max_curves)] #list of rids gotten from self.nsi_rid
+        n_curves=0 
         for rid in self.rids:
             if self.rid==rid:
-                self.n_curves+=1
+                n_curves+=1
+            else:
+                break
+        #check if n_curves changed and modify legend accordingly if needed
+        if self.n_curves != n_curves:
+            #number of curves changed, replotting everything, clear legend, hide or show it if n_curves>1
+            self.n_curves=n_curves
+            self.clear_excess_curves()
+            if self.enable_legend:
+                if self.n_curves==1:
+                    self.legend.setVisible(False)
+                else:
+                    self.legend.setVisible(True)
+                self.legend.clear()
+                self.legend_data_labels=['' for i in range(self.max_curves)]
+                self.legend_fit_labels=['' for i in range(self.max_curves)]
                 
         #load datasets for all curves with matching rid
-        plot_items=['x','y','fitline','error']
+        plot_items=['x','y','fitline','error','fit_legend','data_legend']
         for item in plot_items:
-            setattr(self,item+'s',[self._load_plots(data,'ns%i_'%i+item) for i in range(self.n_curves)])
+            setattr(self,item+'s',[self._load_plots(data,'ns%i_'%i+item) for i in range(self.n_curves)]) #import self.xs,ys,fitlines etc give in plot_items, each a list of data (or none) for n_curves
         
     def validate(self):
         """Validate that the data can be plotted"""
@@ -270,16 +296,17 @@ class XYPlot(parent.Plot):
             if self.y_label is not None:
                 self.setLabel('left', self.y_label, units=self.y_units, **self.get_style("axes.label"))
               
-            #if cursor enabled, move position (and text) to first point
+            #if cursor enabled, remove cursor while plotting
             if self.cursor_enabled:
-                self.set_cursor(0)
+                self.vLine.setVisible(False)
+                self.cursor_text.setVisible(False)
         index=0
-        for trigger in self.triggers:
+        for trigger in self.triggers[0:self.n_curves]:
             if trigger or not self.started:
                 self.draw_series(index)
             index+=1
+        self.set_legend()
     def draw_series(self, i):
-        print('drawing series',i)
         x = self.xs[i]
         y = self.ys[i]
         fit=self.fitlines[i]
@@ -307,7 +334,7 @@ class XYPlot(parent.Plot):
         if fit is not None:
             if not np.isnan(fit).all():
                 # style
-                pen = self.get_style('fit.pen')
+                pen = self.get_style('fit.pen',i)
                 fit_obj.setData(x, fit, pen=pen)
             else:
                 fit_obj.clear()
@@ -316,13 +343,41 @@ class XYPlot(parent.Plot):
             
         # draw error
         if error is not None:
-            if not np.isnan(error).all() or error!=None:
+            if not np.isnan(error).all():
                 error_obj.setData(x=np.array(x),y=np.array(y),height=2*error)
             else:
                 error_obj.clear()
         else:
             error_obj.clear()
-                
+    def clear_excess_curves(self):
+        for i in range(self.n_curves, self.max_curves):
+            self.curve_objs[i].clear()
+            self.fit_objs[i].clear()
+            self.error_objs[i].setVisible(False)
+    def set_legend(self):
+        if self.enable_legend and self.n_curves>1:
+            #legend exists and there's more than one curve, check through n_curves and reset text labels of data if it's new
+            for i in range(self.n_curves):
+                old_fit=self.legend_fit_labels[i]
+                old_data=self.legend_data_labels[i]
+                new_data=self.data_legends[i]
+                new_fit=self.fit_legends[i]
+                if new_data:
+                    #there is a new data legend name for this i'th dataset, check if one already exists and overwrite it, or else ignore
+                    if new_data!=old_data:
+                        self.legend.removeItem(self.curve_objs[i])
+                        self.legend.addItem(self.curve_objs[i],new_data)
+                        self.legend_data_labels[i]=new_data
+                else:
+                    self.legend.removeItem(self.curve_objs[i])
+                if new_fit:
+                    #there is a new data legend name for this i'th dataset, check if one already exists and overwrite it, or else ignore
+                    if new_fit!=old_fit:
+                        self.legend.removeItem(self.fit_objs[i])
+                        self.legend.addItem(self.fit_objs[i],new_fit)
+                        self.legend_fit_labels[i]=new_fit
+                else:
+                    self.legend.removeItem(self.fit_objs[i])
     def mouseMoved(self,evt):
         pos = evt[0]  ## using signal proxy turns original arguments into a tuple
         if self.sceneBoundingRect().contains(pos):
@@ -341,14 +396,28 @@ class XYPlot(parent.Plot):
                             index=i-1
                         break            
             if x_cursor > x[-1]:
-                index=-1
+                index=len(x)-1
             self.set_cursor(index)
     def set_cursor(self,index):
         x=self.xs[0]
-        y=self.ys[0]
+        ys=self.ys
+        y=ys[0]
+        self.cursor_text.setVisible(True)
+        self.vLine.setVisible(True)
         self.cursor_text.setText("x=%f,y=%f" %(x[index],y[index]))
+        ###move cursor anchor point depending on if it's at bottom or end of scan
+        first_pos=0
+        second_pos=0
+        if index>len(x)/2:
+            first_pos=1
+        if y[index]<(max([max(ys[i]) for i in range(len(ys))])+min([min(ys[i]) for i in range(len(ys))]))/2:
+            second_pos=1
+        anchor=(first_pos,second_pos)
         self.cursor_text.setPos(x[index],y[index])
+        self.cursor_text.setAnchor(anchor)
         self.vLine.setPos(x[index])
+    def clicked(self):
+        print(self.vLine.getPos()[0])
 
 def main():
     applet = CurrentScanApplet(XYPlot)

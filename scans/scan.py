@@ -952,8 +952,8 @@ class Scan(HasEnvironment):
                             entry['fit_valid'] = valid
     
                             # tell current scan to plot data...
-                            model.set('plots.trigger', 1, which='mirror')
-                            model.set('plots.trigger', 0, which='mirror')
+                            model.set('plots.trigger', 1, which='both')
+                            model.set('plots.trigger', 0, which='both')
     
                             # params not saved warning occurred
                             if save and not main_fit_saved:
@@ -1834,8 +1834,13 @@ class Scan1D(Scan):
         model.mutate_plot(i_point=i_point, x=point, y=mean,error=error)
 
         # tell the current_scan applet to redraw itself
-        model.set('plots.trigger', 1, which='mirror')
-        model.set('plots.trigger', 0, which='mirror')
+        if hasattr(model,'models'):
+            models=model.models
+        else:
+            models=[model]
+        for model in models:
+            model.set('plots.trigger', 1, which='both')
+            model.set('plots.trigger', 0, which='both')
 
     def _fit(self, entry, model, save, use_mirror, dimension, i):
         """Perform the fit"""
@@ -2006,8 +2011,8 @@ class Scan2D(Scan):
 
             # --- Redraw Plots ---
             # tell the current_scan applet to redraw itself
-            dim1_model.set('plots.trigger', 1, which='mirror')
-            dim1_model.set('plots.trigger', 0, which='mirror')
+            dim1_model.set('plots.trigger', 1, which='both')
+            dim1_model.set('plots.trigger', 0, which='both')
 
     def _fit(self, entry, model, save, use_mirror, dimension, i):
         """Performs fits on dimension 0 and dimension 1"""
@@ -2203,8 +2208,8 @@ class ContinuousScan(HasEnvironment):
         model.mutate_plot(i_point=i_point, x=point, y=mean,error=error)
 
         # tell the current_scan applet to redraw itself
-        model.set('plots.trigger', 1, which='mirror')
-        model.set('plots.trigger', 0, which='mirror')
+        model.set('plots.trigger', 1, which='both')
+        model.set('plots.trigger', 0, which='both')
 
     def _offset_points(self, x_offset):
         parent=self.parent
