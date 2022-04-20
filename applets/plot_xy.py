@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.5
 import scan_framework.applets.plot as parent
-import pyqtgraph as pg
+import pyqtgraph
 import PyQt5
 import numpy as np
 
@@ -61,7 +61,7 @@ class XYPlot(parent.Plot):
             'color': 'k'
         },
         'fit': {
-            'pen': pg.mkPen(color='r', width=4)
+            'pen': pyqtgraph.mkPen(color='r', width=4)
         },
         'plot': {
             'symbol': ['o',  't', 'd', 's', 'd'],
@@ -86,23 +86,11 @@ class XYPlot(parent.Plot):
         }
     }  #: Specifies the style of the plot.
     started = False
-    def __init__(self, args):
-        super().__init__(args)
-        self.vLine = pg.InfiniteLine(angle=90, movable=False)
-        self.cursor_text=pg.TextItem()
-        self.error_bars=pg.ErrorBarItem()
-        self.addItem(self.error_bars)
-        self.addItem(self.cursor_text)
-        self.addItem(self.vLine, ignoreBounds=True)
-        self.vb=self.getPlotItem().vb
-        self.proxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
-        self.curve_plot=self.plot()
-        self.curve_fit_plot=self.plot()
-        self.curve_y2_plot=self.plot()
-        
+
     def load(self, data):
          # don't plot if not triggered
         self._load(data, 'trigger', default=1, ds_only=False)
+
         if self.started and not self.trigger:
             return False
 
@@ -133,13 +121,16 @@ class XYPlot(parent.Plot):
         if self.started and not self.trigger:
             return False
         self.started = True
+
         # default value for x is index values
         #if self.x is None:
         #    self.x = [_ for _ in itertools.product(*[range(self.shape[0]), range(self.shape[1])])]
 
     def clean(self):
         """Clean the data so it can be plotted"""
-        
+
+
+
         # format data so plots also work with 1D arrays
         if len(self.y.shape) == 1:
             self.y = np.array([self.y])
@@ -155,7 +146,7 @@ class XYPlot(parent.Plot):
         if self.y_scale is not None:
             self.y = self.y / self.y_scale
             if self.error is not None:
-                self.error = self.error/ self.y_scale
+                self.error /= self.y_scale
             if self.fit is not None:
                 self.fit = self.fit / self.y_scale
 
@@ -222,23 +213,23 @@ class XYPlot(parent.Plot):
         # don't draw if all values are nan
         if not np.isnan(y).all():
             # style
-            brush = pg.mkBrush(color=self.get_style('plot.color', i))
+            brush = pyqtgraph.mkBrush(color=self.get_style('plot.color', i))
             symbol = self.get_style('plot.symbol', i)
             size = self.get_style('plot.size', i)
             pen = self.get_style('plot.pen')
 
             # plot
-            self.curve_plot.setData(x, y, pen=pen, symbol=symbol, size=size, symbolBrush=brush)
+            self.plot(x, y, pen=pen, symbol=symbol, size=size, symbolBrush=brush)
 
             # style 2
-            brush2 = pg.mkBrush(color=self.get_style('plot.color2', i))
+            brush2 = pyqtgraph.mkBrush(color=self.get_style('plot.color2', i))
             symbol2 = self.get_style('plot.symbol2', i)
             size2 = self.get_style('plot.size2', i)
             pen2 = self.get_style('plot.pen2')
 
             # plot y2
             if y2 is not None:
-                self.curve_y2_plot.setData(x, y2, pen=pen2, symbol=symbol2, size=size2, symbolBrush=brush2)
+                self.plot(x, y2, pen=pen2, symbol=symbol2, size=size2, symbolBrush=brush2)
 
         # draw fit
         if self.fit is not None:
@@ -246,7 +237,7 @@ class XYPlot(parent.Plot):
             if fit is not None:
                 # style
                 pen = self.get_style('fit.pen')
-                self.curve_fit_plot.setData(x, fit, pen=pen)
+                self.plot(x, fit, pen=pen)
 
         # draw error
         if self.error is not None:
@@ -256,33 +247,9 @@ class XYPlot(parent.Plot):
                 if hasattr(error, "__len__") and not isinstance(error, np.ndarray):
                     error = np.array(error)
                 if len(error) == len(x):
-                    self.error_bars.setData(x=np.array(x),y=np.array(y),height=2*error)
-                    #errbars = pg.ErrorBarItem(
-                    #    x = np.array(x), y = np.array(y), height = 2 * error)
-                    #self.addItem(errbars)
-    def mouseMoved(self,evt):
-        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
-        if self.sceneBoundingRect().contains(pos):
-            mousePoint = self.vb.mapSceneToView(pos)
-            x_cursor = mousePoint.x()
-            x=self.x[0]
-            y=self.y[0]
-            index=0
-            if x_cursor > x[0] and x_cursor < x[-1]:
-                #cursor within bounds of data, get approximate index of x data 
-                for i in range(len(x)):
-                    if x[i]>x_cursor:
-                        #x_cursor definitely greater than x[0], find first x[i]>x_cursor
-                        if abs(x[i]-x_cursor)<abs(x[i-1]-x_cursor):
-                            index=i
-                        else:
-                            index=i-1
-                        break            
-            if x_cursor > x[-1]:
-                index=-1
-            self.cursor_text.setText("x=%f,y=%f" %(x[index],y[index]))
-            self.cursor_text.setPos(x[index],y[index])
-            self.vLine.setPos(x[index])
+                    errbars = pyqtgraph.ErrorBarItem(
+                        x = np.array(x), y = np.array(y), height = 2 * error)
+                    self.addItem(errbars)
 
 def main():
     applet = SimpleApplet(XYPlot)

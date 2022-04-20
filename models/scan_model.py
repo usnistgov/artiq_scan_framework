@@ -219,6 +219,9 @@ class ScanModel(Model):
     plot_title = '' #: Title of the current scan plot.
     data_legend = ''
     fit_legend = ''
+    fit_string = ''
+    subtitle = ''
+    enable_fit_string =True #default put fit string below plot of fit value+/- error
 
     # instance variables
     counts = None  #: Contains the value returned by each call to the Scan measure method() -- contains a value for each scan point, repeat, and pass.
@@ -415,6 +418,7 @@ class ScanModel(Model):
             self.set('plots.y_units', self.y_units)
             self.set('plots.fit_legend',self.fit_legend)
             self.set('plots.data_legend',self.data_legend)
+            self.set('plots.subtitle',self.subtitle)
             
 
         # --- Dimension 1 Plots ---
@@ -433,6 +437,9 @@ class ScanModel(Model):
             self.set('plots.dim1.x_scale', self.y_scale)
             self.set('plots.dim1.x_units', self.x_units)
             self.set('plots.dim1.y_units', self.y_units)
+            self.set('plots.dim1.fit_legend',self.fit_legend)
+            self.set('plots.dim1.data_legend',self.data_legend)
+            self.set('plots.dim1.subtitle',self.subtitle)
 
     def write_datasets(self, dimension):
         """Writes all internal values to their datasets.  This method is called by the scan when it is resuming from a
@@ -917,6 +924,16 @@ class ScanModel(Model):
 
         # - post-validation & save fits
         if fit_performed:
+            if self.enable_fit_string:
+                if not self.fit_string:
+                    fit_val=self.fit.fitresults[self.main_fit_param]
+                    fit_err=self.fit.fitresults[self.main_fit_param+'_err']
+                    fit_err_str=f'{fit_err:.3}'
+                    fit_err_3sig=float(fit_err_str)
+                    fit_val_str=str(int(fit_val//fit_err_3sig)*fit_err_3sig)
+                    self.fit_string="fit "+self.main_fit_param+":"+fit_val_str+'+/-'+fit_err_str
+                self.set('plots.fit_string',self.fit_string)
+            
             # append x/y dataset
             self.fit.fitresults['x_dataset'] = self.get_xs_key()
             self.fit.fitresults['y_dataset'] = self.get_means_key()

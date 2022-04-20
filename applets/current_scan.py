@@ -7,6 +7,16 @@ import PyQt5
 import numpy as np
 import os
 
+#if type(x)==bytes:
+#    x=x.decode('utf-8')
+
+
+#list of all items to import given the namespaces you've passed. Items in one_time_imports will be imported from ns0.plots and items in every_curve_imports will be imported for every
+#namespace from ns0.plots,ns1.plots, etc. to import from a different area see generate_namespace_args for how the rid is imported (not located under plots) and _load again for importing rid
+#items are then either imported to self.item (for one time items) or self.items in a list of items for every scan for the n_curves that match first plot rid
+one_time_imports=['plot_title','x_label','x_units','x_scale','y_scale','y_label','y_units','fit_string','subtitle'] #rid found in seperate area from plots, don't include in this list
+every_curve_imports=['x','y','error','fitline','trigger','fit_legend','data_legend'] #rid found in seperate area from plots, don't include in this list
+
 class CurrentScanApplet(SimpleApplet):
     def __init__(self, main_widget_class, cmd_description=None,
                  default_update_delay=0.0):
@@ -35,7 +45,8 @@ class CurrentScanApplet(SimpleApplet):
                          for arg in self.dataset_args}
     def generate_namespace_args(self):
         #generate one time only namespace args from ns1, namely plot_title,x/ylabel/unit/scale,rid
-        plot_items=['plot_title','x_label','x_units','x_scale','y_scale','y_label','y_units']
+        #plot_items=['plot_title','x_label','x_units','x_scale','y_scale','y_label','y_units','fit_string','subtitle']
+        plot_items=one_time_imports
         namespace=self.args.ns0
         for name in plot_items:
             location=namespace+'.plots.'+name
@@ -47,7 +58,8 @@ class CurrentScanApplet(SimpleApplet):
         #generate args unique from all namespaces
         
         #list of items to import from each namespace (in this case most all are prepended by .plots.)
-        plot_items=['x','y','error','fitline','trigger','fit_legend','data_legend']#could add x/y scale/unit to all of these possibly
+        plot_items=every_curve_imports
+        #plot_items=['x','y','error','fitline','trigger','fit_legend','data_legend']#could add x/y scale/unit to all of these possibly
         for i in range(self.n_namespaces):
             ns_string='ns'+str(i)
             namespace=getattr(self.args,ns_string)
@@ -123,6 +135,8 @@ class XYPlot(parent.Plot):
     started = False
     xs=[[0]]#needed to avoid first cursor init call error
     ys=[[0]]
+    subtitle=''
+    fit_string=''
     def __init__(self, args):
         #set self.args and get max_curves (number of arguments passed in artiq applet commands)
         super().__init__(args)
@@ -138,7 +152,8 @@ class XYPlot(parent.Plot):
             self.addItem(error_obj) #add error bar item
         
         #create cursor if desired
-        self.cursor_enabled=not self.args.cursor=="False" #by default enable cursor, only disable it if cursor argument == "False"
+        #self.cursor_enabled=not self.args.cursor=="False" #by default enable cursor, only disable it if cursor argument == "False"
+        self.cursor_enabled = self.args.cursor == "True" #only enable cursor if --cursor True passed to artiq applet
         if self.cursor_enabled:        
             self.vLine = pg.InfiniteLine(angle=90, movable=False)#create cursor (vertical line)
             self.cursor_text=pg.TextItem()#create text for coordinate of cursor at data point
@@ -157,7 +172,20 @@ class XYPlot(parent.Plot):
                 self.legend_fit_labels=['' for i in range(self.max_curves)]
         else:
             self.enable_legend=False
-        
+    def data_changed(self, data, mods):
+        """Data changed handler.  load, reshape, validate, clean, and then plot the new data."""
+        if self.load(data) is not False:
+            self.reshape()
+            try:
+                pass
+            except ValueError:
+                print("Error reshaping")
+                pass
+            else:
+                if self.validate() is not False:
+                    self.clean()
+                    self.draw()
+                    self.started=True   
     def _load_plots(self, data, key, ds_only=True, default=None):
         """Helper method to load a single dataset value and return it. Lists of args therefore not passable
 
@@ -193,9 +221,9 @@ class XYPlot(parent.Plot):
 
         """Load the one time data and set it as attribute of XYPlot"""
         # load dataset values
-        self._load(data, ['plot_title', 'x_label', 'y_label', 'x_units', 'y_units'])
-        self._load(data, 'x_scale', default=1)
-        self._load(data, 'y_scale', default=1)
+        self._load(data,one_time_imports)
+        #self._load(data, ['plot_title', 'x_label', 'y_label', 'x_units', 'y_units'])
+        self._load(data, ['x_scale','y_scale'], default=1)#reload these just with default 1 argument
         self._load(data,'rid',default=None)
         
         #get number of curves to import by checking how many match first rid
@@ -275,6 +303,20 @@ class XYPlot(parent.Plot):
             else:
                 title = "RID {}: {}".format(self.rid, self.plot_title)
             self.setTitle(title, size=style['size'])
+            #self.subtitle='N:105 ions, J=10KHz, arm t 100us'
+            if self.subtitle:
+                titlelabel=self.plotItem.titleLabel
+                normal_title="<span style=font_size:%s>%s</span>" % (style['size'], title)
+                subtitle='<br><span style=font_size:%s>%s</span>' % ('5px',self.subtitle)
+                opts = titlelabel.opts
+                optlist = []
+                optlist.append('font-size: ' + style['size'])
+                full = "<span style='%s'>%s</span>" % ('; '.join(optlist), title)
+                full+=subtitle
+                titlelabel.item.setHtml(full)
+                titlelabel.updateMin()
+                titlelabel.resizeEvent(None)
+                titlelabel.updateGeometry()
     
             # draw axes
             axis_font = PyQt5.QtGui.QFont()
@@ -288,6 +330,13 @@ class XYPlot(parent.Plot):
             x_axis.enableAutoSIPrefix(False)
             if self.x_label is not None:
                 self.setLabel('bottom', self.x_label, units=self.x_units, **self.get_style("axes.label"))
+                #self.fit_string='fit f0=1558.23KHz+/-142Hz'
+                if self.fit_string:
+                    x_label_html=x_axis.labelString()
+                    x_label_html+="<br><span style = 'font-size:10pt'>%s</span>" %self.fit_string
+                    x_axis.label.setHtml(x_label_html)
+                    x_axis._adjustSize()
+                    x_axis.update()
     
             # draw y axis
             y_axis = self.getAxis('left')
@@ -356,14 +405,14 @@ class XYPlot(parent.Plot):
             self.error_objs[i].setVisible(False)
     def set_legend(self):
         if self.enable_legend and self.n_curves>1:
-            #legend exists and there's more than one curve, check through n_curves and reset text labels of data if it's new
+            #legend exists and there's more than one curve, check through n_curves and reset text labels if it's new
             for i in range(self.n_curves):
                 old_fit=self.legend_fit_labels[i]
                 old_data=self.legend_data_labels[i]
                 new_data=self.data_legends[i]
                 new_fit=self.fit_legends[i]
                 if new_data:
-                    #there is a new data legend name for this i'th dataset, check if one already exists and overwrite it, or else ignore
+                    #there is a new data legend name for this i'th dataset, check if it's different from before and overwrite it, or else ignore
                     if new_data!=old_data:
                         self.legend.removeItem(self.curve_objs[i])
                         self.legend.addItem(self.curve_objs[i],new_data)
@@ -371,7 +420,7 @@ class XYPlot(parent.Plot):
                 else:
                     self.legend.removeItem(self.curve_objs[i])
                 if new_fit:
-                    #there is a new data legend name for this i'th dataset, check if one already exists and overwrite it, or else ignore
+                    #there is a new fit legend name for this i'th dataset, check if one already exists and overwrite it, or else ignore
                     if new_fit!=old_fit:
                         self.legend.removeItem(self.fit_objs[i])
                         self.legend.addItem(self.fit_objs[i],new_fit)
