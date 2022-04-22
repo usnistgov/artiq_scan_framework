@@ -1279,33 +1279,89 @@ class Gauss(FitFunction):
         provided in dictionaries will override automatic values unless
         named parameter is being held. Valid keyword names are in cls.names()
         """
-        mid = np.median(y)
-        amax = np.amax(y)
-        amin = np.amin(y)
-        p20 = np.percentile(y, 20)
-        p80 = np.percentile(y, 80)
-        up = True if (p80-mid > mid-p20) else False  # pointing up or down?
+        # mid = np.median(y)
+        # amax = np.amax(y)
+        # amin = np.amin(y)
+        # p20 = np.percentile(y, 20)
+        # p80 = np.percentile(y, 80)
+        # up = True if (p80-mid > mid-p20) else False  # pointing up or down?
 
-        # pick a range near edges to avoid accidentally guessing as a peak
-        xfrac = 0.1
-        xmin = np.amin(x)
-        xmax = np.amax(x)
-        xlo = (xmax-xmin)*xfrac+xmin
-        xhi = xmax-(xmax-xmin)*xfrac
+        # # pick a range near edges to avoid accidentally guessing as a peak
+        # xfrac = 0.1
+        # xmin = np.amin(x)
+        # xmax = np.amax(x)
+        # xlo = (xmax-xmin)*xfrac+xmin
+        # xhi = xmax-(xmax-xmin)*xfrac
 
-        # construct autoguess values
-        g = {}
-        g['A'] = amax-mid if up else amin-mid  # peak to midline
-        g['sigma'] = (np.amax(x)-np.amin(x))/6.
-        # guess max or min values for peak center, unless too close to the edge
-        # in which case use the middle value
-        if up and xlo < x[np.argmax(y)] < xhi:
-            g['x0'] = x[np.argmax(y)]
-        elif not up and xlo < x[np.argmin(y)] < xhi:
-            g['x0'] = x[np.argmin(y)]
+        # # construct autoguess values
+        # g = {}
+        # g['A'] = amax-mid if up else amin-mid  # peak to midline
+        # g['sigma'] = (np.amax(x)-np.amin(x))/6.
+        # # guess max or min values for peak center, unless too close to the edge
+        # # in which case use the middle value
+        # if up and xlo < x[np.argmax(y)] < xhi:
+        #     g['x0'] = x[np.argmax(y)]
+        # elif not up and xlo < x[np.argmin(y)] < xhi:
+        #     g['x0'] = x[np.argmin(y)]
+        # else:
+        #     g['x0'] = (xmax+xmin)/2.
+        # g['y0'] = mid
+        
+        min_y=min(y)
+        max_y=max(y)
+        amp=max_y-min_y
+        mid=(max_y+min_y)/2
+        if y[0]>mid and y[-1]>mid:
+            #scan begins and ends with y above middle value, probably pointing down
+            up=False
+        elif y[0]<mid and y[-1]<mid:
+            #scan begins and ends with y below middle value, probably pointing up
+            up=True
         else:
-            g['x0'] = (xmax+xmin)/2.
-        g['y0'] = mid
+            #must have peak near start or end of scan with one of the values above and one below mid value
+            #hard to guess which is up/down, try checking at higher cutoff (80%) and hope noise isn't greater than this level
+            if y[0]>min_y+0.8*amp and y[-1]>0.8*mid:
+                #scan begins and ends with y above 80% of the amplitude of counts, probably pointing down
+                up=False
+            else:
+                #assume pointing up
+                up=True
+        g={}
+        if up:
+            center_index_guess=np.argmax(y)
+            A_guess=max_y-min_y
+            y_guess=min_y
+            #find sigma guess by scaning to find approx index of y=mid
+            if y[0]<mid:
+                for i in range(len(y)):
+                    if y[i]>mid:
+                        sigma_index_guess=i
+                        break
+            else:
+                #starting point above mid values, scan from end backwards instead
+                for i in range(len(y)):
+                    if y[-1-i]>mid:
+                        sigma_index_guess=-1-i
+        else:
+            #pointing down, repeat above but for pointing down case
+            center_index_guess=np.argmin(y)
+            A_guess=min_y-max_y
+            y_guess=max_y
+            #find sigma guess by scaning to find approx index of y=mid
+            if y[0]>mid:
+                for i in range(len(y)):
+                    if y[i]<mid:
+                        sigma_index_guess=i
+                        break
+            else:
+                #starting point below mid values, scan from end backwards instead
+                for i in range(len(y)):
+                    if y[-1-i]<mid:
+                        sigma_index_guess=-1-i
+        g['x0']=x[center_index_guess]
+        g['A']=A_guess
+        g['y0']=y_guess
+        g['sigma']=abs(x[sigma_index_guess]-g['x0'])
 
         # default bounds: constrain sigma to be positive
         bounds = ([-np.inf, 0., -np.inf, -np.inf], [np.inf, np.inf, np.inf,
@@ -1315,7 +1371,7 @@ class Gauss(FitFunction):
         xsc = {}
         xsc['A'] = np.absolute(g['A'])
         xsc['sigma'] = g['sigma']
-        xsc['x0'] = max(np.absolute(xmax), np.absolute(xmin))
+        xsc['x0'] = g['x0']#max(np.absolute(xmax), np.absolute(xmin))
         xsc['y0'] = np.absolute(g['A'])
 
         return cls.autoguess_outputs(g, xsc, bounds, hold, man_guess,

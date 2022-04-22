@@ -7,10 +7,6 @@ import PyQt5
 import numpy as np
 import os
 
-#if type(x)==bytes:
-#    x=x.decode('utf-8')
-
-
 #list of all items to import given the namespaces you've passed. Items in one_time_imports will be imported from ns0.plots and items in every_curve_imports will be imported for every
 #namespace from ns0.plots,ns1.plots, etc. to import from a different area see generate_namespace_args for how the rid is imported (not located under plots) and _load again for importing rid
 #items are then either imported to self.item (for one time items) or self.items in a list of items for every scan for the n_curves that match first plot rid
@@ -34,9 +30,11 @@ class CurrentScanApplet(SimpleApplet):
             #generate ns1 through ns(n-1) namespace arguments
             self.add_dataset("ns"+str(i), str(i)+"th namespace location of items under scan_framework conventions",required=False) #requires --ns(i) argument before in applet command        
         #allow disable cursor argument
-        self.add_dataset("cursor","set true/false if you want cursor or not",required=False)
+        self.add_dataset("cursor","set true if you want cursor",required=False)
         #allow disable legend argument
-        self.add_dataset("legend","set true/false if you want legend or not",required=False)
+        self.add_dataset("legend","set false if you want legend disabled",required=False)
+        #allow disabling triggering argument
+        self.add_dataset("triggerable","set false to disable triggering",required=False)
     def args_init(self):
         self.args = self.argparser.parse_args()
         self.generate_namespace_args()
@@ -129,7 +127,7 @@ class XYPlot(parent.Plot):
             }
         },
         'title': {
-            'size': '20px'
+            'size': '40px'
         }
     }  #: Specifies the style of the plot.
     started = False
@@ -143,6 +141,9 @@ class XYPlot(parent.Plot):
         self.args_dict=vars(self.args) #create dictionary version of args
         self.max_curves=self.args.n_namespaces
         self.n_curves=self.max_curves #this is modified based on number of matching rid plots
+        
+        #set triggering true/false:
+        self.triggerable=not self.args.triggerable =="False"
         
         #create list of curves/error bars/legend objects for max number of curves
         self.curve_objs=[self.plot() for i in range(self.max_curves)] #access curve n object by self.curve_obs[n]
@@ -165,7 +166,7 @@ class XYPlot(parent.Plot):
                 
         #create legend obj if max_curves>1
         if self.max_curves>1:
-            self.enable_legend= not self.args.legend=="False"
+            self.enable_legend= not (self.args.legend=="False")
             if self.enable_legend:
                 self.legend=self.addLegend() #sets self.legend=LegendItem object
                 self.legend_data_labels=['' for i in range(self.max_curves)]
@@ -186,6 +187,37 @@ class XYPlot(parent.Plot):
                     self.clean()
                     self.draw()
                     self.started=True   
+    def _load(self, data, key, ds_only=True, default=None):
+        """Helper method to load a single dataset value and assign it to an attribute of self.
+
+        Falls back to an explicit value being specified in arguments or a given default value when the
+        dataset doesn't exist.
+        """
+        if isinstance(key, list):
+            for k in key:
+                self._load(data, k, default)
+            return
+
+        argval = getattr(self.args, key)
+        val = data.get(argval, (False, default))
+        ds_found = val[0]
+
+        if ds_found:
+            # get value from dataset
+            if val[1] is not None:
+                if type(val[1])==bytes:
+                    val=val[1].decode('utf-8')
+                else:
+                    val = val[1]
+            else:
+                val = None
+        else:
+            if argval is not None and not ds_only:
+                val = argval
+            else:
+                val = default
+
+        setattr(self, key, val)
     def _load_plots(self, data, key, ds_only=True, default=None):
         """Helper method to load a single dataset value and return it. Lists of args therefore not passable
 
@@ -212,9 +244,13 @@ class XYPlot(parent.Plot):
         return val
     def load(self, data):
         #always load and plot everything if first starting up plot, after which started=True,
-        #then only load data/plot if one of the plots is triggered
-        self.triggers=[self._load_plots(data,'ns%i_trigger'%i,default=0) for i in range(self.n_curves)]
-        trigger=sum(self.triggers)
+        #then only load data/plot if one of the plots is triggered when trigerable=True (is true by default)
+        if self.triggerable:
+            self.triggers=[self._load_plots(data,'ns%i_trigger'%i,default=0) for i in range(self.n_curves)]
+            trigger=sum(self.triggers)
+        else:
+            self.triggers=[1 for i in range(self.n_curves)]
+            trigger=True
 
         if self.started and not trigger:
             return False
@@ -239,6 +275,9 @@ class XYPlot(parent.Plot):
             #number of curves changed, replotting everything, clear legend, hide or show it if n_curves>1
             self.n_curves=n_curves
             self.clear_excess_curves()
+            if not self.triggerable:
+                #reset triggering all ncurves
+                self.triggers=[1 for i in range(self.n_curves)]
             if self.enable_legend:
                 if self.n_curves==1:
                     self.legend.setVisible(False)
@@ -303,16 +342,11 @@ class XYPlot(parent.Plot):
             else:
                 title = "RID {}: {}".format(self.rid, self.plot_title)
             self.setTitle(title, size=style['size'])
-            #self.subtitle='N:105 ions, J=10KHz, arm t 100us'
             if self.subtitle:
                 titlelabel=self.plotItem.titleLabel
-                normal_title="<span style=font_size:%s>%s</span>" % (style['size'], title)
-                subtitle='<br><span style=font_size:%s>%s</span>' % ('5px',self.subtitle)
-                opts = titlelabel.opts
-                optlist = []
-                optlist.append('font-size: ' + style['size'])
-                full = "<span style='%s'>%s</span>" % ('; '.join(optlist), title)
-                full+=subtitle
+                normal_title="<span style=font-size:%s>%s</span>" % ('20px', title)
+                subtitle='<br><span style=font-size:%s>%s</span>' % ('15px',self.subtitle)
+                full=normal_title+subtitle
                 titlelabel.item.setHtml(full)
                 titlelabel.updateMin()
                 titlelabel.resizeEvent(None)
@@ -395,9 +429,9 @@ class XYPlot(parent.Plot):
             if not np.isnan(error).all():
                 error_obj.setData(x=np.array(x),y=np.array(y),height=2*error)
             else:
-                error_obj.clear()
+                error_obj.setVisible(False)
         else:
-            error_obj.clear()
+            error_obj.setVisible(False)
     def clear_excess_curves(self):
         for i in range(self.n_curves, self.max_curves):
             self.curve_objs[i].clear()

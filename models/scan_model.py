@@ -419,6 +419,7 @@ class ScanModel(Model):
             self.set('plots.fit_legend',self.fit_legend)
             self.set('plots.data_legend',self.data_legend)
             self.set('plots.subtitle',self.subtitle)
+            self.set('plots.fit_string','')
             
 
         # --- Dimension 1 Plots ---
@@ -440,6 +441,7 @@ class ScanModel(Model):
             self.set('plots.dim1.fit_legend',self.fit_legend)
             self.set('plots.dim1.data_legend',self.data_legend)
             self.set('plots.dim1.subtitle',self.subtitle)
+            self.set('plots.dim1.fit_string','')
 
     def write_datasets(self, dimension):
         """Writes all internal values to their datasets.  This method is called by the scan when it is resuming from a
@@ -928,9 +930,9 @@ class ScanModel(Model):
                 if not self.fit_string:
                     fit_val=self.fit.fitresults[self.main_fit_param]
                     fit_err=self.fit.fitresults[self.main_fit_param+'_err']
-                    fit_err_str=f'{fit_err:.3}'
-                    fit_err_3sig=float(fit_err_str)
-                    fit_val_str=str(int(fit_val//fit_err_3sig)*fit_err_3sig)
+                    fit_err_str=f'{fit_err:.2}'
+                    n_dec=2-floor(log10(fit_err))
+                    fit_val_str=str(round(fit_val*10**n_dec)/10**n_dec)
                     self.fit_string="fit "+self.main_fit_param+":"+fit_val_str+'+/-'+fit_err_str
                 self.set('plots.fit_string',self.fit_string)
             
