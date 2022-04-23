@@ -127,7 +127,7 @@ class XYPlot(parent.Plot):
             }
         },
         'title': {
-            'size': '40px'
+            'size': '20px'
         }
     }  #: Specifies the style of the plot.
     started = False
