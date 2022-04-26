@@ -1103,15 +1103,15 @@ class Scan(HasEnvironment):
             for k,v in {'default': False}.items():
                 continuous_save.setdefault(k, v)
         if continuous_scan != False:
-            self.setattr_argument('continuous_scan',BooleanValue(default=False),group='Continuous Scan')#, tooltip="make this a continuous scan.")
+            self.setattr_argument('continuous_scan',BooleanValue(**continuous_scan),group='Continuous Scan')#, tooltip="make this a continuous scan.")
         if continuous_points != False:
-            self.setattr_argument('continuous_points',NumberValue(default=1000,ndecimals=0,step=1),group='Continuous Scan')#, tooltip="number of points to save to stats datasets. Points are overriden after this replacing oldest point taken.")
+            self.setattr_argument('continuous_points',NumberValue(**continuous_points),group='Continuous Scan')#, tooltip="number of points to save to stats datasets. Points are overriden after this replacing oldest point taken.")
         if continuous_plot != False:
-            self.setattr_argument('continuous_plot',NumberValue(default=50,ndecimals=0,step=1),group='Continuous Scan')#, tooltip = "number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.")
+            self.setattr_argument('continuous_plot',NumberValue(**continuous_plot),group='Continuous Scan')#, tooltip = "number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.")
         if continuous_measure_point != False:
-            self.setattr_argument('continuous_measure_point',NumberValue(default=0.0),group='Continuous Scan')#, tooltip = "point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this")
+            self.setattr_argument('continuous_measure_point',NumberValue(**continuous_measure_point),group='Continuous Scan')#, tooltip = "point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this")
         if continuous_save != False:
-            self.setattr_argument('continuous_save',BooleanValue(default=False),group='Continuous Scan')#, tooltip = "Save points to external file when datasets will be overriden. Currently not implemented")
+            self.setattr_argument('continuous_save',BooleanValue(**continuous_save),group='Continuous Scan')#, tooltip = "Save points to external file when datasets will be overriden. Currently not implemented")
         
         if self.enable_fitting and fit_options != False:
             fovals = fit_options.pop('values')
