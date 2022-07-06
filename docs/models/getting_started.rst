@@ -75,9 +75,9 @@ Dataset Mirroring
 ------------------
 Model's can mirror all of their datasets to another namespace.  This is useful if you want to plot data for multiple
 model's in a single applet by having the model's share the same mirror namespace.  Mirroring is enabled by default and
-the mirror datasets are updated when either the :meth:`Model::set() <scan_framework.models.model.Model.set>`
-or :meth:`Model::mutate() <scan_framework.models.model.Model.mutate>` methods are called.
+the mirror datasets are updated when either the :meth:`Model::set() <artiq_scan_framework.models.model.Model.set>`
+or :meth:`Model::mutate() <artiq_scan_framework.models.model.Model.mutate>` methods are called.
 
 .. note::
-    To disable mirroring set the models :attr:`mirror <scan_framework.models.model.Model.mirror>` attribute to :code:`False`
+    To disable mirroring set the models :attr:`mirror <artiq_scan_framework.models.model.Model.mirror>` attribute to :code:`False`
 

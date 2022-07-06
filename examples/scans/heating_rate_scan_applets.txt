@@ -12,7 +12,7 @@ heating_rate.bkgd.stats.mean
 --title "RSB, BSB, Bkgd vs Wait Time"
 
 [nbar vs Wait Time]
-$python -m scan_framework.applets.plot_xy
+$python -m artiq_scan_framework.applets.plot_xy
 heating_rate.nbar.stats.mean
 --x heating_rate.nbar.stats.points
 --error heating_rate.nbar.stats.error

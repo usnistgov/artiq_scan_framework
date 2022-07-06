@@ -1,6 +1,6 @@
 Creating Histograms
 ========================
-There is a generic Histograms Model (:class:`HistModel <scan_framework.models.hist_model.HistModel>`) that can be used
+There is a generic Histograms Model (:class:`HistModel <artiq_scan_framework.models.hist_model.HistModel>`) that can be used
 for binning values, saving the histogram to a dataset, and viewing the data in an applet.
 
 To use the model, first instantiate an instance, specify the bin boundaries, and initialize the datasets:
@@ -45,7 +45,7 @@ To bin multiple values and set the :code:`bins` dataset all in one go, use the :
 
 Binning Continuous Values
 -------------------------
-By default, the :class:`HistModel <scan_framework.models.hist_model.HistModel>` class assumes the data being binned is
+By default, the :class:`HistModel <artiq_scan_framework.models.hist_model.HistModel>` class assumes the data being binned is
 discretely valued such as from PMT counts.  Non-discrete values can also be binned by setting the model's :code:`discrete`
 attribute to False.
 

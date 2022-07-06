@@ -6,7 +6,7 @@
 from artiq.experiment import *
 
 # 1. Import all classes needed the scan framework.
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 # 2. Create a scan experiment.
@@ -25,7 +25,7 @@ class Example0Scan(Scan1D, EnvExperiment):
         # The scheduler device is needed for pausing and cancelling scans
         self.setattr_device('scheduler')
 
-        # 4a. Create GUI arguments for setting the scan parameters (uses scan_framework defaults)
+        # 4a. Create GUI arguments for setting the scan parameters (uses artiq_scan_framework defaults)
         # self.scan_arguments()
 
         # 4b. GUI arguments can be created with different defaults via arguments with the same name as the GUI label.

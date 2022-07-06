@@ -65,7 +65,7 @@ class HistogramPlot(pyqtgraph.PlotWidget):
                 name = getattr(self.args, 'leg{}'.format(i+1))
                 self.plot(x, y, stepMode=True, fillLevel=0, brush=brushes[i], name=name, antialias=False)
             else:
-                print("Plot Hist: x and y dimensions don't agree")
+                #print("Plot Hist: x and y dimensions don't agree")
             i = i + 1
 
         self.setLabel('bottom', x_label, **self.labelStyle)

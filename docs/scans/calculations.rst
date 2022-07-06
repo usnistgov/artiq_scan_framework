@@ -11,8 +11,8 @@ the mirror namespace will be mutated with these calculated values after each sca
 
 .. code-block:: python
 
-    from scan_framework.scans import *
-    from scan_framework.models import *
+    from artiq_scan_framework.scans import *
+    from artiq_scan_framework.models import *
 
     class CalculationScan(Scan1D, EnvExperiment):
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3.5
-import scan_framework.applets.plot as parent
+from . import plot
 import pyqtgraph
 import PyQt5
 import numpy as np
 
 
-class SimpleApplet(parent.SimpleApplet):
+class SimpleApplet(plot.SimpleApplet):
 
     def add_datasets(self):
         # plot title
@@ -34,7 +34,7 @@ class SimpleApplet(parent.SimpleApplet):
         self.add_dataset("y_units", 'y-axis label', required=False)
 
 
-class XYPlot(parent.Plot):
+class XYPlot(plot.Plot):
     """Applet for plotting X-Y data.  A single trace is plotted by providing two 1D arrays for the x and y values.
     Multiple traces can be plotted by providing two 2D arrays for the x and y values.  The plot style can be customized
     by modifiying the `style` attribute.  When plotting multiple traces, each trace uses a separate symbol
@@ -142,23 +142,36 @@ class XYPlot(parent.Plot):
                 self.error = np.array([self.error])
 
         if self.x_scale is not None:
-            self.x = self.x / self.x_scale
+            try:
+                self.x = self.x / self.x_scale
+            except ValueError:
+                pass
         if self.y_scale is not None:
-            self.y = self.y / self.y_scale
+            try:
+                self.y = self.y / self.y_scale
+            except ValueError:
+                pass
             if self.error is not None:
-                self.error /= self.y_scale
+                try:
+                    self.error /= self.y_scale
+                except TypeError:
+                    pass
             if self.fit is not None:
-                self.fit = self.fit / self.y_scale
+                try:
+                    self.fit = self.fit / self.y_scale
+                except ValueError:
+                    pass
+
 
     def validate(self):
         """Validate that the data can be plotted"""
         try:
             if not self.y.shape == self.x.shape:
-                print("plot_xy applet: x and y shapes don't agree")
+                #print("plot_xy applet: x and y shapes don't agree")
                 return False
 
             if self.fit is not None and not self.fit.shape == self.x.shape:
-                print("plot_xy applet: x and fit shapes don't agree")
+                #print("plot_xy applet: x and fit shapes don't agree")
                 return False
         except AttributeError:
             return False
@@ -242,14 +255,17 @@ class XYPlot(parent.Plot):
         # draw error
         if self.error is not None:
             error = self.error[i]
-            if not np.isnan(error).all():
-                # See https://github.com/pyqtgraph/pyqtgraph/issues/211
-                if hasattr(error, "__len__") and not isinstance(error, np.ndarray):
-                    error = np.array(error)
-                if len(error) == len(x):
-                    errbars = pyqtgraph.ErrorBarItem(
-                        x = np.array(x), y = np.array(y), height = 2 * error)
-                    self.addItem(errbars)
+            try:
+                if not np.isnan(error).all():
+                    # See https://github.com/pyqtgraph/pyqtgraph/issues/211
+                    if hasattr(error, "__len__") and not isinstance(error, np.ndarray):
+                        error = np.array(error)
+                    if len(error) == len(x):
+                        errbars = pyqtgraph.ErrorBarItem(
+                            x = np.array(x), y = np.array(y), height = 2 * error)
+                        self.addItem(errbars)
+            except TypeError:
+                pass
 
 def main():
     applet = SimpleApplet(XYPlot)

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3.5
-import artiq_ions.applets.plot as parent
+from . import plot
 import pyqtgraph
 import PyQt5
 import numpy as np
 import itertools
 
 
-class SimpleApplet(parent.SimpleApplet):
+class SimpleApplet(plot.SimpleApplet):
 
     def add_datasets(self):
         # plot title
@@ -38,7 +38,7 @@ class SimpleApplet(parent.SimpleApplet):
         self.add_dataset("y_units", 'y-axis label', required=False)
 
 
-class XYPlot(parent.Plot):
+class XYPlot(plot.Plot):
     """Applet for plotting X-Y data.  A single trace is plotted by providing two 1D arrays for the x and y values.
     Multiple traces can be plotted by providing two 2D arrays for the x and y values.  The plot style can be customized
      by modifiying the `style` attribute.  When plotting multiple traces, each trace uses a separate symbol
@@ -69,7 +69,7 @@ class XYPlot(parent.Plot):
         },
         'plot': {
             'symbol': ['o',  't', 'd', 's', 'd'],
-            'size': [6, 12, 15, 10, 10],
+            'size': [6, 6, 6, 6, 6],
             'color': [
                 PyQt5.QtGui.QColor.fromHsvF(205 / 360, 0.828, 0.706, 0.9),
                 PyQt5.QtGui.QColor.fromHsvF(255 / 360, 0.945, 1.0, 1.0),
@@ -129,13 +129,16 @@ class XYPlot(parent.Plot):
         self._load(data, ['title', 'x_label', 'y_label', 'x_units', 'y_units'])
         self._load(data, 'x_scale', default=1)
         self._load(data, 'y_scale', default=1)
+
         self._load(data, ['x', 'y'], default=None)
+
         self._load(data, 'pass_y', default=None)
         if self.x is None and not self.y is None:
             self.x = np.array([i for i in range(len(self.y))], np.int64)
         self._load(data, 'y2', default=None)
 
         self._load(data, 'i_plot', default=None)
+
 
         self._load(data, 'fit', default=None, ds_only=True)
         self._load(data, 'fit_fine', default=None, ds_only=True)
@@ -155,82 +158,116 @@ class XYPlot(parent.Plot):
     def clean(self):
         """Clean the data so it can be plotted"""
         # format data so plots also work with 1D arrays
-        if len(self.y.shape) == 1:
+        if self.y is not None and len(self.y.shape) == 1:
             self.y = np.array([self.y])
             self.y2 = np.array([self.y2])
-            self.x = np.array([self.x])
+            if self.x is not None:
+                self.x = np.array([self.x])
+            if self.x_fine is not None:
+                if type(self.x_fine) == str:
+                    self.x_fine = None
+                else:
+                    self.x_fine = np.array([self.x_fine])
             if self.fit is not None:
                 self.fit = np.array([self.fit])
+            if self.fit_fine is not None:
+                if type(self.fit_fine) == str:
+                    self.fit_fine = None
+                else:
+                    self.fit_fine = np.array([self.fit_fine])
             if self.error is not None:
                 self.error = np.array([self.error])
 
-        if self.x_scale is not None:
-            self.x = self.x / self.x_scale
+        if self.x is not None and self.x_scale is not None:
+            if not np.isnan(self.x).all():
+                self.x = self.x / self.x_scale
             if self.x_fine is not None:
-                self.x_fine = self.x_fine / self.x_scale
-        if self.y_scale is not None:
+                if not np.isnan(self.x_fine).all():
+                    self.x_fine = self.x_fine / self.x_scale
+        if self.y is not None and self.y_scale is not None:
             self.y = self.y / self.y_scale
             if self.fit is not None:
-                self.fit = self.fit / self.y_scale
+                if not np.isnan(self.fit).all():
+                    self.fit = self.fit / self.y_scale
             if self.fit_fine is not None:
-                self.fit_fine = self.fit_fine / self.y_scale
+                if not np.isnan(self.fit_fine).all():
+                    self.fit_fine = self.fit_fine / self.y_scale
 
     def validate(self):
         """Validate that the data can be plotted"""
-
-        try:
-            if not self.y.shape == self.x.shape:
-                #print("plot_xy applet: x and y shapes don't agree")
+        #try:
+        if self.x is not None:
+            if type(self.x) == str:
                 return False
-
-            if self.fit is not None and not self.fit.shape == self.x.shape:
-                #print("plot_xy applet: x and fit shapes don't agree")
+        if self.y is not None:
+            if type(self.y) == str:
                 return False
-        except AttributeError:
-            return False
+        if self.y is not None and self.x is not None:
+            if hasattr(self.y, 'shape') and hasattr(self.x, 'shape'):
+                if self.y.shape != self.x.shape:
+                    print("plot_xy_new_color_scheme applet: x and y shapes don't agree")
+                    #print(getattr(self.args, 'x'))
+                    #print(getattr(self.args, 'y'))
+                    return False
+
+        #if self.fit is not None and self.x is not None:
+        #    if hasattr(self.fit, 'shape') and hasattr(self.x, 'shape'):
+        #        if self.fit.shape != self.x.shape:
+                    #print("plot_xy_new_color_scheme applet: x and fit shapes don't agree")
+                    #return False
+        # except AttributeError:
+        #     print('AttributeError')
+        #     return False
 
     def draw(self):
         """Plot the data"""
+        # try:
         # dimensions of the data
-        shape = self.y.shape
+        if self.y is not None:
+            shape = self.y.shape
 
-        # draw title
-        style = self.style['title']
-        if self.rid is None:
-            title = self.title
-        else:
-            title = "RID {}: {}".format(self.rid, self.title)
-        self.setTitle(title, size=style['size'])
+            # draw title
+            style = self.style['title']
+            if self.rid is None:
+                title = self.title
+            else:
+                title = "RID {}: {}".format(self.rid, self.title)
+            self.setTitle(title, size=style['size'])
 
-        # draw data
-        if self.i_plot is not None:
-            self.draw_series(self.i_plot)
-        else:
-            for i in range(shape[0]):
-                self.draw_series(i)
+            # draw data
+            if self.i_plot is not None:
+                self.draw_series(self.i_plot)
+            else:
+                for i in range(shape[0]):
+                    self.draw_series(i)
 
-        # draw axes
-        axis_font = PyQt5.QtGui.QFont()
-        axis_font.setPixelSize(self.get_style('axes.size'))
+            # draw axes
+            axis_font = PyQt5.QtGui.QFont()
+            axis_font.setPixelSize(self.get_style('axes.size'))
 
-        # draw x axis
-        x_axis = self.getAxis('bottom')
-        x_axis.tickFont = axis_font
-        # somehow tickTextOffset necessary to change tick font
-        x_axis.setStyle(tickTextOffset=self.get_style('axes.tick_offset'))
-        x_axis.enableAutoSIPrefix(False)
-        #if self.x_label is not None and self.x_label:
-        self.setLabel('bottom', self.x_label, units=self.x_units, **self.get_style("axes.label"))
+            # draw x axis
+            x_axis = self.getAxis('bottom')
+            x_axis.tickFont = axis_font
+            # somehow tickTextOffset necessary to change tick font
+            x_axis.setStyle(tickTextOffset=self.get_style('axes.tick_offset'))
+            x_axis.enableAutoSIPrefix(False)
+            #if self.x_label is not None and self.x_label:
+            self.setLabel('bottom', self.x_label, units=self.x_units, **self.get_style("axes.label"))
 
-        # draw y axis
-        y_axis = self.getAxis('left')
-        y_axis.tickFont = axis_font
-        y_axis.setStyle(tickTextOffset=self.get_style('axes.tick_offset'))
-        #if self.y_label is not None and self.y_label:
-        self.setLabel('left', self.y_label, units=self.y_units, **self.get_style("axes.label"))
-        self.showGrid(x=True, y=True, alpha=0.5)
+            # draw y axis
+            y_axis = self.getAxis('left')
+            y_axis.tickFont = axis_font
+            y_axis.setStyle(tickTextOffset=self.get_style('axes.tick_offset'))
+            #if self.y_label is not None and self.y_label:
+            self.setLabel('left', self.y_label, units=self.y_units, **self.get_style("axes.label"))
+            self.showGrid(x=True, y=True, alpha=0.5)
+        # except:
+        #
+        #     print("An error occured in plot_xy_new_color_scheme.draw()")
 
     def draw_series(self, i, name=None):
+        if type(i) is str:
+            i = 0
         if i < len(self.x) and i < len(self.y):
             x = self.x[i]
             y = self.y[i]
@@ -272,18 +309,26 @@ class XYPlot(parent.Plot):
 
             # draw fit
             if self.fit_fine is not None and self.x_fine is not None:
-                if len(self.fit_fine) == len(self.x_fine):
-                    # style
-                    pen = self.get_style('fit.pen')
-                    self.plot(self.x_fine, self.fit_fine, pen=pen)
-            elif self.fit is not None:
+                if hasattr(self.fit_fine[i], 'shape') and hasattr(self.x_fine[i], 'shape'):
+                    fit_fine = self.fit_fine[i]
+                    x_fine = self.x_fine[i]
+                    if fit_fine.shape == x_fine.shape:
+
+                        # style
+                        pen = self.get_style('fit.pen')
+                        self.plot(x_fine, fit_fine, pen=pen)
+
+            elif self.fit is not None and self.x is not None:
+
                 fit = self.fit[i]
-                if fit is not None:
-                    # style
-                    pen = self.get_style('fit.pen')
-                    self.plot(x, fit, pen=pen)
+                if hasattr(fit, 'shape') and hasattr(x, 'shape'):
+                    if fit.shape == x.shape:
+                        # style
+                        pen = self.get_style('fit.pen')
+                        self.plot(x, fit, pen=pen)
 
             # draw error
+
             if self.error is not None:
                 error = self.error[i]
                 if not np.isnan(error).all():

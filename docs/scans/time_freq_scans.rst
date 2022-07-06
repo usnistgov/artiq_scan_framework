@@ -2,20 +2,20 @@ Time & frequency scans
 ======================
 Scans over a range of time values or frequency values are common.  To simplify the process of writing these
 types of scans, the scan framework provides three base classes from which a scan may inherit.  These
-base classes are :class:`TimeScan<scan_framework.scans.extensions.TimeScan>`,
-:class:`FreqScan<scan_framework.scans.extensions.FreqScan>`, and
-:class:`TimeFreqScan<scan_framework.scans.extensions.TimeFreqScan>`.  Additionally, any of these scans
+base classes are :class:`TimeScan<artiq_scan_framework.scans.extensions.TimeScan>`,
+:class:`FreqScan<artiq_scan_framework.scans.extensions.FreqScan>`, and
+:class:`TimeFreqScan<artiq_scan_framework.scans.extensions.TimeFreqScan>`.  Additionally, any of these scans
 can also use auto-tracking or set :code:`self._x_offset` to offset the scan points.  See :ref:`auto_tracking`.
 
 Time scans
 ----------
 Time scans create a configurable GUI argument for entering a range of times to scan over.  To create a time
-scan, simply inherit from the :class:`TimeScan<scan_framework.scans.extensions.TimeScan>` class and call
-:meth:`scan_arguments()<scan_framework.scans.scan.Scan.scan_arguments>` in :code:`build()`.
+scan, simply inherit from the :class:`TimeScan<artiq_scan_framework.scans.extensions.TimeScan>` class and call
+:meth:`scan_arguments()<artiq_scan_framework.scans.scan.Scan.scan_arguments>` in :code:`build()`.
 
 .. code-block:: python
 
-    from scan_framework.scans import *
+    from artiq_scan_framework.scans import *
 
 
     class MyTimeScan(Scan1D, TimeScan, EnvExperiment):
@@ -36,25 +36,25 @@ scan, simply inherit from the :class:`TimeScan<scan_framework.scans.extensions.T
                 }
             )
 
-When creating a time scan it is not necessary to define the :meth:`get_scan_points()<scan_framework.scans.scan.Scan.get_scan_points>`
+When creating a time scan it is not necessary to define the :meth:`get_scan_points()<artiq_scan_framework.scans.scan.Scan.get_scan_points>`
 callback method;  the framework will automatically scan over the GUI argument named 'times'.
 
 The scan model that is registered with a time scan can also inherit from the
-:class:`TimeModel<scan_framework.models.time_model.TimeModel>` class which automatically
-sets the :attr:`x_units<scan_framework.models.scan_model.ScanModel.x_units>` and
-:attr:`x_label<scan_framework.models.scan_model.ScanModel.x_label>`
+:class:`TimeModel<artiq_scan_framework.models.time_model.TimeModel>` class which automatically
+sets the :attr:`x_units<artiq_scan_framework.models.scan_model.ScanModel.x_units>` and
+:attr:`x_label<artiq_scan_framework.models.scan_model.ScanModel.x_label>`
 attributes of the scan model.
 
 Frequency scans
 ---------------
 Frequency scans create a configurable GUI argument for entering a range of frequencies to scan over.  To create a
-frequency scan, simply inherit from the :class:`FreqScan<scan_framework.scans.extensions.FreqScan>` class and call
-:meth:`scan_arguments()<scan_framework.scans.scan.Scan.scan_arguments>` in :code:`build()`.
+frequency scan, simply inherit from the :class:`FreqScan<artiq_scan_framework.scans.extensions.FreqScan>` class and call
+:meth:`scan_arguments()<artiq_scan_framework.scans.scan.Scan.scan_arguments>` in :code:`build()`.
 
 .. code-block:: python
 
-    from scan_framework.scans import *
-    from scan_framework.models import *
+    from artiq_scan_framework.scans import *
+    from artiq_scan_framework.models import *
 
 
     class MyFreqScan(Scan1D, FreqScan, EnvExperiment):
@@ -93,22 +93,22 @@ frequency scan, simply inherit from the :class:`FreqScan<scan_framework.scans.ex
             self.register_model(model, auto_track='fit', measurement=True)
 
 
-When creating a frequency scan it is not necessary to define the :meth:`get_scan_points()<scan_framework.scans.scan.Scan.get_scan_points>`
+When creating a frequency scan it is not necessary to define the :meth:`get_scan_points()<artiq_scan_framework.scans.scan.Scan.get_scan_points>`
 callback method;  the framework will automatically scan over the GUI frequencies argument.
 
 The scan model that is registered with a frequency scan can also inherit from the
-:class:`FreqModel<scan_framework.models.freq_model.FreqModel>` class which automatically
-sets the :attr:`x_units<scan_framework.models.scan_model.ScanModel.x_units>` and
-:attr:`x_label<scan_framework.models.scan_model.ScanModel.x_label>`
+:class:`FreqModel<artiq_scan_framework.models.freq_model.FreqModel>` class which automatically
+sets the :attr:`x_units<artiq_scan_framework.models.scan_model.ScanModel.x_units>` and
+:attr:`x_label<artiq_scan_framework.models.scan_model.ScanModel.x_label>`
 attributes of the scan model.
 
 Time/frequency scans
 ------------------------
 Time/frequency scans are provided for scans that need to scan over either a range of frequencies or
 a range of times.  This is useful for scans of atomic transitions which need to find both the transition
-frequency and the appropriate pi time for the transition.  Creating a :class:`TimeFreqScan<scan_framework.scans.extensions.TimeFreqScan>`
+frequency and the appropriate pi time for the transition.  Creating a :class:`TimeFreqScan<artiq_scan_framework.scans.extensions.TimeFreqScan>`
 significantly simplifies these types of scans.  Inheriting from
-:class:`TimeFreqScan<scan_framework.scans.extensions.TimeFreqScan>`
+:class:`TimeFreqScan<artiq_scan_framework.scans.extensions.TimeFreqScan>`
 
     1. Creates two GUI arguments for entering either a range of frequencies or a range of times.
     2. Creates a GUI argument for specifying if the scan should scan over the range of frequencies or times.
@@ -121,20 +121,20 @@ significantly simplifies these types of scans.  Inheriting from
     9. Passes both the frequency and time as arguments to the :code:`measure()` method.
 
 To create a Time/frequency scan, simply inherit from the
-:class:`TimeFreqScan<scan_framework.scans.extensions.TimeFreqScan>` class and call
-:meth:`scan_arguments()<scan_framework.scans.scan.Scan.scan_arguments>` in :code:`build()`.  If you are also
+:class:`TimeFreqScan<artiq_scan_framework.scans.extensions.TimeFreqScan>` class and call
+:meth:`scan_arguments()<artiq_scan_framework.scans.scan.Scan.scan_arguments>` in :code:`build()`.  If you are also
 using auto-tracking, register a single auto-tracking scan model and use the
-:attr:`type<scan_framework.models.scan_model.ScanModel.type>` attribute in the scan model to dynamically
+:attr:`type<artiq_scan_framework.models.scan_model.ScanModel.type>` attribute in the scan model to dynamically
 determine the fit function, main fit, etc based on the type (frequency or time) of scan being performed.
-For a full example of a :class:`TimeFreqScan<scan_framework.scans.extensions.TimeFreqScan>` class that uses
+For a full example of a :class:`TimeFreqScan<artiq_scan_framework.scans.extensions.TimeFreqScan>` class that uses
 auto-tracking, see the example below.
 
 .. note::
 
     The scan model that is registered for a time/frequency scan can also inherit from the
-    :class:`TimeFreqModel<scan_framework.models.time_freq_model.TimeFreqModel>` class which automatically
-    sets the :attr:`x_units<scan_framework.models.scan_model.ScanModel.x_units>` and
-    :attr:`x_label<scan_framework.models.scan_model.ScanModel.x_label>`
+    :class:`TimeFreqModel<artiq_scan_framework.models.time_freq_model.TimeFreqModel>` class which automatically
+    sets the :attr:`x_units<artiq_scan_framework.models.scan_model.ScanModel.x_units>` and
+    :attr:`x_label<artiq_scan_framework.models.scan_model.ScanModel.x_label>`
     attributes of the scan model.
 
 .. note::
@@ -149,9 +149,9 @@ auto-tracking, see the example below.
 
 .. code-block:: python
 
-    from scan_framework.scans import *
-    from scan_framework.models import *
-    from scan_framework.analysis.curvefits import AtomLine, Sine
+    from artiq_scan_framework.scans import *
+    from artiq_scan_framework.models import *
+    from artiq_scan_framework.analysis.curvefits import AtomLine, Sine
     import random
 
 

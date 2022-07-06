@@ -4,7 +4,7 @@ Applets
 =====================
 
 There are a few applets that need to be created so that scan data may be plotted.  Each applet uses one of the
-applet classes defined in the scan_framework/applets folder.  See the applets documentation for more information about
+applet classes defined in the artiq_scan_framework/applets folder.  See the applets documentation for more information about
 these applet classes.
 
 .. _current-scan-applet:
@@ -19,7 +19,7 @@ Add the following command to the applets panel in the dashboard to create the cu
 
 .. code-block:: console
 
-    $python -m scan_framework.applets.plot_xy current_scan.plots.y
+    $python -m artiq_scan_framework.applets.plot_xy current_scan.plots.y
         --x current_scan.plots.x
         --fit current_scan.plots.fitline
         --title current_scan.plots.plot_title
@@ -64,7 +64,7 @@ Add the following command to the applets panel in the dashboard to create the cu
 
 .. code-block:: console
 
-    $python -m scan_framework.applets.plot_hist current_hist.bins
+    $python -m artiq_scan_framework.applets.plot_hist current_hist.bins
         --x current_hist.bin_boundaries
         --x_units current_hist.x_units
         --x_label current_hist.x_label
@@ -83,7 +83,7 @@ Add the following command to the applets panel in the dashboard to create the cu
 
 .. code-block:: console
 
-    $python -m scan_framework.applets.plot_hist current_hist.aggregate_bins
+    $python -m artiq_scan_framework.applets.plot_hist current_hist.aggregate_bins
         --x current_hist.bin_boundaries
         --x_units current_hist.x_units
         --x_label current_hist.x_label
@@ -104,7 +104,7 @@ Add the following command to the applets panel in the browser to create the brow
 
 .. code-block:: console
 
-    $python -m scan_framework.applets.plot_xy current_scan.plots.y
+    $python -m artiq_scan_framework.applets.plot_xy current_scan.plots.y
     --x current_scan.plots.x
     --fit current_scan.plots.fitline
     --title current_scan.plots.plot_title
@@ -127,7 +127,7 @@ Add the following command to the applets panel in the dashboard to create the cu
 
 .. code-block:: console
 
-    $python -m scan_framework.applets.plot_xy current_scan.plots.dim1.y
+    $python -m artiq_scan_framework.applets.plot_xy current_scan.plots.dim1.y
         --x current_scan.plots.dim1.x
         --fit current_scan.plots.dim1.fitline
         --title current_scan.plots.dim1.plot_title
@@ -146,7 +146,7 @@ If rendering of the current sub-scan applet is slow, a sub-scan plot with no fit
 
 .. code-block:: console
 
-    $python -m scan_framework.applets.plot_xy current_scan.plots.dim1.y
+    $python -m artiq_scan_framework.applets.plot_xy current_scan.plots.dim1.y
         --x current_scan.plots.dim1.x
         --title current_scan.plots.dim1.plot_title
         --x_scale current_scan.plots.dim1.x_scale

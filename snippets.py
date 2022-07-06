@@ -1,9 +1,26 @@
 from artiq.experiment import *
+from .exceptions import Paused
+import time
+from .scans.scan import FitGuess
 
 
-class Paused(Exception):
-    """Exception raised when scheduler.check_pause() returns True"""
-    pass
+# for debugging purposes
+def print_caller():
+    import inspect
+    frm = inspect.stack()[2]
+    mod = inspect.getmodule(frm[0])
+    print('Caller: {1}.{0}'.format(frm[3], mod.__name__))
+
+
+@kernel
+def trig_timestamp(ttl, rate):
+    ttl.gate_rising(rate)
+    _ = now_mu()
+    mu_trig = now_mu()
+    while _ > 0:
+        mu_trig = _
+        _ = ttl.timestamp_mu()
+    return mu_trig
 
 
 def pause(self):
@@ -14,10 +31,20 @@ def pause(self):
     except TerminationRequested:
         return False
 
+
 @portable
 def check_pause(self):
     if self.scheduler.check_pause():
         raise Paused
+
+
+def wait_for_action(self):
+    """Block the caller until the user performs some action and manually sets the 'wait' dataset to 0"""
+    self.set_dataset('wait', 1, broadcast=True, save=True, persist=True)
+    time.sleep(2)
+    while self.get_dataset('wait', archive=False) == 1:
+        time.sleep(1)
+
 
 def setattr_argument(self, key, processor=None, group=None, show='auto'):
     if show is 'auto' and hasattr(self, key) and getattr(self, key) is not None:
@@ -27,6 +54,7 @@ def setattr_argument(self, key, processor=None, group=None, show='auto'):
     if hasattr(processor, 'default_value'):
         if not hasattr(self, key) or getattr(self, key) is None:
             setattr(self, key, processor.default_value)
+
 
 def scan_arguments(self, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
     # assign default values for scan GUI arguments

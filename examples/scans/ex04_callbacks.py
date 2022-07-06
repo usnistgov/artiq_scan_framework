@@ -3,7 +3,7 @@
 # How to set a device value at the start of each scan point using the
 # `set_scan_point()` callback.
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class Example4Scan(Scan1D, EnvExperiment):

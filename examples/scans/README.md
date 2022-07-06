@@ -12,5 +12,5 @@ is used in a real lab setting.  These scans cover more advanced usage of the sca
 ---
 **NOTE**:
 These scans cannot be run in the dashboard as they require third 
-party libraries not included in the scan_framework source.
+party libraries not included in the artiq_scan_framework source.
 --- 

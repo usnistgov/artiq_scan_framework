@@ -42,7 +42,7 @@ they appear in :code:`self.measurements` and are interleaved such that each succ
 Multiple measurements when using models
 ---------------------------------------
 When using models, measurements are defined by simply setting the :code:`measurement` attribute of
-:meth:`register_model <scan_framework.scans.scan.Scan.register_model>`
+:meth:`register_model <artiq_scan_framework.scans.scan.Scan.register_model>`
 
 .. code-block:: python
 

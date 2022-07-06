@@ -15,43 +15,43 @@ features are also listed below.
 
 Datset configurations
 ---------------------
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.namespace
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.mirror_namespace
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.broadcast
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.persist
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.save
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.mirror
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.namespace
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.mirror_namespace
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.broadcast
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.persist
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.save
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.mirror
 
 Fitting configurations
 ----------------------
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.fit_map
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.fit_function
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.fit_use_yerr
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.guess
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.man_bounds
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.man_scale
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.hold
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.main_fit
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.fits_to_save
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.fit_map
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.fit_function
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.fit_use_yerr
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.guess
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.man_bounds
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.man_scale
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.hold
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.main_fit
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.fits_to_save
 
 Fit validation configurations
 -----------------------------
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.validators
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.strong_validators
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.pre_validators
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.validators
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.strong_validators
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.pre_validators
 
 Plotting configurations
 -----------------------
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.x_label
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.y_label
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.x_scale
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.y_scale
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.x_units
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.y_units
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.plot_title
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.x_label
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.y_label
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.x_scale
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.y_scale
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.x_units
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.y_units
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.plot_title
 
 Enabling/disabling features
 ---------------------------
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.enable_histograms
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.aggregate_histogram
-.. autoattribute:: scan_framework.models.scan_model.ScanModel.disable_validations
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.enable_histograms
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.aggregate_histogram
+.. autoattribute:: artiq_scan_framework.models.scan_model.ScanModel.disable_validations

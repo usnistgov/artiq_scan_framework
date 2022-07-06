@@ -1,4 +1,4 @@
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class ShimModel(Model):

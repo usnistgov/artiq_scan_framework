@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changes from previous in-house version of the artiq\_ions scan class:
 - The previous alias of "fitting" for analysis.curvefits has been renamed to "curvefits".  Adding 
-  "from scan_framework import *" now imports the analysis.curvefits submodule with the alias of curvefits.
+  "from artiq_scan_framework import *" now imports the analysis.curvefits submodule with the alias of curvefits.
 - The 'frequency_center' attribute has been replaced by '_x_offset' attribute
 - TimeFrequencyScan renamed to TimeFreqScan
 - FrequencyScan renamed to FreqScan

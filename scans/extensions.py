@@ -2,34 +2,37 @@
 
 from artiq.language.core import *
 from .scan import *
-from scan_framework.scans.loading_interface import *
-from scipy.fftpack import fft
+from .loading_interface import *
+from ..lib.ion_checker import *
+from ..exceptions import *
 
 
 class TimeScan(Scan):
     """Scan class for scanning over time values."""
 
-    def scan_arguments(self, times={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
+    def scan_arguments(self, times={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False, **kwargs):
         # assign default values for scan GUI arguments
-        for k, v in {'start': 0, 'stop': 10 * us, 'npoints': 50, 'unit': 'us', 'scale': 1 * us, 'global_step': 10 * us,
-                     'ndecimals': 3}.items():
-            times.setdefault(k, v)
+        if times is not False:
+            for k, v in {'start': 0, 'stop': 10 * us, 'npoints': 50, 'unit': 'us', 'scale': 1 * us, 'global_step': 10 * us,
+                         'ndecimals': 3}.items():
+                times.setdefault(k, v)
 
         # create core scan arguments
-        super().scan_arguments(npasses=npasses, nrepeats=nrepeats, nbins=nbins, fit_options=fit_options, guesses=guesses)
+        super().scan_arguments(npasses=npasses, nrepeats=nrepeats, nbins=nbins, fit_options=fit_options, guesses=guesses, **kwargs)
 
         # create scan arguments for time scans
-        self.setattr_argument('times', Scannable(
-            default=RangeScan(
-                start=times['start'],
-                stop=times['stop'],
-                npoints=times['npoints']
-            ),
-            unit=times['unit'],
-            scale=times['scale'],
-            global_step=times['global_step'],
-            ndecimals=times['ndecimals']
-        ), group='Scan Range')
+        if times is not False:
+            self.setattr_argument('times', Scannable(
+                default=RangeScan(
+                    start=times['start'],
+                    stop=times['stop'],
+                    npoints=times['npoints']
+                ),
+                unit=times['unit'],
+                scale=times['scale'],
+                global_step=times['global_step'],
+                ndecimals=times['ndecimals']
+            ), group='Scan Range')
 
     def get_scan_points(self):
         return self.times
@@ -39,30 +42,32 @@ class FreqScan(Scan):
     """Scan class for scanning over frequency values."""
     _freq_center_manual = None
 
-    def scan_arguments(self, frequencies={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
+    def scan_arguments(self, frequencies={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False, **kwargs):
         # assign default values for scan GUI arguments
-        for k, v in {'start': -5*MHz, 'stop': 5*MHz, 'npoints': 50, 'unit': 'MHz', 'scale': 1 * MHz, 'ndecimals':4}.items():
-            frequencies.setdefault(k, v)
+        if frequencies is not False:
+            for k, v in {'start': -5*MHz, 'stop': 5*MHz, 'npoints': 50, 'unit': 'MHz', 'scale': 1 * MHz, 'ndecimals':4}.items():
+                frequencies.setdefault(k, v)
 
         # crate core scan arguments
         super().scan_arguments(npasses=npasses,
                                nrepeats=nrepeats,
                                nbins=nbins,
                                fit_options=fit_options,
-                               guesses=guesses)
+                               guesses=guesses, **kwargs)
 
         # create scan arguments for frequency scans
-        group = 'Scan Range'
-        self.setattr_argument('frequencies', Scannable(
-            default=RangeScan(
-                start=frequencies['start'],
-                stop=frequencies['stop'],
-                npoints=frequencies['npoints']
-            ),
-            unit=frequencies['unit'],
-            scale=frequencies['scale'],
-            ndecimals=frequencies['ndecimals']
-        ), group=group)
+        if frequencies is not False:
+            group = 'Scan Range'
+            self.setattr_argument('frequencies', Scannable(
+                default=RangeScan(
+                    start=frequencies['start'],
+                    stop=frequencies['stop'],
+                    npoints=frequencies['npoints']
+                ),
+                unit=frequencies['unit'],
+                scale=frequencies['scale'],
+                ndecimals=frequencies['ndecimals']
+            ), group=group)
 
     def get_scan_points(self):
         return self.frequencies
@@ -74,22 +79,33 @@ class TimeFreqScan(Scan):
     pulse_time = None  # default must be None so it can be overriden in the scan
     enable_auto_tracking = True
 
-    def scan_arguments(self, times={}, frequencies={}, frequency_center={}, pulse_time={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
+    def scan_arguments(self, times={}, frequencies={}, frequency_center={}, pulse_time={}, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False, scan={}, **kwargs):
         # assign default values for scan GUI arguments
-        for k,v in {'start': 0, 'stop': 10 * us, 'npoints': 50, 'unit': 'us', 'scale': 1 * us, 'global_step': 10 * us, 'ndecimals':3}.items():
-            times.setdefault(k, v)
-        for k, v in {'start': -5*MHz, 'stop': 5*MHz, 'npoints': 50, 'unit': 'MHz', 'scale': 1 * MHz, 'ndecimals':4}.items():
-            frequencies.setdefault(k, v)
-        for k, v in {'unit': 'MHz', 'scale': MHz, 'default': 100 * MHz, 'ndecimals': 4}.items():
-            frequency_center.setdefault(k, v)
-        for k, v in {'unit': 'us', 'scale': us, 'default': 100 * us, 'ndecimals': 4}.items():
-            pulse_time.setdefault(k, v)
-
-        # create GUI argument to select if scan is a time or a frequency scan
-        self.setattr_argument('scan', EnumerationValue(['frequency', 'time'], default='frequency'))
+        if times is not False:
+            for k,v in {'start': 0, 'stop': 10 * us, 'npoints': 50, 'unit': 'us', 'scale': 1 * us, 'global_step': 10 * us, 'ndecimals':3}.items():
+                times.setdefault(k, v)
+        if frequencies is not False:
+            for k, v in {'start': -5*MHz, 'stop': 5*MHz, 'npoints': 50, 'unit': 'MHz', 'scale': 1 * MHz, 'ndecimals':4}.items():
+                frequencies.setdefault(k, v)
+        if frequency_center is not False:
+            for k, v in {'unit': 'MHz', 'scale': MHz, 'default': 100 * MHz, 'ndecimals': 4}.items():
+                frequency_center.setdefault(k, v)
+        if pulse_time is not False:
+            for k, v in {'unit': 'us', 'scale': us, 'default': 100 * us, 'ndecimals': 4}.items():
+                pulse_time.setdefault(k, v)
+        if scan is not False:
+            for k, v in {'default': 'frequency', 'group': 'Scan Range'}.items():
+                scan.setdefault(k, v)
 
         # create core scan arguments
-        super().scan_arguments(npasses=npasses, nrepeats=nrepeats, nbins=nbins, fit_options=fit_options, guesses=guesses)
+        super().scan_arguments(npasses=npasses, nrepeats=nrepeats, nbins=nbins, fit_options=fit_options, guesses=guesses, **kwargs)
+
+        # create GUI argument to select if scan is a time or a frequency scan
+        if scan is not False:
+            group = scan['group']
+            del scan['group']
+            self.setattr_argument('scan', EnumerationValue(['frequency', 'time'], **scan), group)
+
 
         # create remaining scan arguments for time and frequency scans
         if frequencies is not False:
@@ -108,28 +124,29 @@ class TimeFreqScan(Scan):
         # ask user for the frequency center
         if not self.enable_auto_tracking:
             if self.frequency_center is None:
-                if frequency_center != False:
+                if frequency_center is not False:
                     self.setattr_argument('frequency_center', NumberValue(**frequency_center), group='Scan Range')
 
             if self.pulse_time is None:
-                if pulse_time != False:
+                if pulse_time is not False:
                     self.setattr_argument('pulse_time', NumberValue(**pulse_time), group='Scan Range')
-        self.setattr_argument('times', Scannable(
-            default=RangeScan(
-                start=times['start'],
-                stop=times['stop'],
-                npoints=times['npoints']
-            ),
-            unit=times['unit'],
-            scale=times['scale'],
-            global_step=times['global_step'],
-            ndecimals=times['ndecimals']
-        ), group='Scan Range')
+        if times is not False:
+            self.setattr_argument('times', Scannable(
+                default=RangeScan(
+                    start=times['start'],
+                    stop=times['stop'],
+                    npoints=times['npoints']
+                ),
+                unit=times['unit'],
+                scale=times['scale'],
+                global_step=times['global_step'],
+                ndecimals=times['ndecimals']
+            ), group='Scan Range')
 
     def _attach_models(self):
         self.__bind_models()
         if not self.fit_only:
-            self.__load_frequency_center()
+            self._load_frequency_center()
 
         # tell scan to offset x values by the frequency_center
         # this is done even when not auto-tracking in case the user has manually set frequency_center
@@ -148,13 +165,13 @@ class TimeFreqScan(Scan):
                     self.enable_auto_tracking and 'auto_track' in entry and entry['auto_track']):
                 entry['model'].bind()
 
-    def __load_frequency_center(self):
+    def _load_frequency_center(self):
         # frequency or pulse time manually set in the scan, state that in the debug logs
         if self.frequency_center is not None:
-            self.logger.debug("frequency_center manually set to {0}".format(self.frequency_center))
+            self._logger.warn("frequency_center manually set to {0}".format(self.frequency_center))
 
         if self.pulse_time is not None:
-            self.logger.debug("pulse_time manually set to {0}".format(self.pulse_time))
+            self._logger.warn("pulse_time manually set to {0}".format(self.pulse_time))
 
         # the frequency center is auto loaded from the fits by this class...
         if self.enable_auto_tracking:
@@ -169,13 +186,13 @@ class TimeFreqScan(Scan):
                     if self.frequency_center is None:
                         # set frequency center from saved fit values
                         self.frequency_center = fitted_freq
-                        self._logger.debug("auto set frequency_center to {0} from fits".format(fitted_freq))
+                        self._logger.warn("auto set frequency_center to {0} from fits".format(fitted_freq))
 
                     # hasn't been set yet, ok to auto load
                     if self.pulse_time is None:
                         # set pulse time from saved fit values
                         self.pulse_time = fitted_time
-                        self._logger.debug("auto set pulse_time to {0} from fits".format(fitted_time))
+                        self._logger.warn("auto set pulse_time to {0} from fits".format(fitted_time))
 
     def _get_main_fits(self, model):
         """Get's the last fitted frequency and time values"""
@@ -248,9 +265,14 @@ class ReloadingScan(Scan):
 
     # ====== Scan Interface Methods ======
 
-    def _scan_arguments(self):
+    def _scan_arguments(self, check_for_ion={'default': True}):
         if self.enable_reloading:
-            self.setattr_argument("check_for_ion", BooleanValue(default=False), 'Reloading')
+            if check_for_ion is not False:
+                for k, v in {'default': False, 'group': 'Ion Checker'}.items():
+                    check_for_ion.setdefault(k, v)
+                group = check_for_ion['group']
+                del check_for_ion['group']
+                self.setattr_argument("check_for_ion", BooleanValue(**check_for_ion), group)
             
     def _map_arguments(self):
         """Map coarse grained attributes to fine grained options."""
@@ -325,4 +347,4 @@ class ReloadingScan(Scan):
         else:
             # schedule the load ion experiment
             self.logger.warning("Scheduling ion reload.")
-            self.loading.schedule_load_ion(due_date=time(), synchronous=True)
+            self.loading.schedule_load_ion(due_date=time.time(), synchronous=True)

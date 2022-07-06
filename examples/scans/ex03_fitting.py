@@ -3,7 +3,7 @@
 # How to instruct the scan framework to perform a fit to the calculated mean values and save a fitted parameter
 # to the datasets.
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class Example3Scan(Scan1D, EnvExperiment):

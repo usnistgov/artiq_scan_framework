@@ -3,7 +3,7 @@
 #    1. `after_measure()` is called after the measure method is called
 #    2. When `after_measure()` is called self._data has been updated
 from artiq.experiment import *
-from scan_framework.scans import *
+from artiq_scan_framework.scans import *
 
 
 class Example9Scan(Scan1D, EnvExperiment):

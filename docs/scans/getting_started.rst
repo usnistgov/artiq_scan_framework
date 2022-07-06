@@ -9,8 +9,8 @@ Creating a 1D Scan
 
 To create a 1D scan, a few basic things are needed:
 
-1. Include the scan framework classes using :code:`from scan_framework.scans import *`
-2. Create an experiment that inherits from :code:`scan_framework.scans.scan.Scan1D`.
+1. Include the scan framework classes using :code:`from artiq_scan_framework.scans import *`
+2. Create an experiment that inherits from :code:`artiq_scan_framework.scans.scan.Scan1D`.
 3. (optional) Call :code:`super().build()` to create the :code:`self.core` and :code:`self.scheduler` devices.
 4. Call :code:`self.scan_arguments()` in the build method.
 5. (optional) Create an instance of a scan model and register it by calling :code:`register_model()` in either :code:`build()`
@@ -27,7 +27,7 @@ will be called multiple times at each scan point within the main loop (once at e
 The :code:`measure()` method performs a measurement at the current scan point and returns the value of that measurement
 as an integer (typically a number of integer PMT counts).  You may also write your own :code:`run()` method, which
 allows for greater control over the procedural flow of a scan.  See the source code for the
-:meth:`run() <scan_framework.scans.scan.Scan.run>` method in the :meth:`Scan <scan_framework.scans.scan.Scan>` class.
+:meth:`run() <artiq_scan_framework.scans.scan.Scan.run>` method in the :meth:`Scan <artiq_scan_framework.scans.scan.Scan>` class.
 It is easiest to copy and paste that entire run method into your class and make modifications as necessary.  A few
 GUI arguments for controlling the execution of the scan are also needed.  These are created by calling
 :code:`self.scan_arguments()` in the :code:`build()` method.
@@ -35,7 +35,7 @@ GUI arguments for controlling the execution of the scan are also needed.  These 
 Finally, if you wish to use the scan framework to process the data that is generated, a scan model needs to be instantiated
 and registered with the framework.  This is done by calling :code:`register_model()`.  There are a number of
 arguments to the :code:`register_model()` method that instruct the framework how to use your model -- such as
-if it should calculate statistics or perform a fit on the statistics generated  (see :meth:`register_model() <scan_framework.scans.scan.Scan.register_model>`
+if it should calculate statistics or perform a fit on the statistics generated  (see :meth:`register_model() <artiq_scan_framework.scans.scan.Scan.register_model>`
 for a full listing of these arguments).  If you need to perform custom statistics or simply want more control over, say,
 fitting, you can opt to not register a model and perform statistics calculations and fitting manually within the scan.
 Typically, this is not needed, however.  Please consult :ref:`scans_api` for details on how to perform manual
@@ -46,7 +46,7 @@ Following these requirements a typical, but basic, 1D scan might look something 
 .. code-block:: python
 
     # include all classes needed for writing scan experiments
-    from scan_framework.scans import *
+    from artiq_scan_framework.scans import *
 
     # include your scan model class
     from my_repository.models.my_model import MyModel
@@ -101,19 +101,19 @@ Following these requirements a typical, but basic, 1D scan might look something 
 Creating a Scan Model
 ----------------------------
 To process the data collected by a scan, a scan model is also needed.  All processing of scan data and data handling
-is performed by the scan model, which is a Python class that extends from :class:`ScanModel <scan_framework.models.scan_model.ScanModel>`
+is performed by the scan model, which is a Python class that extends from :class:`ScanModel <artiq_scan_framework.models.scan_model.ScanModel>`
 and has built-in data processing capabilities.  In its most basic form, a scan model only needs to define a
-:attr:`namespace <scan_framework.models.scan_model.ScanModel.namespace>` attribute, which specifies the dataset key under which
+:attr:`namespace <artiq_scan_framework.models.scan_model.ScanModel.namespace>` attribute, which specifies the dataset key under which
 all data will be saved.  If the model is to be used for fitting, additionally the
-:attr:`fit_function <scan_framework.models.scan_model.ScanModel.fit_function>` and
-:attr:`main_fit <scan_framework.models.scan_model.ScanModel.main_fit>` attributes need to be specified.
+:attr:`fit_function <artiq_scan_framework.models.scan_model.ScanModel.fit_function>` and
+:attr:`main_fit <artiq_scan_framework.models.scan_model.ScanModel.main_fit>` attributes need to be specified.
 
 A very basic scan model might look something like:
 
 .. code-block:: python
 
     # include all classes needed for creating scan models
-    from scan_framework.models import *
+    from artiq_scan_framework.models import *
 
 
     class MyScanModel(ScanModel):

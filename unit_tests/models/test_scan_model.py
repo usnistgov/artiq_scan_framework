@@ -1,7 +1,7 @@
-from scan_framework.models.scan_model import *
-from scan_framework.scans.scan import Scan
-import scan_framework.analysis.curvefits as curvefits
-from scan_framework.unit_tests.test_case import *
+from ...models.scan_model import *
+from ...scans.scan import Scan
+from ...analysis.curvefits import Sine
+from ..test_case import *
 import math
 import numpy as np
 
@@ -16,7 +16,7 @@ class TestScanModel(TestCase):
                                namespace='unit_tests',
                                broadcast=True,
                                persist=True,
-                               fit_function=curvefits.Sine)
+                               fit_function=Sine)
         self.model.enable_histograms = False
         self.model.attach(self.scan)
 
@@ -53,7 +53,7 @@ class TestScanModel(TestCase):
         self.model.fit_data(x_data=self.model.stat_model.get('points'),
                             y_data=self.model.stat_model.get('mean'),
                             errors=self.model.stat_model.get('error'),
-                            fit_function=curvefits.Sine)
+                            fit_function=Sine)
         self.model.set_fits()
 
         # tests

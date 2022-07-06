@@ -1,4 +1,4 @@
-from scan_framework.models.scan_model import *
+from .scan_model import *
 
 
 class TimeModel(ScanModel):

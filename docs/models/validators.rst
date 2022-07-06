@@ -96,7 +96,7 @@ Validation Methods
 
 Builtin Validation Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-These are defined in :code:`scan_framework.models.model.py` and are available to all models.
+These are defined in :code:`artiq_scan_framework.models.model.py` and are available to all models.
 
     - :code:`greater_than(min_)`
     - :code:`less_than(max_)`

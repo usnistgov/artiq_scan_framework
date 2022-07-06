@@ -1,6 +1,7 @@
 # tests models/model.py
-from scan_framework.unit_tests.test_case import *
-from scan_framework.models.model import *
+from ..test_case import *
+from ...models.model import *
+
 
 # tests the built in validation rules in model.py
 class TestValidationRules(TestCase):

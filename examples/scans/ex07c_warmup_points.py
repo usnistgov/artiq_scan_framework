@@ -4,7 +4,7 @@
 #   1. Each warmup point is repeated once for each measurement.
 
 from artiq.experiment import *
-from scan_framework.scans import *
+from artiq_scan_framework.scans import *
 
 
 class WarmupPointsMeasurementsExample(Scan1D, EnvExperiment):

@@ -20,8 +20,8 @@ Ion's can be automatically loaded by creating a sub-component similar to the loa
 counts and loading will stop after a given number of seconds if an ion could not be loaded.
 
 .. note::
-    To use lost ion detection and automatic reloading, inherit from the :class:`~scan_framework.scans.extensions.ReloadingScan`
-    class, create a loading library that implements the :class:`~scan_framework.lib.loading_interface.LoadingInterface`
+    To use lost ion detection and automatic reloading, inherit from the :class:`~artiq_scan_framework.scans.extensions.ReloadingScan`
+    class, create a loading library that implements the :class:`~artiq_scan_framework.lib.loading_interface.LoadingInterface`
     interface, and set :code:`self.loading` to an instance of the loading library in the scan:
 
 .. code-block:: python

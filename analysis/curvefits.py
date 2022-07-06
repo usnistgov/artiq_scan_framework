@@ -566,7 +566,8 @@ class Fit():
                 popt, pcov = curve_fit(_wrap_func, x, y, p0=guess, sigma=yerr,
                                        absolute_sigma=False, bounds=bounds,
                                        max_nfev=10000, x_scale=x_scale,
-                                       method='trf')
+                                       method='trf',
+                                       )
             except:
                 logger.error(func.__name__ + " fit failed!")
                 raise

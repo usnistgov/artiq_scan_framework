@@ -22,19 +22,22 @@ class HistogramPlot(pyqtgraph.PlotWidget):
                 title = data.get(self.args.plot_title, (False,None))[1]
             except KeyError:
                 title = ""
-        try:
+
+        if self.args.y in data:
             y = data[self.args.y][1]
-            fit = data.get(self.args.fit, (False, None))[1] or [1 for _ in range(10)]
-            if self.args.x is None:
-                x = None
-            else:
-                x = data[self.args.x][1]
-            fit = data.get(self.args.fit, (False, None))[1]
-            x_units = data.get(self.args.x_units, (False, None))[1] or 1
-            x_label = data.get(self.args.x_label, (False, None))[1] or ""
-            y_label = data.get(self.args.y_label, (False, None))[1] or ""
-        except KeyError:
+        else:
+            print('{} dataset does not exist'.format(self.args.y))
             return
+        fit = data.get(self.args.fit, (False, None))[1] or [1 for _ in range(10)]
+        if self.args.x is None:
+            x = None
+        else:
+            x = data[self.args.x][1]
+        fit = data.get(self.args.fit, (False, None))[1]
+        x_units = data.get(self.args.x_units, (False, None))[1] or 1
+        x_label = data.get(self.args.x_label, (False, None))[1] or ""
+        y_label = data.get(self.args.y_label, (False, None))[1] or ""
+
         if x is None:
             x = list(range(len(y)+1))
 
@@ -57,7 +60,8 @@ class HistogramPlot(pyqtgraph.PlotWidget):
                 pen = pyqtgraph.mkPen(color='r', width=4)
                 self.plot(np.linspace((x[1] + x[0]) / 2, (x[-1] + x[-2]) / 2, len(y)), fit, pen=pen)
         else:
-            print("Plot Hist: x and y dimensions don't agree")
+            #print("Plot Hist: x and y dimensions don't agree")
+            pass
 
 
 def main():

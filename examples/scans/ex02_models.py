@@ -3,7 +3,7 @@
 # How to register a scan model to calculate and plot mean values and standard errors.
 
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 # 1. Create a scan model.
@@ -43,7 +43,7 @@ class Example2Scan(Scan1D, EnvExperiment):
         self.register_model(self.model, measurement=True)
 
     # NOTE: No run method is defined.  Typically, a run method is not necessary.
-    #       In this case, the default run method in scan_framework/scans/scan.py is used which handles
+    #       In this case, the default run method in artiq_scan_framework/scans/scan.py is used which handles
     #       initializing, running the scan, yielding/terminating, and performing fits automatically.
 
     def get_scan_points(self):

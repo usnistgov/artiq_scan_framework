@@ -2,7 +2,7 @@
 #
 # How to specify fit guesses using GUI arguments in the dashboard
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class Example10Scan(Scan1D, EnvExperiment):

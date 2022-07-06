@@ -1,5 +1,5 @@
-from scan_framework.models.model import *
-from scan_framework.analysis.curvefits import *
+from .model import *
+from ..analysis.curvefits import *
 import numpy as np
 from math import *
 
@@ -22,6 +22,10 @@ class FitModel(Model):
     def fit_data(self, x, y, fit_function, hold=None, guess={}, yerr=None, man_bounds={}, man_scale={}):
         """Fit data in x and y to self.fit_function"""
         # make sure x & y are numpy arrays
+
+        if fit_function is None:
+            self.logger.warning("No fit function has been set")
+            return
         x = np.array(x)
         y = np.array(y)
         # -- fit the data

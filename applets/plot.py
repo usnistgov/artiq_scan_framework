@@ -42,6 +42,7 @@ class Plot(pyqtgraph.PlotWidget):
     def __init__(self, args):
         self.args = args
         self.set_config(pyqtgraph)
+        pyqtgraph.setConfigOptions(antialias=True)
         pyqtgraph.PlotWidget.__init__(self)
 
     def set_config(self, pyqtgraph):
@@ -83,7 +84,7 @@ class Plot(pyqtgraph.PlotWidget):
         """Plot the data"""
         pass
 
-    def _load(self, data, key, ds_only=True, default=None):
+    def _load(self, data, key, ds_only=False, default=None):
         """Helper method to load a single dataset value and assign it to an attribute of self.
 
         Falls back to an explicit value being specified in arguments or a given default value when the
@@ -91,23 +92,29 @@ class Plot(pyqtgraph.PlotWidget):
         """
         if isinstance(key, list):
             for k in key:
-                self._load(data, k, default)
+                self._load(data, k, default=default, ds_only=ds_only)
             return
-
         argval = getattr(self.args, key)
-        val = data.get(argval, (False, default))
-        ds_found = val[0]
 
-        if ds_found:
-            # get value from dataset
-            if val[1] is not None:
-                val = val[1]
-            else:
-                val = None
+        # argument was not set, use default
+        if argval is None:
+            val = default
+        # argument was set
         else:
-            if argval is not None and not ds_only:
+            # get value from the datasets
+            val = data.get(argval, (False, default))[1]
+            # dataset value doesn't exist, use argument value
+            if val is None:
                 val = argval
-            else:
-                val = default
-
+        # if changed:
+        #     # get value from dataset
+        #     if val[1] is not None:
+        #         val = val[1]
+        #     else:
+        #         val = None
+        # else:
+        #     if argval is not None and not ds_only:
+        #         val = argval
+        #     else:
+        #         val = default
         setattr(self, key, val)

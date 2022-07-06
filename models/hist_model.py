@@ -1,4 +1,4 @@
-from scan_framework.models.model import *
+from .model import *
 import numpy as np
 from artiq.language.core import *
 

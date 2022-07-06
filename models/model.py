@@ -31,7 +31,7 @@ class Model(HasEnvironment):
         """
         self.__dict__.update(kwargs)
         if not hasattr(self, 'logger'):
-            self.logger = logging.getLogger('Model')
+            self.logger = logging.getLogger("")
 
         self._namespace = self.namespace
         self._mirror_namespace = self.mirror_namespace
@@ -378,7 +378,7 @@ class Model(HasEnvironment):
             return True
         else:
             if error_msg is None:
-                error_msg = "Span of ydata ({0}) is less than {2}."
+                error_msg = "Span of y values is less than {2}."
             self.validation_errors[series_name] = error_msg .format(round(height,1), series_name, min_height)
             return False
 

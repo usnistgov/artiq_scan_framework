@@ -1,6 +1,6 @@
 from artiq.experiment import *
-from scan_framework import *
-import scan_framework.analysis.curvefits as curvefits
+from artiq_scan_framework import *
+import artiq_scan_framework.analysis.curvefits as curvefits
 
 
 class SincInv(curvefits.FitFunction):

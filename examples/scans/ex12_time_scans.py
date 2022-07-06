@@ -2,7 +2,7 @@
 #
 # How to create scan over times, frequencies, or both times and frequencies (e.g. atomic transitions)
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 from math import sin, pi
 
 # Custom fit function to fit pi times

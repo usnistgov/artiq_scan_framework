@@ -6,7 +6,7 @@
 # Adjusting the 'Validation' and 'Simulation' arguments will result in fits that do not pass
 # validation.
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 import random
 from math import pi
 

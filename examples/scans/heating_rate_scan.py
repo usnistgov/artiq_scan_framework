@@ -6,15 +6,15 @@
 # This scan is provided to give an example of usage of the scan framework in
 # an actual lab experiment.
 
-# Include the scan_framework files.
+# Include the artiq_scan_framework files.
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 # Include the model for this scan.
 # Source code is in examples/models/heating_rate.py.
-from scan_framework.examples.models.heating_rate import *
+from artiq_scan_framework.examples.models.heating_rate import *
 
-# Lab specific libraries not included in the scan_framework source.
+# Lab specific libraries not included in the artiq_scan_framework source.
 # Included for illustrative purposes.
 from lib.detection import *
 from lib.cooling import *
@@ -59,7 +59,7 @@ class HeatingRateScan(Scan1D, ReloadingScan, EnvExperiment):
         self.setattr_argument('mode', EnumerationValue(['mode_1', 'mode_2'], default='mode_1'))
 
         # Create the scan arguments.
-        # (These are all dashboard arguments specific to/need by  the scan_framework)
+        # (These are all dashboard arguments specific to/need by the ARTIQ Scan Framework
         self.scan_arguments()
 
         # Override default scan arguments in the dashboard.

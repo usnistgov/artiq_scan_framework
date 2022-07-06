@@ -2,7 +2,7 @@
 #
 # How to format the plot axes and title
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class Example13Scan(Scan1D, FreqScan, EnvExperiment):
@@ -37,4 +37,4 @@ class Example13Model(ScanModel):
     y_units = 'x10'
 
     # 2. Formatting colors, point symbols, axes sizes, etc. of the plot can be accomplished by creating your own applet.
-    #    See `scan_framework/applets/plot_xy.py` as a template that easily be copied and modified.
+    #    See `artiq_scan_framework/applets/plot_xy.py` as a template that easily be copied and modified.
