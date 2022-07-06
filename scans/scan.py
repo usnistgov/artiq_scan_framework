@@ -3,18 +3,13 @@ import numpy as np
 from time import time, sleep
 import inspect
 import cProfile, pstats
-from scan_framework.scans.data_logger import DataLogger
-
+from .data_logger import DataLogger
+from ..exceptions import *
 
 # allows @portable methods that use delay_mu to compile
 def delay_mu(duration):
     pass
 
-
-class Paused(Exception):
-    """Exception raised on the core device when a scan should either pause and yield to a higher priority experiment or
-    should terminate."""
-    pass
 
 
 class FitGuess(NumberValue):
@@ -93,7 +88,7 @@ class Scan(HasEnvironment):
         if self._name is None:
             self._name = self.__class__.__name__
         if self._logger_name is None:
-            self._logger_name = 'scan'
+             self._logger_name = ''
         self.create_logger()
 
         # initialize variables
@@ -103,9 +98,9 @@ class Scan(HasEnvironment):
         #self.nresults = 1 #Number of results to return per measurement
         #self.result_names=None
         #self.nresults = None
-        
+        self.dtype = np.int32
         self.nmeasurements = 0
-        self.npoints = 0
+        self.npoints = None
         #self.npasses = 1  #: Number of passes
         self.npasses = None
         #self.nbins = 50  #: Number of histogram bins
@@ -378,14 +373,15 @@ class Scan(HasEnvironment):
             self._i_point = i_points[self._idx]
 
             # repeat measurement on scan point
-            self._repeat_loop(point, point, self._i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
-                              last_point=False, last_pass=last_pass)
+            self._repeat_loop(point, point, self._i_point, self._i_pass, nrepeats, nmeasurements, measurements, poffset, ncalcs,
+                               last_point=False, last_pass=last_pass)
+
             self._idx += 1
 
         # last scan point is special (optimization)
         point = points[npoints - 1]
         self._i_point = i_points[npoints - 1]
-        self._repeat_loop(point, point, self._i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
+        self._repeat_loop(point, point, self._i_point, self._i_pass, nrepeats, nmeasurements, measurements, poffset, ncalcs,
                           last_point=True, last_pass=last_pass)
 
         # -- reset loop counter
@@ -393,7 +389,7 @@ class Scan(HasEnvironment):
 
     # private: for scan.py
     @portable
-    def _repeat_loop(self, point, measure_point, i_point, nrepeats, nmeasurements, measurements, poffset, ncalcs,
+    def _repeat_loop(self, point, measure_point, i_point, i_pass, nrepeats, nmeasurements, measurements, poffset, ncalcs,
                      last_point=False, last_pass=False):
 
         # check for higher priority experiment or termination requested
@@ -412,8 +408,8 @@ class Scan(HasEnvironment):
         self.set_scan_point(i_point, measure_point)
 
         # iterate over repeats
-        counts = np.int32(0)
-        
+
+        self._counts = self._counts_zero
         for i_repeat in range(nrepeats):
             # iterate over measurements
             for i_measurement in range(nmeasurements):
@@ -423,10 +419,11 @@ class Scan(HasEnvironment):
                 # callback
                 self.before_measure(measure_point, self.measurement)
                 self.lab_before_measure(measure_point, self.measurement)
-                
-                count=self.do_measure(measure_point)
+
+                count = self.do_measure(measure_point)
+
                 self._data[i_measurement][i_repeat] = count
-                counts += count
+                self._counts += count
 
                 # callback
                 self.after_measure(measure_point, self.measurement)
@@ -434,7 +431,7 @@ class Scan(HasEnvironment):
 
         # update the dataset used to monitor counts
         #mean = counts / (nrepeats*nmeasurements*self.nresults)
-        mean = counts / (nrepeats*nmeasurements)
+        mean = self._counts / (nrepeats*nmeasurements)
 
         # cost: 18 ms per point
         # mutate dataset values
@@ -448,7 +445,7 @@ class Scan(HasEnvironment):
 
                 # rpc to host
                 # send data to the model
-                self.mutate_datasets(i_point, poffset, measurement, point, data)
+                self.mutate_datasets(i_point, i_pass, poffset, measurement, point, data)
             # self._logger.info("i_pass = ")
             # self._logger.info(i_pass)
             # self._logger.info("idx = ")
@@ -457,7 +454,7 @@ class Scan(HasEnvironment):
         # perform calculations
         if ncalcs > 0:
             # rpc to host
-            self._calculate_all(i_point, measure_point)
+            self._calculate_all(i_point, i_pass, measure_point)
 
         # analyze data
         self._analyze_data(i_point, last_pass, last_point)
@@ -510,7 +507,10 @@ class Scan(HasEnvironment):
         """initialize memory to record counts on core device"""
 
         #: 2D array of counts measured for a given scan point, i.e. nmeasurement*nrepeats
-        self._data = np.zeros((self.nmeasurements, self.nrepeats),dtype=np.int32)
+        self._counts = self.dtype(0)
+        self._counts_zero = self.dtype(0)
+        self._data = np.zeros((self.nmeasurements, self.nrepeats), dtype=self.dtype)
+
         self._logger.debug('initialized storage')
 
     # private: for scan.py
@@ -611,7 +611,7 @@ class Scan(HasEnvironment):
                     self._idx = self.npoints + self._idx
 
     # private: for scan.py
-    def _calculate(self, i_point, point, calculation, entry):
+    def _calculate(self, i_point, i_pass, point, calculation, entry):
         """Perform calculations on collected data after each scan point"""
         model = entry['model']
         ###nresults version possibly
@@ -619,7 +619,7 @@ class Scan(HasEnvironment):
         #     value = model.mutate_datasets_calc(i_point, point, calculation)
         #     if 'mutate_plot' in entry and entry['mutate_plot']:
         #         self._mutate_plot(entry, i_point, point, value)
-        value = model.mutate_datasets_calc(i_point, point, calculation)
+        value = model.mutate_datasets_calc(i_point, i_pass, point, calculation)
         if 'mutate_plot' in entry and entry['mutate_plot']:
             self._mutate_plot(entry, i_point, point, value)
 
@@ -736,7 +736,7 @@ class Scan(HasEnvironment):
         """
         import logging
         self.logger = logging.getLogger(self._logger_name)
-        self._logger = logging.getLogger("scan_framework.scans.scan")
+        self._logger = logging.getLogger("")
 
     # interface: for child class
     def report(self, location='both'):
@@ -792,7 +792,7 @@ class Scan(HasEnvironment):
 
     # interface: for child class (optional)
     @rpc(flags={"async"})
-    def mutate_datasets(self, i_point, poffset, measurement, point, data):
+    def mutate_datasets(self, i_point, i_pass, poffset, measurement, point, data):
         """Interface method  (optional, has default behavior)
 
         If this method is not overridden, all data collected for the specified measurement during the
@@ -822,8 +822,8 @@ class Scan(HasEnvironment):
                 #    entry = self._model_registry['measurements'][measurement]
 
                 # mutate the stats for this measurement with the data passed from the core device
-                mean = entry['model'].mutate_datasets(i_point, poffset, point, data)
-                self._mutate_plot(entry, i_point, point, mean)
+                mean, error = entry['model'].mutate_datasets(i_point, i_pass, poffset, point, data)
+                self._mutate_plot(entry, i_point, point, mean, error)
                 
     # interface: for child class (optional)
     def analyze(self):
@@ -852,7 +852,7 @@ class Scan(HasEnvironment):
         except TerminationRequested:
             self.logger.warning("Scan terminated.")
             self._terminated = True
-            if self.continuous_logger:
+            if hasattr(self, 'continuous_logger') and self.continuous_logger:
                 first_pass=self.continuous_points==int(self.continuous_index)
                 ContinuousScan(self,self).continuous_logging(self,self.continuous_logger,first_pass)
 
@@ -878,7 +878,7 @@ class Scan(HasEnvironment):
 
     # interface: for child class (optional)
     @rpc(flags={"async"})
-    def _calculate_all(self, i_point, point):
+    def _calculate_all(self, i_point, i_pass, point):
         # for every registered calculation....
         for calculation in self.calculations:
             for entry in self._model_registry:
@@ -888,7 +888,7 @@ class Scan(HasEnvironment):
 
                     # perform the calculation
                     if self.before_calculate(i_point, point, calculation):
-                        self._calculate(i_point, point, calculation, entry)
+                        self._calculate(i_point, i_pass, point, calculation, entry)
 
     # interface: for child class
     def _get_fit_guess(self, fit_function):
@@ -995,7 +995,7 @@ class Scan(HasEnvironment):
         pass
 
     # interface: for extensions (required)
-    def _mutate_plot(self, entry, i_point, data, mean):
+    def _mutate_plot(self, entry, i_point, data, mean, error=None):
         raise NotImplementedError()
 
     # interface: for extensions (required)
@@ -1006,7 +1006,7 @@ class Scan(HasEnvironment):
         as  the y-value in the dimension 0 plot and the returned error will weight the final fit along dimension 0.
 
         :param model: The model which just performed a fit along the dimension 1 sub-scan.  :code:`model.fit` points to
-                      the :class:`Fit <scan_framework.analysis.curvefits.Fit>` object from the
+                      the :class:`Fit <artiq_scan_framework.analysis.curvefits.Fit>` object from the
                       :ref:`analysis <analysisapi>` package.
         :type model: ScanModel
         :returns: The calculated value and the error in the calculated value.
@@ -1067,7 +1067,10 @@ class Scan(HasEnvironment):
                 setattr(self, key, processor.default_value)
 
     # helper: for child class
-    def scan_arguments(self, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
+    def scan_arguments(self, npasses={}, nrepeats={}, nbins={}, fit_options={}, continuous_scan={}, continuous_points={}, continuous_plot={}, continuous_measure_point={},
+                       continuous_save={},
+                       guesses=False, **kwargs):
+
         # assign default values for scan GUI arguments
         if npasses is not False:
             for k,v in {'default': 1, 'ndecimals': 0, 'step': 1}.items():
@@ -1090,12 +1093,17 @@ class Scan(HasEnvironment):
             self.setattr_argument('nbins', NumberValue(**nbins), group='Scan Settings')
         
         ### Set continuous scan argument options
-        self.setattr_argument('continuous_scan',BooleanValue(default=False),group='Continuous Scan')#, tooltip="make this a continuous scan.")
-        self.setattr_argument('continuous_points',NumberValue(default=1000,ndecimals=0,step=1),group='Continuous Scan')#, tooltip="number of points to save to stats datasets. Points are overriden after this replacing oldest point taken.")
-        self.setattr_argument('continuous_plot',NumberValue(default=50,ndecimals=0,step=1),group='Continuous Scan')#, tooltip = "number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.")
-        self.setattr_argument('continuous_measure_point',NumberValue(default=0.0),group='Continuous Scan')#, tooltip = "point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this")
-        self.setattr_argument('continuous_save',BooleanValue(default=False),group='Continuous Scan')#, tooltip = "Save points to external file when datasets will be overriden. Currently not implemented")
-        
+        if self.continuous_scan is None:
+            if continuous_scan is not False:
+                self.setattr_argument('continuous_scan',BooleanValue(default=False),group='Continuous Scan')#, tooltip="make this a continuous scan.")
+            if continuous_points is not False:
+                self.setattr_argument('continuous_points',NumberValue(default=1000,ndecimals=0,step=1),group='Continuous Scan')#, tooltip="number of points to save to stats datasets. Points are overriden after this replacing oldest point taken.")
+            if continuous_plot is not False:
+                self.setattr_argument('continuous_plot',NumberValue(default=50,ndecimals=0,step=1),group='Continuous Scan')#, tooltip = "number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.")
+            if continuous_measure_point is not False:
+                self.setattr_argument('continuous_measure_point',NumberValue(default=0.0),group='Continuous Scan')#, tooltip = "point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this")
+            if continuous_save is not False:
+                self.setattr_argument('continuous_save',BooleanValue(default=False),group='Continuous Scan')#, tooltip = "Save points to external file when datasets will be overriden. Currently not implemented")
         if self.enable_fitting and fit_options is not False:
             fovals = fit_options.pop('values')
             self.setattr_argument('fit_options', EnumerationValue(fovals, **fit_options), group='Fit Settings')
@@ -1120,7 +1128,7 @@ class Scan(HasEnvironment):
                                                        step=0.001,
                                                        fit_param=fit_param,
                                                        param_index=None))
-        self._scan_arguments()
+        self._scan_arguments(**kwargs)
 
     # helper: for child class
     def register_model(self, model_instance, measurement=None, fit=None, calculation=None,
@@ -1139,7 +1147,7 @@ class Scan(HasEnvironment):
         called at the end of each scan point.
 
         :param model_instance: Instance of the scan model being registered
-        :type model_instance: :class:`scan_framework.models.scan_model.ScanModel`
+        :type model_instance: :class:`artiq_scan_framework.models.scan_model.ScanModel`
         :param measurement: The name of the measurement for which the model will calculate and save statistics.
                             When only a single measurement is performed by the scan, this can simply be set to True.
                             If not set to a string or to True, statistics will not be generated or saved. If set to
@@ -1651,7 +1659,7 @@ class Scan(HasEnvironment):
 
         Notes
             - :code:`model.fit` is used in this callback to access the
-              :class:`Fit <scan_framework.analysis.curvefits.Fit>` object containing the fitted parameters and other
+              :class:`Fit <artiq_scan_framework.analysis.curvefits.Fit>` object containing the fitted parameters and other
               useful information about the fit.
             - Always runs on the host.
             - Will not run if fit's are not performed for any reason
@@ -1732,448 +1740,9 @@ class Scan(HasEnvironment):
         pass
 
 
-class Scan1D(Scan):
-    """Extension of the :class:`~scan_framework.scans.scan.Scan` class for 1D scans.  All 1D scans should inherit from
-    this class."""
 
-    def __init__(self, managers_or_parent, *args, **kwargs):
-        super().__init__(managers_or_parent, *args, **kwargs)
-        self._dim = 1
-        self._i_point = np.int64(0)
 
-    def _load_points(self):
-        # grab the points
-        if self._points is None:
-            points = list(self.get_scan_points())
-        else:
-            points = list(self._points)
-
-        # warmup points
-        if self._warmup_points is None:
-            warmup_points = self.get_warmup_points()
-        else:
-            warmup_points = list(self._warmup_points)
-        warmup_points = [p for p in warmup_points]
-
-        # this turn's ARTIQ scan arguments into lists
-        points = [p for p in points]
-
-        # total number of scan points
-        self.npoints = np.int32(len(points))
-        self.nwarmup_points = np.int32(len(warmup_points))
-
-        # initialize shapes (these are the authority on data structure sizes)...
-
-        # shape of the stats.counts dataset
-        self._shape = np.int32(self.npoints)
-
-        # shape of the plots.x, plots.y, and plots.fitline datasets
-        if self._plot_shape is None:
-            self._plot_shape = np.int32(self.npoints)
-
-        # initialize 1D data structures...
-
-        # 1D array of scan points (these are saved to the stats.points dataset)
-        self._points = np.array(points, dtype=np.float64)
-
-        # flattened 1D array of scan points (these are looped over on the core)
-        self._points_flat = np.array(points, dtype=np.float64)
-        if self.nwarmup_points:
-            self._warmup_points = np.array(warmup_points, dtype=np.float64)
-        else:
-            self._warmup_points = np.array([0],dtype=np.float64)
-
-
-        # flattened 1D array of point indices as tuples
-        # (these are used on the core to map the flat idx index to the 2D point index)
-        self._i_points = np.array(range(self.npoints), dtype=np.int64)
-
-    def _mutate_plot(self, entry, i_point, point, mean):
-        model = entry['model']
-
-        # mutate plot x/y datasets
-        model.mutate_plot(i_point=i_point, x=point, y=mean)
-
-        # tell the current_scan applet to redraw itself
-        model.set('plots.trigger', 1, which='mirror')
-        model.set('plots.trigger', 0, which='mirror')
-
-    def _fit(self, entry, save, use_mirror, dimension, i):
-        """Perform the fit"""
-
-        model = entry['model']
-        x_data, y_data = model.get_fit_data(use_mirror)
-
-        # for validation methods
-        self.min_point = min(x_data)
-        self.max_point = max(x_data)
-
-        errors = model.stat_model.get('error', mirror=use_mirror)
-        fit_function = model.fit_function
-
-        guess = self._get_fit_guess(fit_function)
-
-        return model.fit_data(
-            x_data=x_data,
-            y_data=y_data,
-            errors=errors,
-            fit_function=fit_function,
-            guess=guess,
-            validate=True,
-            set=True,  # keep a record of the fit
-            save=save,  # save the main fit to the root namespace?
-            man_bounds=model.man_bounds,
-            man_scale=model.man_scale
-            )
-
-    def _offset_points(self, x_offset):
-        if x_offset is not None:
-            self._points += x_offset
-            self._points_flat += x_offset
-
-    def _write_datasets(self, entry):
-        entry['model'].write_datasets(dimension=0)
-        entry['datasets_written'] = True
-
-
-class Scan2D(Scan):
-    """Extension of the :class:`~scan_framework.scans.scan.Scan` class for 2D scans.  All 2D scans should inherit from
-        this class."""
-    hold_plot = False
-
-    def __init__(self, managers_or_parent, *args, **kwargs):
-        super().__init__(managers_or_parent, *args, **kwargs)
-        self._dim = 2
-        self._i_point = np.array([0, 0], dtype=np.int64)
-
-    # private: for scan.py
-    def _load_points(self):
-        # grab the points...
-        if self._points is None:
-            points = list(self.get_scan_points())
-        else:
-            points = list(self._points)
-
-        # warmup points
-        if self._warmup_points is None:
-            warmup_points = self.get_warmup_points()
-        else:
-            warmup_points = list(self._warmup_points)
-        warmup_points = [p for p in warmup_points]
-        self.nwarmup_points = np.int32(len(warmup_points))
-        if self.nwarmup_points:
-            self._warmup_points = np.array(warmup_points, dtype=np.float64)
-        else:
-            self._warmup_points = np.array([0],dtype=np.float64)
-
-
-        # this turn's ARTIQ scan arguments into lists
-        points = [p for p in points[0]], [p for p in points[1]]
-
-        # total number of scan points over both dimensions
-        self.npoints = np.int32(len(points[0]) * len(points[1]))
-
-        # initialize shapes (these are the authority on data structure sizes)...
-        self._shape = np.array([len(points[0]), len(points[1])], dtype=np.int32)
-
-        # shape of the current scan plot
-        if self._plot_shape is None:
-            self._plot_shape = np.array([self._shape[0], self._shape[1]], dtype=np.int32)
-
-        # initialize 2D data structures...
-
-        # 2D array of scan points (these are saved to the stats.points dataset)
-        self._points = np.array([
-            [[x1, x2] for x2 in points[1]] for x1 in points[0]
-        ], dtype=np.float64)
-
-        # flattened 1D array of scan points (these are looped over on the core)
-        self._points_flat = np.array([
-            [x1, x2] for x1 in points[0] for x2 in points[1]
-        ], dtype=np.float64)
-
-        # flattened 1D array of point indices as tuples
-        # (these are used on the core to map the flat idx index to the 2D point index)
-        self._i_points = np.array([
-            (i1, i2) for i1 in range(self._shape[0]) for i2 in range(self._shape[1])
-        ], dtype=np.int64)
-
-    def _mutate_plot(self, entry, i_point, point, mean):
-        """Mutates datasets for dimension 0 plots and dimension 1 plots"""
-        if entry['dimension'] == 1:
-            dim1_model = entry['model']
-            dim1_scan_end = i_point[1] == self._shape[1] - 1
-            dim1_scan_begin = i_point[1] == 0 and i_point[0] > 0
-            dim1_model.set('plots.subplot.i_plot', i_point[0], which='mirror', broadcast=True, persist=True)
-
-            # --- Beginning of dimension 1 scan ---
-            #if dim1_scan_begin:
-                #if not self.hold_plot:
-                    # clear out plot data from previous dimension 1 plots
-                #    dim1_model.init_plots(dimension=1)
-
-
-            # --- Mutate Dimension 1 Plot ---
-
-            # first store the point & mean to the dim1 plot x/y datasets
-            # the value of the fitted parameter is plotted as the y value
-            # at the current dimension-0 x value (i.e. x0)
-            dim1_model.mutate_plot(i_point=i_point, x=point[1], y=mean, error=None, dim=1)
-
-
-
-            # --- End of dimension 1 scan ---
-            if dim1_scan_end:
-
-                # --- Fit dimension 1 data ---
-                # perform a fit over the dimension 1 data
-                fit_performed = False
-                try:
-                    fit_performed, fit_valid, saved, errormsg = self._fit(entry,
-                                                                              save=None,
-                                                                              use_mirror=None,
-                                                                              dimension=1,
-                                                                              i=i_point[0])
-
-                # handle cases when fit fails to converge so the scan doesn't just halt entirely with an
-                # unhandeled error
-                except RuntimeError:
-                    fit_performed = False
-                    fit_valid = False
-                    saved = False
-                    errormsg = 'Runtime Error'
-
-                # fit went ok...
-                if fit_performed:
-
-                    # --- Plot Dimension 1 Fitline ---
-                    # set the fitline to the dimension 1 plot dataset
-                    dim1_model.mutate('plots.dim1.fitline', ((i_point[0], i_point[0]+1), (0, len(dim1_model.fit.fitline))), dim1_model.fit.fitline)
-
-                    # --- Mutate Dimension 0 Plot ---
-
-                    # get the name of the fitted parameter that will be plotted
-                    param, error = self.calculate_dim0(dim1_model)
-
-                    # find the dimension 0 model
-                    for entry2 in self._model_registry:
-                        if entry2['dimension'] == 0:
-                            dim0_model = entry2['model']
-
-                            # mutate the dimension 0 plot
-                            dim0_model.mutate_plot(i_point=i_point, x=point[0], y=param, error=error, dim=0)
-
-            # --- Redraw Plots ---
-            # tell the current_scan applet to redraw itself
-            dim1_model.set('plots.trigger', 1, which='mirror')
-            dim1_model.set('plots.trigger', 0, which='mirror')
-
-    def _fit(self, entry, save, use_mirror, dimension, i):
-        """Performs fits on dimension 0 and dimension 1"""
-        model = entry['model']
-        # dimension 1 fits
-        if dimension == 1:
-            # perform a fit on the completed dim1 plot and mutate the dim0 x/y datasets
-
-            # get the x/y data for the fit on dimension 1
-            x_data = model.stat_model.points[i, :, 1]  # these are unsorted
-            y_data = model.stat_model.means[i, :]
-
-            # use the errors in the dimension 1 mean values (std dev of mean) as the weights in the fit
-            errors = model.stat_model.errors[i, :]
-
-            # default fit arguments
-            defaults = {
-                'validate': True,
-                'set': True,
-                'save': False
-            }
-            guess = None
-
-        # dimension 0 fits
-        elif dimension == 0:
-            # get the x/y data for the fit on dimension 0
-            x_data, y_data, errors = model.get_plot_data(mirror=True)
-
-            # default fit arguments
-            defaults = {
-                'validate': True,
-                'set': True,
-                'save': save
-            }
-            i = None
-            guess = self._get_fit_guess(model.fit_function)
-
-        # settings in 'entry' always override default values
-        args = {**defaults, **entry}
-
-        # perform the fit
-        fit_function = model.fit_function
-        validate = args['validate']
-        set = args['set']  # save all info about the fit (fitted params, etc) to the 'fits' namespace?
-        save = args['save']  # save the main fit to the root namespace?
-        return model.fit_data(
-            x_data=x_data,
-            y_data=y_data,
-            errors=errors,
-            fit_function=fit_function,
-            guess=guess,
-            i=i,
-            validate=validate,
-            set=set,
-            save=save,
-            man_bounds=model.man_bounds,
-            man_scale=model.man_scale
-        )
-
-    def _offset_points(self, offset):
-        self._points[:, :, 1] += offset
-        self._points_flat[:, 1] += offset
-
-    def _write_datasets(self, entry):
-        entry['model'].write_datasets(dimension=entry['dimension'])
-        entry['datasets_written'] = True
-
-
-# NOTE: MetaScan has been deprecated by Scan2D
-class MetaScan(Scan1D):
-    """Support for 2D scan of scan.  A top level scan is defined by inheriting from MetaScan.  That top level scan then
-    executes a separate 1D scan that inherits from Scan1D."""
-    scan_registry = {}  # dictionary containing instance of sub-scans that will be run by the top-level scan.
-
-    def register_scan(self, scan, name=None, enable_pausing=False):
-        """Register a sub scan.  By registering a scan, it's prepare(), _initialize_scan(), and prepare_scan() methods
-        will automatically be called immediately before those methods are called on the top level scan.
-        Scan's must be registered in the build method of the top level scan.
-        :param scan: Instance of the scan to register
-        :param name: Name of the scan to register, must be unique.
-        :param enable_pausing: pausing/terminating sub-scans does not work with the current scan architecture,
-        it is recommended to keep this set to False.  This will override the enable_pausing attribute of the passed
-        in scan instance.
-        """
-        if name is not None:
-            if name in self.scan_registry:
-                raise Exception("Cannot register the scan named '{0}' the name has already been used.  "
-                                "You must pick a unique name to register this scan under.".format(name))
-            scan.enable_pausing = enable_pausing
-            self.scan_registry[name] = scan
-            self.logger.debug('registered scan \'{0}\' of type \'{1}\''.format(name, scan.__class__.__name__))
-        else:
-            raise Exception("Cannot register scan.  The name argument is required.")
-
-    # prepare sub scans
-    def prepare(self):
-        super().prepare()
-        for name, s in self.scan_registry.items():
-            self.logger.debug('calling \'{0}.prepare()\''.format(name))
-            s.prepare()
-
-    # sub scans are always initialized before top level scan
-    def _initialize(self, resume):
-        # initialize sub scans
-        for name, s in self.scan_registry.items():
-            self.logger.debug('calling \'{0}.initialize()\''.format(name))
-            s._initialize(resume)
-
-        # initialize top level scan
-        super()._initialize(resume)
-
-    # sub scans are always prepared before top level scan
-    def prepare_scan(self):
-        # prepare sub scans
-        for name, s in self.scan_registry.items():
-            self.logger.debug('calling \'{0}.prepare_scan()\''.format(name))
-            s.prepare_scan()
-
-        # prepare top level scan
-        super().prepare_scan()
-        
-class ContinuousScan(HasEnvironment):
-    def build(self,parent):
-        self.parent=parent
-    @portable
-    def _loop(self,resume=False):
-       parent = self.parent
-       ncalcs = parent._ncalcs
-       nmeasurements = parent.nmeasurements
-       nrepeats = parent.nrepeats
-       measurements = parent.measurements
-
-       try:
-           # callback
-           parent._before_loop(resume)
-           # callback
-           parent.initialize_devices()
-           
-           poffset=0
-           while True:
-               if not resume or parent._idx==0:
-                   parent.before_pass(parent._i_pass)
-               parent._repeat_loop(parent.continuous_index,parent.continuous_measure_point,parent._idx,nrepeats,nmeasurements,measurements,poffset,ncalcs)
-               parent._idx+=1
-               parent.continuous_index+=1
-               if parent._idx == parent.continuous_points:
-                   parent._idx =0
-                   if parent.continuous_logger:
-                       first_pass=parent.continuous_points==int(parent.continuous_index)
-                       self.continuous_logging(parent,parent.continuous_logger,first_pass)
-       except Paused:
-           parent._paused = True
-       finally:
-           parent.cleanup()
-
-    def _load_points(self):
-        parent=self.parent
-        # grab the points
-        points = [i for i in range(parent.continuous_points)]
-
-        # total number of scan points
-        parent.npoints = np.int32(parent.continuous_points)
-
-        # initialize shapes (these are the authority on data structure sizes)...
-
-        # shape of the stats.counts dataset
-        parent._shape = np.int32(parent.npoints)
-
-        # shape of the plots.x, plots.y, and plots.fitline datasets
-        if parent._plot_shape is None:
-            parent._plot_shape = np.int32(parent.continuous_plot)
-
-        # initialize 1D data structures...
-
-        # 1D array of scan points (these are saved to the stats.points dataset)
-        parent._points = np.array(points, dtype=np.float64)
-        
-        # flattened 1D array of scan points (these are looped over on the core)
-        parent._points_flat = np.array(points, dtype=np.float64)
-        
-        parent.continuous_index=0.0
-
-    def _mutate_plot(self, entry, i_point, point, mean):
-        parent=self.parent
-        model = entry['model']
-        i_point = int(point % parent.continuous_plot)
-        # mutate plot x/y datasets
-        model.mutate_plot(i_point=i_point, x=point, y=mean)
-
-        # tell the current_scan applet to redraw itself
-        model.set('plots.trigger', 1, which='mirror')
-        model.set('plots.trigger', 0, which='mirror')
-
-    def _offset_points(self, x_offset):
-        parent=self.parent
-        if x_offset is not None:
-            parent.continuous_measure_point += x_offset
-    def continuous_logging(self,parent,logger,first_pass):
-        for entry in parent._model_registry:
-            # model registered for this measurement
-            if entry['measurement']:
-                # grab the model for the measurement from the registry
-                # get counts for measurement of the measurement model
-                if parent._terminated:
-                    counts = entry['model'].stat_model.counts[0:int(parent._idx)]
-                else:
-                    counts = entry['model'].stat_model.counts
-                    
-                name = entry['model'].stat_model.namespace +'.counts'
-                logger.append_continuous_data(counts, name, first_pass)
+from .scan_1d import *
+from .scan_2d import *
+from .meta_scan import *
+from .continuous_scan import *
