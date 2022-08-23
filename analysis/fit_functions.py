@@ -903,10 +903,7 @@ class IonPosFit(FitFunction):
 
     @staticmethod
     def value(x, A, alpha, w, x0, y0):
-        # added on kyle-687stylab as of 8/13/2020
         return A*np.cos(alpha*(np.pi/2)*np.exp(-2*(x-x0)**2/w**2)) + y0
-        # original
-        #return A*cos(alpha*(np.pi/2)*exp(-2*(x-x0)**2/w**2)) + y0
 
     @staticmethod
     def jacobian(xdata, A, alpha, w, x0, y0):
