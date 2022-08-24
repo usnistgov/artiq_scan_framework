@@ -217,7 +217,7 @@ class Scan(HasEnvironment):
 
         if not resume:
             # map gui arguments to class variables
-            self.map_arguments()
+            self._private_map_arguments()
 
             self._attach_models()
 
@@ -465,7 +465,7 @@ class Scan(HasEnvironment):
             # cost: 2.7 ms
             self._set_counts(mean)
     # private: for scan.py
-    def map_arguments(self):
+    def _private_map_arguments(self):
         """Map coarse grained attributes to fine grained options."""
 
         if self.enable_fitting:
@@ -648,6 +648,7 @@ class Scan(HasEnvironment):
 
             # initialize the scan
             self._initialize(resume)
+            
             # run the scan
             if not self.fit_only:
                 if resume:
@@ -2011,8 +2012,8 @@ class Scan2D(Scan):
 
             # --- Redraw Plots ---
             # tell the current_scan applet to redraw itself
-            dim1_model.set('plots.trigger', 1, which='both')
-            dim1_model.set('plots.trigger', 0, which='both')
+            dim1_model.set('plots.trigger', 1, which='mirror')
+            dim1_model.set('plots.trigger', 0, which='mirror')
 
     def _fit(self, entry, model, save, use_mirror, dimension, i):
         """Performs fits on dimension 0 and dimension 1"""
