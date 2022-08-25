@@ -1,5 +1,5 @@
 from artiq.experiment import *
-from scan_framework.models.scan_model import *
+from artiq_scan_framework.models.scan_model import *
 import numpy as np
 from math import *
 import logging

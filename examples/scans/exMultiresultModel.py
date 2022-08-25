@@ -8,7 +8,7 @@
 #
 # NOTE: Also create in the dashboard the applet for this experiment in scan_framework/examples/scans/ex14_applet.txt
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 class ExMultiResultScan(Scan1D, EnvExperiment):
     enable_simulations=True #enabling this populates the simulation GUI arguments. Running a simulation does the whole scan on the host no core device utilized

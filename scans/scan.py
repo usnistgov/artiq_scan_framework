@@ -96,17 +96,17 @@ class Scan(HasEnvironment):
         # initialize variables
 
         ###nresults version
-        #self._measure_results = [0] #array of measure results sized by default to 1, otherwise sized to the maximum number of results for any measurement.
-        #self.nresults = 1 # maximum number of results for any measurement, default to 1
-        #self.result_names=None
-        #self.nresults = None
         self.dtype = np.int32
+        self._measure_results = np.array([0], dtype=self.dtype) #array of measure results sized by default to 1, otherwise sized to the maximum number of results for any measurement.
+        self.nresults = 1 # maximum number of results for any measurement, default to 1
+        #self.result_names=None
+
         self.nmeasurements = 0
-        self.npoints = None
+        self.npoints = 0
         #self.npasses = 1  #: Number of passes
 
         #multiresult models use the below initializations
-        self.nresults_array=[] #list of number of results for each measurement
+        self.nresults_array=np.array([], dtype=np.int32) #list of number of results for each measurement
         self.nmeasureresults=0 #total number of measurement results (sum of above list)
         #self.nresults=1 #maximum number of results for any measurement, default to 1
 
@@ -155,9 +155,9 @@ class Scan(HasEnvironment):
 
         # this stores "flat" idx point index when a scan is paused.  the idx index is then restored from
         # this variable when the scan resumes.
-        self._idx = np.int32(0)
-        self._i_pass = np.int32(0)
-        self._i_measurement = np.int32(0)
+        self._idx = np.int64(0)
+        self._i_pass = np.int64(0)
+        self._i_measurement = np.int64(0)
 
         super().__init__(managers_or_parent, *args, **kwargs)
 
@@ -182,6 +182,10 @@ class Scan(HasEnvironment):
 
     # private: for scan.py
     def _initialize(self, resume):
+        # Warn user that they need to call self.scan_arguments()
+        if not resume and self.nrepeats == None:
+            self.logger.error("Unable to execute scan.  Number of repeats is unknown.  Did you forget to call self.scan_arguments() in build?")
+
         """Initialize the scan"""
         self._logger.debug("_initialize()")
 
@@ -191,7 +195,6 @@ class Scan(HasEnvironment):
 
         # callback
         self._logger.debug("executing prepare_scan callback")
-
         if not resume:
             ###This is run first call of _initialize (resume=False), override and initialize anything needed at start of experiment
             if self.continuous_scan:
@@ -200,8 +203,8 @@ class Scan(HasEnvironment):
             if self.nresults_array:
                 self.nresults=max(self.nresults_array)
             else:
-                self.nresults_array=[1]
-                self.nmeasureresults=1
+                self.nresults_array = np.array([1], dtype=np.int32)
+                self.nmeasureresults = 1
             if self.nresults>1:
                 self._measure_results=[0 for _ in range(self.nresults)]
                 #Override the do_measure function to call measure(point,results) to give a results list (_measure_results) to output results
@@ -434,7 +437,7 @@ class Scan(HasEnvironment):
                 self.before_measure(measure_point, self.measurement)
                 self.lab_before_measure(measure_point, self.measurement)
 
-                count = self.do_measure(measure_point)
+                self.do_measure(measure_point)
                 for i_result in range(self.nresults_array[i_measurement]):
                     count = self._measure_results[i_result]
                     self._data[i_measurement][i_result][i_repeat] = count
@@ -459,7 +462,8 @@ class Scan(HasEnvironment):
         if self.enable_mutate:
             for i_measurement in range(nmeasurements):
                 # get data for model, only send this measurement, and only the nresults for this measurement
-                data = self._data[i_measurement][0:self.nresults_array[i_measurement]]
+                end = self.nresults_array[i_measurement]
+                data = self._data[i_measurement][0:end]
 
                 # get the name of the measurement
                 measurement = self.measurements[i_measurement]
@@ -693,6 +697,7 @@ class Scan(HasEnvironment):
                             'before_compile': time()
                         }
                     self._logger.debug("compiling core scan...")
+
                     self._run_scan_core(resume)
                 else:
                     self._run_scan_host(resume)
@@ -1305,7 +1310,7 @@ class Scan(HasEnvironment):
 
         if measurement and measurement not in self.measurements:
             self.measurements.append(measurement)
-            self.nresults_array.append(nresults)
+            self.nresults_array = np.array(np.append(self.nresults_array, nresults), dtype=np.int32)
             self.nmeasureresults+=nresults
     # helper method: for scan.py or child class
     @kernel
