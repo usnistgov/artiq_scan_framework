@@ -17,7 +17,7 @@ class MetaScan(Scan1D):
         it is recommended to keep this set to False.  This will override the enable_pausing attribute of the passed
         in scan instance.
         """
-        if name is not None:
+        if name != None:
             if name in self.scan_registry:
                 raise Exception("Cannot register the scan named '{0}' the name has already been used.  "
                                 "You must pick a unique name to register this scan under.".format(name))

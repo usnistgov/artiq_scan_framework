@@ -12,13 +12,13 @@ class Scan1D(Scan):
 
     def _load_points(self):
         # grab the points
-        if self._points is None:
+        if self._points == None:
             points = list(self.get_scan_points())
         else:
             points = list(self._points)
 
         # warmup points
-        if self._warmup_points is None:
+        if self._warmup_points == None:
             warmup_points = self.get_warmup_points()
         else:
             warmup_points = list(self._warmup_points)
@@ -37,7 +37,7 @@ class Scan1D(Scan):
         self._shape = np.int32(self.npoints)
 
         # shape of the plots.x, plots.y, and plots.fitline datasets
-        if self._plot_shape is None:
+        if self._plot_shape == None:
             self._plot_shape = np.int32(self.npoints)
 
         # initialize 1D data structures...
@@ -47,6 +47,7 @@ class Scan1D(Scan):
 
         # flattened 1D array of scan points (these are looped over on the core)
         self._points_flat = np.array(points, dtype=np.float64)
+        # edge case to help artiq compiler. Doesn't like looping through an empty array so always have a least warmup_points=[0], if nwarmup_points=0
         if self.nwarmup_points:
             self._warmup_points = np.array(warmup_points, dtype=np.float64)
         else:
@@ -64,13 +65,19 @@ class Scan1D(Scan):
         model.mutate_plot(i_point=i_point, x=point, y=mean, error=error)
 
         # tell the current_scan applet to redraw itself
-        model.set('plots.trigger', 1, which='mirror')
-        model.set('plots.trigger', 0, which='mirror')
+        if hasattr(model,'models'):
+            models=model.models
+        else:
+            models=[model]
 
-    def _fit(self, entry, save, use_mirror, dimension, i):
+        for model in models:
+            model.set('plots.trigger', 1, which='both')
+            model.set('plots.trigger', 0, which='both')
+
+    def _fit(self, entry, model, save, use_mirror, dimension, i):
         """Perform the fit"""
 
-        model = entry['model']
+        #model = entry['model']
         x_data, y_data = model.get_fit_data(use_mirror)
 
         # for validation methods
@@ -96,7 +103,7 @@ class Scan1D(Scan):
             )
 
     def _offset_points(self, x_offset):
-        if x_offset is not None:
+        if x_offset != None:
             self._points += x_offset
             self._points_flat += x_offset
 

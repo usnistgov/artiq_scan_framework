@@ -1,0 +1,12 @@
+# Add this applet to the `Applets` tab in the console before running example 14/ExMultiresultModel
+# Note 4 lines are potentially plotted, be,mg,m1, and calculation. The fourth is mirrored to current scan
+$python -m scan_framework.applets.plot_xy_ntrace_white
+    example_14.m1.stats.mean
+    --x1 example_14.m1.stats.points
+    --error1 example_14.m1.stats.error
+    multiresult.be_ions.stats.mean
+    --x2 multiresult.be_ions.stats.points
+    --error2 multiresult.be_ions.stats.error
+    multiresult.mg_ions.stats.mean
+    --x3 multiresult.mg_ions.stats.points
+    --error3 multiresult.mg_ions.stats.error

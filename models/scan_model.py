@@ -2,6 +2,7 @@ from artiq.experiment import *
 from .model import *
 from .hist_model import *
 from .fit_model import *
+from .plot_model import *
 import numpy as np
 import scipy.stats as stats
 from math import *
@@ -218,6 +219,11 @@ class ScanModel(Model):
     x_units = ''    #: Unit of the x-axis for the current scan plot.
     y_units = ''    #: Unit of the y-axis for the current scan plot.
     plot_title = '' #: Title of the current scan plot.
+    data_legend = ''
+    fit_legend = ''
+    fit_string = ''
+    subtitle = ''
+    enable_fit_string =True #default put fit string below plot of fit value+/- error
 
     # instance variables
     counts = None  #: Contains the value returned by each call to the Scan measure method() -- contains a value for each scan point, repeat, and pass.
@@ -308,15 +314,15 @@ class ScanModel(Model):
         self.fit_model._namespace = self.namespace + '.fits'
         self.fit_model._mirror_namespace = self.mirror_namespace + '.fits'
         self.fit_model.bind()
-        self.stat_model.namespace = self.namespace + '.stats'
-        self.stat_model.mirror_namespace = self.mirror_namespace + '.stats'
+        self.stat_model._namespace = self.namespace + '.stats'
+        self.stat_model._mirror_namespace = self.mirror_namespace + '.stats'
         self.stat_model.bind()
         if self.enable_histograms:
-            self.hist_model.namespace = self.namespace + '.hist'
-            self.hist_model.mirror_namespace = 'current_hist'
+            self.hist_model._namespace = self.namespace + '.hist'
+            self.hist_model._mirror_namespace = 'current_hist'
             self.hist_model.plot_title = self.plot_title
             self.hist_model.bind()
-        self.defaults_model.namespace = self.namespace + '.defaults'
+        self.defaults_model._namespace = self.namespace + '.defaults'
         self.defaults_model.bind()
 
     def attach(self, scan):
@@ -407,8 +413,11 @@ class ScanModel(Model):
                             x_units=self.x_units,
                             y_label=self.y_label,
                             y_scale=self.y_scale,
-                            y_units=self.y_units)
-
+                            y_units=self.y_units,
+                            fit_legend=self.fit_legend,
+                            data_legend=self.data_legend,
+                            subtitle=self.subtitle
+                            )
 
         # --- Dimension 1 Plots ---
         elif dimension == 1:
@@ -419,9 +428,13 @@ class ScanModel(Model):
                                 x_units=self.x_units,
                                 y_label=self.y_label,
                                 y_scale=self.y_scale,
-                                y_units=self.y_units)
+                                y_units=self.y_units,
+                                fit_legend=self.fit_legend,
+                                data_legend=self.data_legend,
+                                subtitle=self.subtitle
+                                )
 
-    def init_plots(self, shape, plot_title="", x_label="", x_scale=1, x_units="", y_label="", y_scale=1, y_units=""):
+    def init_plots(self, shape, plot_title="", x_label="", x_scale=1, x_units="", y_label="", y_scale=1, y_units="", fit_legend="", data_legend="", subtitle=""):
         # data
         self.init('plots.x', shape, varname='x', init_local=True)
         self.init('plots.y', shape, varname='y', init_local=True)
@@ -439,8 +452,12 @@ class ScanModel(Model):
         self.set('plots.y_scale', y_scale)
         self.set('plots.x_units', x_units)
         self.set('plots.y_units', y_units)
+        self.set('plots.fit_legend', fit_legend)
+        self.set('plots.data_legend', data_legend)
+        self.set('plots.subtitle', subtitle)
+        self.set('plots.fit_string', '')
 
-    def init_sub_plots(self, shape, plot_title="", x_label="", x_scale=1, x_units="", y_label="", y_scale=1, y_units=""):
+    def init_sub_plots(self, shape, plot_title="", x_label="", x_scale=1, x_units="", y_label="", y_scale=1, y_units="", fit_legend="", data_legend="", subtitle=""):
         # data
         self.init('plots.dim1.x', shape, varname='dim1_x', init_local=True)
         self.init('plots.dim1.y', shape, varname='dim1_y', init_local=True)
@@ -456,6 +473,10 @@ class ScanModel(Model):
         self.set('plots.dim1.x_scale', y_scale)
         self.set('plots.dim1.x_units', x_units)
         self.set('plots.dim1.y_units', y_units)
+        self.set('plots.dim1.fit_legend', fit_legend)
+        self.set('plots.dim1.data_legend', data_legend)
+        self.set('plots.dim1.subtitle', subtitle)
+        self.set('plots.dim1.fit_string', '')
 
     def write_plots(self):
         self.write('plots.x', varname='x')
@@ -523,7 +544,7 @@ class ScanModel(Model):
                 self.stat_model.write('hist')
                 self.hist_model.init_datasets()
 
-        elif dimension is 1:
+        elif dimension == 1:
             # write scan points
             #self.write('x', 'x')
 
@@ -555,9 +576,11 @@ class ScanModel(Model):
         :param counts: array containing all values returned by the scan's measure() method during the specified
                        scan point
         """
+        if len(counts.shape)==2:
+            counts=counts[0]
         dim = self._scan._dim
         # mutate the dataset containing the scan point values
-        self.mutate_points(i_point, point) #TODO this shouldn't need to be called every time, does this slow down the rpc?
+        self.mutate_points(i_point, point)
         # mutate the dataset containing the array of counts measured at each repetition of the scan point
         if dim == 1:
             # mutate the counts dataset with counts at point i_point,poffset:poffset+len(counts)
@@ -627,11 +650,11 @@ class ScanModel(Model):
                     1 plot, dim=0 updates the final dimension 0 plot.
         """
         which = 'both'
-        if self.broadcast is False:
+        if self.broadcast == False:
             which = 'mirror'
 
         # --- Mutate Dimension 0 Plot ---
-        if dim is None or dim == 0:
+        if dim == None or dim == 0:
 
             # --- 1D Scans ---
             if self._scan._dim == 1:
@@ -643,11 +666,11 @@ class ScanModel(Model):
 
             self.mutate('plots.x', i, x, varname='x', which=which)
             self.mutate('plots.y', i, y, varname='y', which=which)
-            if error is not None:
+            if error != None:
                 self.mutate('plots.error', i, error, which=which, update_local=False)
 
 # Merge Conflict 8/15/18 not sure which is correct
-#         elif dim is 1:
+#         elif dim == 1:
 #             self.mutate('plots.dim1.x', i, x, which=which)
 #             self.dim1_x[i] = x
 #             self.mutate('plots.dim1.y', i, y, which=which)
@@ -680,7 +703,7 @@ class ScanModel(Model):
         self.mutate_means(i_point, i_pass, value, None)
 
         self.mutate_errors(i_point, error)
-        return value
+        return value,error
 
     def mutate_points(self, i_point, point):
         """Mutate the 'points' dataset with the value of a scan point
@@ -842,7 +865,7 @@ class ScanModel(Model):
     # --fitting
     def _map_fit_param(self, name):
         """ Maps a fit param name to it's dataset key """
-        if self.fit_map is not None and name in self.fit_map:
+        if self.fit_map != None and name in self.fit_map:
             return self.fit_map[name]
         return name
 
@@ -871,11 +894,11 @@ class ScanModel(Model):
         """
 
         if use_fit_result:
-            if self.main_fit_param is None:
+            if self.main_fit_param == None:
                 raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
             return self.fit.fitresults[self.main_fit_param]
         else:
-            if self.main_fit_ds is None:
+            if self.main_fit_ds == None:
                 raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
 
             if self.fit_model.default_fallback:
@@ -1004,6 +1027,7 @@ class ScanModel(Model):
                     except BadFit as msg:
                         valid_strong = False
                         errormsg = msg
+
                     self.fit_valid_strong = valid_strong
 
                     # - soft validations:
@@ -1029,7 +1053,7 @@ class ScanModel(Model):
 
                     # - save other fits
                     for fitparam, dskey in self.fits_to_save.items():
-                        if fitparam and fitparam is not self.main_fit_param:
+                        if fitparam and fitparam != self.main_fit_param:
                             self.save_fit(fitparam=fitparam, dskey=dskey, broadcast=True, persist=True, save=True)
 
         # store status of fit to class variables.
@@ -1041,11 +1065,11 @@ class ScanModel(Model):
         self._fit_saved = saved
 
         # tell the user about any fit validation errors or warnings that occurred.
-        if self.fit_valid_pre is False:
+        if self.fit_valid_pre == False:
             self.logger.warning("Fit skipped {}".format(errormsg))
-        if self.fit_valid_soft is False:
+        if self.fit_valid_soft == False:
             self.logger.warning("Invalid fit {}".format(errormsg))
-        if self.fit_valid_strong is False:
+        if self.fit_valid_strong == False:
             self.logger.error("Invalid fit. {}".format(errormsg))
 
         return fit_performed, self.fit_valid, saved, errormsg
@@ -1091,7 +1115,7 @@ class ScanModel(Model):
         self.set(dskey, fitval, which='main', broadcast=broadcast, persist=persist, save=save)
 
         # record what's been saved
-        if broadcast is True:
+        if broadcast == True:
             self.fits_saved[self.key(dskey)] = fitval
 
     def set_fits(self, i=None):
@@ -1101,46 +1125,47 @@ class ScanModel(Model):
         # fitted params
         for key, value in zip(self.fit.params._fields, self.fit.params):
             key = "params.{0}".format(key)
-            if i is not None:
+            if i != None:
                 key = "{0}.{1}".format(i, key)
             self.fit_model.set(key, value)
 
         # guess
         for key, value in zip(self.fit.params._fields, self.fit.guess):
             key = "guesses.{0}".format(key)
-            if i is not None:
+            if i != None:
                 key = "{0}.{1}".format(i, key)
             self.fit_model.set(key, value)
 
         # fitted param errors
         for key, value in zip(self.fit.errs._fields, self.fit.errs):
             key = "errors.{0}".format(key)
-            if i is not None:
+            if i != None:
                 key = "{0}.{1}".format(i, key)
             self.fit_model.set(key, value)
 
         # fitline
         key = 'fitline'
-        if i is not None:
+        if i != None:
             key = "{0}.{1}".format(i, key)
         else:
+            ####modified 3/3/2022, not sure what edge case necessitated overriding mirror of plots.fitline, but now not overridden so
+            ####multiple fits can be done and only mirror one of them to the current scan
             # this must update the current_scan so fitlines show up in the plots
-            mirror = self.mirror
-            self.mirror = True
+            #mirror = self.mirror
+            #self.mirror = True
             self.set('plots.fitline', self.fit.fitline_orig)
             self.set('plots.x_fine', self.fit.fitresults['x_fine'])
             self.set('plots.fitline_fine', self.fit.fitresults['fitline_fine'])
-            self.mirror = mirror
 
         self.fit_model.set(key, self.fit.fitline_orig)
 
         # regression analysis
         key = 'analysis.r2'
-        if i is not None:
+        if i != None:
             key = "{0}.{1}".format(i, key)
         self.fit_model.set(key, self.fit.r2)
         key = 'analysis.reg_err'
-        if i is not None:
+        if i != None:
             key = "{0}.{1}".format(i, key)
         self.fit_model.set(key, self.fit.reg_err)
 
@@ -1195,9 +1220,9 @@ class ScanModel(Model):
         Defaults to self._scan.tick which is the difference between adjacent scan points.
         """
 
-        if padding_left is None:
+        if padding_left == None:
             padding_left = self.tick
-        if padding_right is None:
+        if padding_right == None:
             padding_right = self.tick
         return self.validate_between(field, value,
                                      min_=self.min_point - self.tick,
@@ -1210,6 +1235,6 @@ class ScanModel(Model):
         """Function arguments passed to the fit function when running simulations"""
         raise NotImplementedError('Your model needs to implement the simulation_args property')
 
-    def simulate(self, x, noise_level=0, simulation_args=None):
-        simulation_args = simulation_args or self.simulation_args
+    def simulate(self, x,results, noise_level=0, simulation_args=None):
+        simulation_args = simulation_args or self.simulation_args()
         return FitModel.simulate(self, x, noise_level, simulation_args)

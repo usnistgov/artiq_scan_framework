@@ -61,7 +61,7 @@ class FitModel(Model):
         """Validate data is acceptable to fit"""
         self.validation_errors = {}
         self.valid = True
-        if validators is None:
+        if validators == None:
             return True
         for field, rules in validators.items():
             for method, args in rules.items():
@@ -77,7 +77,7 @@ class FitModel(Model):
         self.validation_errors = {}
         self.valid = True
 
-        if validators is None:
+        if validators == None:
             return True
 
         for field, rules in validators.items():
@@ -99,7 +99,7 @@ class FitModel(Model):
         return True
 
     def simulate(self, x, noise_level=0, simulation_args = None):
-        if simulation_args is None:
+        if simulation_args == None:
             try:
                 simulation_args = self.simulation_args
             except(NotImplementedError):
@@ -115,7 +115,7 @@ class FitModel(Model):
             value = c
 
         noise = (2.0 * np.random.random() - 1.0) * noise_level
-        return int(abs(value + noise))
+        return round(abs(value + noise))
 
     @staticmethod
     def reg_err(y, fitline):

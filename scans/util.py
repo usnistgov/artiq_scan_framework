@@ -11,7 +11,7 @@ class Automation:
         """Helper method to run a scan manually from another experiment or sub-component"""
         scan.prepare()
         r = scan.run()
-        if r is False:
+        if r == False:
             raise Exception('Automation Terminated')
         else:
             scan.analyze()

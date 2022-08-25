@@ -65,7 +65,7 @@ class Model(HasEnvironment):
                 key = key.replace("%", "")
                 if hasattr(self, key):
                     val = getattr(self, key)
-                    if val is not None:
+                    if val != None:
                         _namespace.append(str(val))
             else:
                 _namespace.append(key)
@@ -134,11 +134,11 @@ class Model(HasEnvironment):
         """
 
         # default variable name to key
-        if varname is None:
+        if varname == None:
             varname = key
 
         # the initialized value
-        if shape is not 0:
+        if shape != 0:
             value = np.full(shape, fill_value, dtype)
         else:
             value = fill_value
@@ -158,7 +158,7 @@ class Model(HasEnvironment):
         :param mirror: Set to True to load the value of the datset stored under the mirror namespace instead.
         :param archive: Set to True to archive the dataset value to the hdf5 file for the current experiment.
         """
-        if varname is None:
+        if varname == None:
             varname = key
         setattr(self, varname, self.get(key, default, mirror, archive=archive))
         return self
@@ -181,7 +181,7 @@ class Model(HasEnvironment):
         """
 
         # default variable name to key
-        if varname is None:
+        if varname == None:
             varname = key
 
         # fetch local value
@@ -216,11 +216,11 @@ class Model(HasEnvironment):
             value = np.array(value)
 
         # default these to class settings
-        if broadcast is None:
+        if broadcast == None:
             broadcast = self.broadcast
-        if persist is None:
+        if persist == None:
             persist = self.persist
-        if save is None:
+        if save == None:
             save = self.save
 
         # set the main dataset
@@ -250,7 +250,7 @@ class Model(HasEnvironment):
             for k in key:
                 vals[k] = self.get(k, default, mirror, default_fallback)
             return vals
-        if (self.default_fallback or default_fallback is True) and default == NoDefault:
+        if (self.default_fallback or default_fallback == True) and default == NoDefault:
             try:
                 default = self.get_default(key)
             except KeyError:
@@ -261,7 +261,7 @@ class Model(HasEnvironment):
             val = self.get_dataset(self.key(key, mirror), default=default, archive=archive)
         except KeyError as err:
             # display warning when dataset does not exist as opposed to halting execution
-            if warn is True:
+            if warn == True:
                 val = None
                 self.logger.warning('Dataset {} does not exist.  Returning None for dataset.'.format(err))
             elif warn != 'silent':
@@ -279,7 +279,7 @@ class Model(HasEnvironment):
         """
 
         if update_local:
-            if varname is None:
+            if varname == None:
                 varname = key
 
             # update local variable
@@ -377,7 +377,7 @@ class Model(HasEnvironment):
         if height >= min_height:
             return True
         else:
-            if error_msg is None:
+            if error_msg == None:
                 error_msg = "Span of y values is less than {2}."
             self.validation_errors[series_name] = error_msg .format(round(height,1), series_name, min_height)
             return False
@@ -387,7 +387,7 @@ class Model(HasEnvironment):
         unit = ''
         scaled = value
         if isinstance(value, float):
-            if obj is not None and hasattr(obj, 'scales') and key in obj.scales:
+            if obj != None and hasattr(obj, 'scales') and key in obj.scales:
                 scale = obj.scales[key]['scale']
                 unit = obj.scales[key]['unit']
                 scaled = value / scale
@@ -409,12 +409,12 @@ class Model(HasEnvironment):
 
     @staticmethod
     def _is_frequency_param(param):
-        if 'frequency' in param:
+        if 'freq' in param:
             return True
         return False
 
     @staticmethod
     def _is_time_param(param):
-        if 'pi_time' in param:
+        if 'pi_t' in param:
             return True
         return False

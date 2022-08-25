@@ -1,6 +1,7 @@
 from artiq.experiment import *
 import numpy as np
-from time import time, sleep
+#from time import time, sleep
+import time
 import inspect
 import cProfile, pstats
 from .data_logger import DataLogger
@@ -34,11 +35,8 @@ class Scan(HasEnvironment):
     listed in order of execution.  (see the 'Scan Callbacks' section for additional information)
     """
     # -- kernel invariants
-    ###nresults version
-    #kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements', 'nresults',
-    #                     'do_fit', 'save_fit', 'fit_only'}
-    kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements',
-                         'do_fit', 'save_fit', 'fit_only'}
+    kernel_invariants = {'npasses', 'nbins', 'nrepeats', 'npoints', 'nmeasurements', 'nresults',
+                         'do_fit', 'save_fit', 'fit_only','nresults_array','nmeasureresults'}
 
     # ------------------- Configuration Attributes ---------------------
     # These are set by the child scan class to enable/disable features and control how the scan is run.
@@ -65,6 +63,10 @@ class Scan(HasEnvironment):
     # Feature: auto tracking
     enable_auto_tracking = True   #: Auto center the scan range around the last fitted value.
 
+    # Feature: Scan simulating
+    simulate_scan = None         #: Set to true to disable certain callbacks that run on the core device.  This is used when simulating a scan without a core device, i.e. for debugging/testing purposes.
+    enable_simulations = False    #: Turn on GUI arguments for simulating scans.
+
     # Feature: host scans
     run_on_core = True            #: Set to False to run scans entirely on the host and not on the core device.
     
@@ -85,30 +87,46 @@ class Scan(HasEnvironment):
 
     # ------------------- Private Methods ---------------------
     def __init__(self, managers_or_parent, *args, **kwargs):
-        if self._name is None:
+        if self._name == None:
             self._name = self.__class__.__name__
-        if self._logger_name is None:
+        if self._logger_name == None:
              self._logger_name = ''
         self.create_logger()
 
         # initialize variables
-        
+
         ###nresults version
-        #self._measure_results = []
-        #self.nresults = 1 #Number of results to return per measurement
+        #self._measure_results = [0] #array of measure results sized by default to 1, otherwise sized to the maximum number of results for any measurement.
+        #self.nresults = 1 # maximum number of results for any measurement, default to 1
         #self.result_names=None
         #self.nresults = None
         self.dtype = np.int32
         self.nmeasurements = 0
         self.npoints = None
         #self.npasses = 1  #: Number of passes
+
+        #multiresult models use the below initializations
+        self.nresults_array=[] #list of number of results for each measurement
+        self.nmeasureresults=0 #total number of measurement results (sum of above list)
+        #self.nresults=1 #maximum number of results for any measurement, default to 1
+
+        # --- \start Bryce's original changes for reference
+        #multiresult models use the below initializations
+        #self.nresults_array=[] #list of number of results for each measurement
+        #self.nmeasureresults=0 #total number of measurement results (sum of above list)
+        #self.nresults=1 #maximum number of results for any measurement, default to 1
+        #self._measure_results = [0] #array of measure results sized by default to 1, otherwise sized to the maximum number of results for any measurement.
+
+        #self.nmeasurements = 0
+        #self.npoints = 0
+        # --- \end Bryce's changes
+
         self.npasses = None
-        #self.nbins = 50  #: Number of histogram bins
         self.nbins = None
-        #self.nrepeats = 1  #: Number of repeats
         self.nrepeats = None
         self._x_offset = None
-        self.debug = 0
+        #self.debug = 0
+        self.debug = None
         
         self.continuous_scan=None
 
@@ -133,6 +151,7 @@ class Scan(HasEnvironment):
         self._points = None
         self._warmup_points = None
         self.warming_up = False
+        self._check_pause = False
 
         # this stores "flat" idx point index when a scan is paused.  the idx index is then restored from
         # this variable when the scan resumes.
@@ -155,7 +174,7 @@ class Scan(HasEnvironment):
                 if self.enable_profiling:
                     self.pr.disable()
                     p = pstats.Stats(self.pr)
-                    #p.strip_dirs()
+                    #p.strip_dirs() #gets rid of directory prefix of file locations
                     p.sort_stats('time')
                     p.print_stats(10)
                     p.sort_stats('cumulative')
@@ -165,10 +184,6 @@ class Scan(HasEnvironment):
     def _initialize(self, resume):
         """Initialize the scan"""
         self._logger.debug("_initialize()")
-        
-        ###nresults version
-        #if self.nresults is not None and self.result_names is None:
-        #    self.result_names = ["result_{0}".format(i) for i in range(self.nresults)]
 
         # initialize state variables
         self._paused = False
@@ -178,19 +193,24 @@ class Scan(HasEnvironment):
         self._logger.debug("executing prepare_scan callback")
 
         if not resume:
+            ###This is run first call of _initialize (resume=False), override and initialize anything needed at start of experiment
             if self.continuous_scan:
-                #Set _load_points,_loop,_mutate_plot, _offset_points to be continuous versions
-                self._load_points=ContinuousScan(self,self)._load_points
-                self._loop=ContinuousScan(self,self)._loop
-                self._mutate_plot=ContinuousScan(self,self)._mutate_plot
-                self._offset_points=ContinuousScan(self,self)._offset_points
-                if self.continuous_save:
-                    self.continuous_logger=DataLogger(self)
-                else:
-                    self.continuous_logger=None
-            ###nresults version
-            #self._measure_results = [0 for _ in range(self.nresults)]
-            
+                self._init_continuous()
+            #Check if nresults is greater than one, resize the _measure_results array to account for the maximum number of results for any individual measurement
+            if self.nresults_array:
+                self.nresults=max(self.nresults_array)
+            else:
+                self.nresults_array=[1]
+                self.nmeasureresults=1
+            if self.nresults>1:
+                self._measure_results=[0 for _ in range(self.nresults)]
+                #Override the do_measure function to call measure(point,results) to give a results list (_measure_results) to output results
+                self.do_measure=self.do_measure_nresults
+            #check simulation, if true set run_on_host true and overwrite do_measure with simulate_measure
+            if self.simulate_scan:
+                self.run_on_core=False
+                self.do_measure=self.simulate_measure
+                
             # load scan points
             self._load_points()
             self._logger.debug('loaded points')
@@ -209,7 +229,6 @@ class Scan(HasEnvironment):
                 self.report()
 
         if not resume:
-
             # map gui arguments to class variables
             self._private_map_arguments()
 
@@ -231,7 +250,8 @@ class Scan(HasEnvironment):
             self._attach_to_models()
 
             # initialize simulations (needs self._x_offset/self.frequency_center)
-            #self._init_simulations()
+            if self.simulate_scan:
+                self._init_simulations()
 
             # display scan info
             if self.enable_reporting:
@@ -245,56 +265,47 @@ class Scan(HasEnvironment):
         self.before_scan()
 
         # -- Initialize Datasets
-
-        # these have been deprecated
-        #init_local = not (self.fit_only or resume)
-        #write_datasets = resume
-        #write_done = []
-
+        #shape,plot_shape,points are set in scan1d/2d,continuous etc. version of _load_points(), gives what the points being scanned over look like
         shape = self._shape
         plot_shape = self._plot_shape
         points = self._points
         # datasets are only initialized/written when a scan can run
         if not self.fit_only:
-
             # for every registered model...
             for entry in self._model_registry:
-                # each type (e.g. rsb, bsb, etc)
-                #for type, entry in entries.items():
-
-                    # datasets are only initialized when the scan begins
-                    if not resume:
-                        # initialize datasets if requested by the users
-                        if entry['init_datasets']:
-                            # initialize the model's datasets
-                            entry['datasets_initialized'] = True
-                            entry['model'].init_datasets(shape, plot_shape, points, dimension=entry['dimension'])
-
-                            # debug logging
-                            self._logger.debug("initialized datasets of model '{0}' {1}".format(entry['name'], entry))
-
-                            # # run once
-                            # if entry['name'] in done:
-                            #     entry['datasets_initialized'] = True
-                            # else:
-                            #     entry['model'].init_datasets(shape, plot_shape, points, dimension=entry['dimension'])
-                            #
-                            #     # mark done
-                            #     done.append(entry['name'])
-                            #     entry['datasets_initialized'] = True
-
-                    # datasets are only written when resuming a scan
-                    if resume:
-                        # restore data when resuming a scan by writing the model's local variables to it's datasets
-                        self._write_datasets(entry)
+                # datasets are only initialized when the scan begins, only written to (to pull from the model into the datasets) if resuming
+                if not resume:
+                    # initialize datasets if requested by the users
+                    if entry['init_datasets']:
+                        # initialize the model's datasets
+                        entry['datasets_initialized'] = True
+                        entry['model'].init_datasets(shape, plot_shape, points, dimension=entry['dimension'])
 
                         # debug logging
-                        self._logger.debug("wrote datasets of model '{0}' {1}".format(entry['model'], entry))
+                        self._logger.debug("initialized datasets of model '{0}' {1}".format(entry['name'], entry))
+                else:
+                    # restore data when resuming a scan by writing the model's local variables to it's datasets
+                    self._write_datasets(entry)
+
+                    # debug logging
+                    self._logger.debug("wrote datasets of model '{0}' {1}".format(entry['model'], entry))
 
         self._ncalcs = len(self.calculations)
 
         if not (hasattr(self, 'scheduler')):
             raise NotImplementedError('The scan has no scheduler attribute.  Did you forget to call super().build()?')
+    
+    def _init_continuous(self):
+        "Override functions necessary to perform a continuous scan. Sets _load_points,_loop,_mutate_plot, _offset_points to be continuous versions"
+        self._load_points=ContinuousScan(self,self)._load_points
+        self._loop=ContinuousScan(self,self)._loop
+        self._mutate_plot=ContinuousScan(self,self)._mutate_plot
+        self._offset_points=ContinuousScan(self,self)._offset_points
+        if self.continuous_save:
+            #Save all continuous data collected to an external hdf file with a resizeable array appended every time the points loop is filled
+            self.continuous_logger=DataLogger(self)
+        else:
+            self.continuous_logger=None
 
     # private: for scan.py
     @portable
@@ -315,7 +326,10 @@ class Scan(HasEnvironment):
             # callback
             self._before_loop(resume)
             # callback
-            self.initialize_devices()
+            if not self.simulate_scan:
+                # callback
+                self.initialize_devices()
+
             
             # iterate of passes
             while self._i_pass < npasses:
@@ -373,9 +387,11 @@ class Scan(HasEnvironment):
             self._i_point = i_points[self._idx]
 
             # repeat measurement on scan point
+            # first two arguments are point because point (value in the scan points array) is assumed to be the same as measure point (value you would like to
+            # pass to the measure method). This is different for a continuous scan  that uses the first point as the number of scan points run, and the second as
+            # the value that the measure function should use.
             self._repeat_loop(point, point, self._i_point, self._i_pass, nrepeats, nmeasurements, measurements, poffset, ncalcs,
                                last_point=False, last_pass=last_pass)
-
             self._idx += 1
 
         # last scan point is special (optimization)
@@ -391,19 +407,17 @@ class Scan(HasEnvironment):
     @portable
     def _repeat_loop(self, point, measure_point, i_point, i_pass, nrepeats, nmeasurements, measurements, poffset, ncalcs,
                      last_point=False, last_pass=False):
-
-        # check for higher priority experiment or termination requested
-        if self.enable_pausing:
-
-            # cost: 3.6 ms
-            check_pause = self.scheduler.check_pause()
-            if check_pause:
-                # yield
-                raise Paused
+        # see if check for higher priority experiment or termination requested raised at end of previous _repeat_loop. Do this so blocking rpc (the check_pause call)
+        # isn't blocked by the quickly sent async rpc's called afterwords. Also allows user to manually set _check_pause status themselves and not lose deadtime when they
+        # have slack on last pass
+        if self._check_pause:
+            # yield
+            self._check_pause=False #reset for when scan restarts
+            raise Paused
 
         # dynamically offset the scan point
         measure_point = self.offset_point(i_point, measure_point)
-
+        
         # callback
         self.set_scan_point(i_point, measure_point)
 
@@ -421,30 +435,36 @@ class Scan(HasEnvironment):
                 self.lab_before_measure(measure_point, self.measurement)
 
                 count = self.do_measure(measure_point)
-
-                self._data[i_measurement][i_repeat] = count
-                self._counts += count
+                for i_result in range(self.nresults_array[i_measurement]):
+                    count = self._measure_results[i_result]
+                    self._data[i_measurement][i_result][i_repeat] = count
+                    self._counts += count
 
                 # callback
                 self.after_measure(measure_point, self.measurement)
                 self.lab_after_measure(measure_point, self.measurement)
-
         # update the dataset used to monitor counts
-        #mean = counts / (nrepeats*nmeasurements*self.nresults)
-        mean = self._counts / (nrepeats*nmeasurements)
 
-        # cost: 18 ms per point
+        #mean = counts / (nrepeats*nmeasurements*self.nresults)
+        mean = self._counts / (nrepeats*self.nmeasureresults)
+
+        if self.enable_pausing:
+            # cost: 3.6 ms slack, is blocking. Call on your last loop when you have 3.6ms slack and disable pausing to
+            # still check pausing but remove this delay
+            self._check_pause = self.scheduler.check_pause()
+
+        # cost: 18 ms per point, around 100us slack as async rpc, can block other rpc calls though
+
         # mutate dataset values
         if self.enable_mutate:
             for i_measurement in range(nmeasurements):
-                # get data for model, only send newly generated data array 0:nrepeats
-                data = self._data[i_measurement]
+                # get data for model, only send this measurement, and only the nresults for this measurement
+                data = self._data[i_measurement][0:self.nresults_array[i_measurement]]
 
                 # get the name of the measurement
                 measurement = self.measurements[i_measurement]
 
-                # rpc to host
-                # send data to the model
+                # rpc to host to send data to the model
                 self.mutate_datasets(i_point, i_pass, poffset, measurement, point, data)
             # self._logger.info("i_pass = ")
             # self._logger.info(i_pass)
@@ -458,16 +478,13 @@ class Scan(HasEnvironment):
 
         # analyze data
         self._analyze_data(i_point, last_pass, last_point)
-
         # callback
         self.after_scan_point(i_point, measure_point)
         self._after_scan_point(i_point, measure_point, mean)
-
-        # rpc to host
+        # async rpc to host loses about 20us slack can block other rpc calls though
         if self.enable_count_monitor:
             # cost: 2.7 ms
             self._set_counts(mean)
-
     # private: for scan.py
     def _private_map_arguments(self):
         """Map coarse grained attributes to fine grained options."""
@@ -506,11 +523,10 @@ class Scan(HasEnvironment):
     def _init_storage(self):
         """initialize memory to record counts on core device"""
 
-        #: 2D array of counts measured for a given scan point, i.e. nmeasurement*nrepeats
+        #: 3D array of counts measured for a given scan point, i.e. nmeasurement*nrepeats*nresults
         self._counts = self.dtype(0)
         self._counts_zero = self.dtype(0)
-        self._data = np.zeros((self.nmeasurements, self.nrepeats), dtype=self.dtype)
-
+        self._data = np.zeros((self.nmeasurements, self.nresults,self.nrepeats), dtype=self.dtype)
         self._logger.debug('initialized storage')
 
     # private: for scan.py
@@ -541,7 +557,7 @@ class Scan(HasEnvironment):
     # private: for scan.py
     def __get_x_offset(self):
         # offset has been manually set by the user:
-        if self._x_offset is not None:
+        if self._x_offset != None:
             return self._x_offset
         # automatic determination of x_offset:
         else:
@@ -553,7 +569,7 @@ class Scan(HasEnvironment):
                         if entry['auto_track'] == 'fitresults' and hasattr(model, 'fit'):
                             return model.fit.fitresults[model.main_fit]
                         # use dataset value
-                        elif entry['auto_track'] == 'fit' or entry['auto_track'] is True:
+                        elif entry['auto_track'] == 'fit' or entry['auto_track'] == True:
                             return model.get_main_fit(archive=False)
 
         # default to no offset if none of the above cases apply
@@ -565,12 +581,19 @@ class Scan(HasEnvironment):
             # measurement models...
             if entry['measurement']:
                 # make a copy of simulation args to speed up simulations (don't have to recompute at each scan point)
-                try:
-                    entry['model']._simulation_args = entry['model'].simulation_args
-                    self._logger.debug('initialized model {0} simulation args to {1}'.format(entry['model'].__class__,
-                                                                                            entry['model']._simulation_args))
-                except NotImplementedError:
-                    pass
+                model=entry['model']
+                if hasattr(model,"models"):
+                    ###if hasattr models this is a multiresult model and will loop through all models in that multiresult model
+                    models=model.models
+                else:
+                    ###else normal model, just make this an array so the for loop below behaves and only loops for the singular model
+                    models=[model]
+                for model in models:
+                    try:
+                        model._simulation_args = model.simulation_args
+                        self._logger.debug('initialized model {0} simulation args to {1}'.format(model.__class__, model._simulation_args))
+                    except NotImplementedError:
+                        pass
 
         self._logger.debug('initialized simulations')
 
@@ -614,14 +637,16 @@ class Scan(HasEnvironment):
     def _calculate(self, i_point, i_pass, point, calculation, entry):
         """Perform calculations on collected data after each scan point"""
         model = entry['model']
+
         ###nresults version possibly
         # for i_result in range(self.nresults):
         #     value = model.mutate_datasets_calc(i_point, point, calculation)
         #     if 'mutate_plot' in entry and entry['mutate_plot']:
         #         self._mutate_plot(entry, i_point, point, value)
-        value = model.mutate_datasets_calc(i_point, i_pass, point, calculation)
+        value, error = model.mutate_datasets_calc(i_point, i_pass, point, calculation)
+
         if 'mutate_plot' in entry and entry['mutate_plot']:
-            self._mutate_plot(entry, i_point, point, value)
+            self._mutate_plot(entry, i_point, point, value,error)
 
     # ------------------- Interface Methods ---------------------
 
@@ -813,18 +838,12 @@ class Scan(HasEnvironment):
         :param data: List of integers containing the values returned by :code:`measure()` at each repetition of the current scan point.
         """
         self.measurement = measurement
-
         for entry in self._model_registry:
             # model registered for this measurement
             if entry['measurement'] and entry['measurement'] == measurement:
-                # grab the model for the measurement from the registry
-                # if measurement in self._model_registry['measurements']:
-                #    entry = self._model_registry['measurements'][measurement]
-
                 # mutate the stats for this measurement with the data passed from the core device
                 mean, error = entry['model'].mutate_datasets(i_point, i_pass, poffset, point, data)
                 self._mutate_plot(entry, i_point, point, mean, error)
-                
     # interface: for child class (optional)
     def analyze(self):
         """Interface method  (optional)
@@ -852,9 +871,11 @@ class Scan(HasEnvironment):
         except TerminationRequested:
             self.logger.warning("Scan terminated.")
             self._terminated = True
-            if hasattr(self, 'continuous_logger') and self.continuous_logger:
-                first_pass=self.continuous_points==int(self.continuous_index)
-                ContinuousScan(self,self).continuous_logging(self,self.continuous_logger,first_pass)
+
+            #Scan has ended, append remaining data collected to external hdf file if continuous scan saving enabled
+            if hasattr(self, 'continuous_save') and self.continuous_save and hasattr(self, 'continuous_logger') and self.continuous_logger:
+                first_pass = self.continuous_points >= int(self.continuous_index)
+                ContinuousScan(self, self).continuous_logging(self, self.continuous_logger, first_pass)
 
     # interface: for child class (optional)
     # RPC
@@ -884,8 +905,6 @@ class Scan(HasEnvironment):
             for entry in self._model_registry:
                 # models that are registered for the calculation...
                 if entry['calculation'] and entry['calculation'] == calculation:
-                    # entry = self._model_registry['calculations'][calculation]
-
                     # perform the calculation
                     if self.before_calculate(i_point, point, calculation):
                         self._calculate(i_point, i_pass, point, calculation, entry)
@@ -901,11 +920,11 @@ class Scan(HasEnvironment):
                 g = self._fit_guesses[key]
                 if g['use']:
                     # generic fit guess gui arguments specified by position in the fit function signature
-                    if g['fit_param'] is None and g['param_index'] is not None:
+                    if g['fit_param'] == None and g['param_index'] != None:
                         i = g['param_index']
                         if i < len(signature):
                             g['fit_param'] = signature[i]
-                    if g['fit_param'] is not None:
+                    if g['fit_param'] != None:
                         guess[g['fit_param']] = g['value']
             return guess
         else:
@@ -932,51 +951,57 @@ class Scan(HasEnvironment):
             #
             #If self.save_fit is true, the main fit is broadcast to the ARTIQ master,
             #persisted and saved.  If self.save_fit is False, the main fit is not broadcasted or persisted but is saved
-            #so that it can still be retrieved using normal get_datset methods before the experiment has completed.
+            #so that it can still be retrieved using normal get_dataset methods before the experiment has completed.
 
             # for every registered model...
             for entry in self._model_registry:
                 # registered fit models
                 if entry['fit']:
                     model = entry['model']
-
-                    # callback
-                    if self.before_fit(model) is not False:
-
-                        # what's the correct data source?
-                        #   When fitting only (no scan is performed) the fit is performed on data from the last
-                        #   scan that ran, which is assumed to be in the 'current_scan' namespace.
-                        #   Otherwise, the fit is performed on data in the model's namespace.
-                        use_mirror = model.mirror is True and self.fit_only
-                        save = self.save_fit
-
-                        # dummy values, these are only used in 2d scans
-                        dimension = 0
-                        i = 0
-
-                        # perform the fit
-                        self._logger.debug('performing fit on model \'{0}\''.format(entry['name']))
-                        fit_performed, valid, main_fit_saved, errormsg = self._fit(entry, save, use_mirror, dimension, i)
-
-                        entry['fit_valid'] = valid
-
-                        # tell current scan to plot data...
-                        model.set('plots.trigger', 1, which='mirror')
-                        model.set('plots.trigger', 0, which='mirror')
-
-                        # params not saved warning occurred
-                        if save and not main_fit_saved:
-                            self.logger.warning("Fitted params not saved.")
-
+                    if hasattr(model,"fit_models"):
+                        ###if hasattr fit_models this is a multiresult model and will loop through all fit models in that multiresult model
+                        models=model.fit_models
+                    else:
+                        ###else normal model, just make this an array so the for loop below behaves and only loops for the singular model
+                        models=[model]
+                    for model in models:
                         # callback
-                        self._main_fit_saved = main_fit_saved
-                        self._fit_valid = valid
-                        if fit_performed:
-                            self.after_fit(entry['fit'], valid, main_fit_saved, model)
-
-                    # print the fitted parameters...
-                    if self.enable_reporting and fit_performed:
-                        self.report_fit(model)
+                        if self.before_fit(model) != False:
+    
+                            # what's the correct data source?
+                            #   When fitting only (no scan is performed) the fit is performed on data from the last
+                            #   scan that ran, which is assumed to be in the 'current_scan' namespace.
+                            #   Otherwise, the fit is performed on data in the model's namespace.
+                            use_mirror = model.mirror == True and self.fit_only
+                            save = self.save_fit
+    
+                            # dummy values, these are only used in 2d scans
+                            dimension = 0
+                            i = 0
+    
+                            # perform the fit
+                            self._logger.debug('performing fit on model \'{0}\''.format(entry['name']))
+                            fit_performed, valid, main_fit_saved, errormsg = self._fit(entry, model,save, use_mirror, dimension, i)
+    
+                            entry['fit_valid'] = valid
+    
+                            # tell current scan to plot data...
+                            model.set('plots.trigger', 1, which='both')
+                            model.set('plots.trigger', 0, which='both')
+    
+                            # params not saved warning occurred
+                            if save and not main_fit_saved:
+                                self.logger.warning("Fitted params not saved.")
+    
+                            # callback
+                            self._main_fit_saved = main_fit_saved
+                            self._fit_valid = valid
+                            if fit_performed:
+                                self.after_fit(entry['fit'], valid, main_fit_saved, model)
+    
+                        # print the fitted parameters...
+                        if self.enable_reporting and fit_performed:
+                            self.report_fit(model)
 
     # interface: for extensions (required)
     def _write_datasets(self, entry):
@@ -995,6 +1020,7 @@ class Scan(HasEnvironment):
         pass
 
     # interface: for extensions (required)
+
     def _mutate_plot(self, entry, i_point, data, mean, error=None):
         raise NotImplementedError()
 
@@ -1018,25 +1044,31 @@ class Scan(HasEnvironment):
     # interface: for extensions (optional)
     @portable
     def do_measure(self, point):
-        """Provides a way for subclasses to override the method signature of the measure method."""
-        ###nresults version
-        #result= self.measure(point)
-        #self._measure_results[0] = result
-        return self.measure(point)
+        """Provides a way for subclasses to override the method signature of the measure method. You MUST return the result of the measuerment into 
+        the self._measure_results array. If you only have one value to return, do _measure_results[0]=self.measure(point). If you have multiple results for
+        a single measurement, iterate through the array for each result, while only calling measure once, ideally passing _measure_results as an array to modify"""
+        self._measure_results[0]=self.measure(point)
+    @portable
+    def do_measure_nresults(self, point):
+        """Provides a way for subclasses to override the method signature of the measure method. You MUST return the result of the measuerment into 
+        the self._measure_results array. If you only have one value to return, do _measure_results[0]=self.measure(point). If you have multiple results for
+        a single measurement, iterate through the array for each result, while only calling measure once, ideally passing _measure_results as an array to modify"""
+        #multiresult model used in this scan, fill your results into the _measure_results list passed in the second argument of self.measure
+        self.measure(point,self._measure_results)
 
     # ------------------- Helper Methods ---------------------
     # helper: for child class
     def setattr_argument(self, key, processor=None, group=None, show='auto'):
-        if show is 'auto' and hasattr(self, key) and getattr(self, key) is not None:
+        if show == 'auto' and hasattr(self, key) and getattr(self, key) != None:
             return
-        if show is False or key in self._hide_arguments:
+        if show == False or key in self._hide_arguments:
             if not key in self._hide_arguments:
                 self._hide_arguments[key] = True
             return
 
         # fit guesses
         if isinstance(processor, FitGuess):
-            if group is None:
+            if group == None:
                 group = 'Fit Settings'
             super().setattr_argument(key, NumberValue(default=processor.default_value,
                                                       ndecimals=processor.ndecimals,
@@ -1046,7 +1078,7 @@ class Scan(HasEnvironment):
                                                       max=processor.max,
                                                       scale=processor.scale), group)
             use = None
-            if processor.use is 'ask':
+            if processor.use == 'ask':
                 super().setattr_argument('use_{0}'.format(key), BooleanValue(default=processor.use_default), group)
                 use = getattr(self, 'use_{0}'.format(key))
             else:
@@ -1063,7 +1095,7 @@ class Scan(HasEnvironment):
 
         # set attribute to default value when class is built but not submitted
         if hasattr(processor, 'default_value'):
-            if not hasattr(self, key) or getattr(self, key) is None:
+            if not hasattr(self, key) or getattr(self, key) == None:
                 setattr(self, key, processor.default_value)
 
     # helper: for child class
@@ -1072,43 +1104,61 @@ class Scan(HasEnvironment):
                        guesses=False, **kwargs):
 
         # assign default values for scan GUI arguments
-        if npasses is not False:
+        if npasses != False:
             for k,v in {'default': 1, 'ndecimals': 0, 'step': 1}.items():
                 npasses.setdefault(k, v)
-        if nrepeats is not False:
+        if nrepeats != False:
             for k,v in {'default': 100, 'ndecimals': 0, 'step': 1}.items():
                 nrepeats.setdefault(k, v)
-        if nbins is not False:
+        if nbins != False:
             for k,v in {'default': 50, 'ndecimals': 0, 'step': 1}.items():
                 nbins.setdefault(k, v)
-        if fit_options is not False:
+        if fit_options != False:
             for k,v in {'values': ['No Fits','Fit',"Fit and Save","Fit Only","Fit Only and Save"], 'default': 'Fit'}.items():
                 fit_options.setdefault(k, v)
 
-        if npasses is not False:
+        if npasses != False:
             self.setattr_argument('npasses', NumberValue(**npasses), group='Scan Settings')
-        if nrepeats is not False:
+        if nrepeats != False:
             self.setattr_argument('nrepeats', NumberValue(**nrepeats), group='Scan Settings')
-        if nbins is not False:
+        if nbins != False:
             self.setattr_argument('nbins', NumberValue(**nbins), group='Scan Settings')
         
-        ### Set continuous scan argument options
-        if self.continuous_scan is None:
-            if continuous_scan is not False:
-                self.setattr_argument('continuous_scan',BooleanValue(default=False),group='Continuous Scan')#, tooltip="make this a continuous scan.")
-            if continuous_points is not False:
-                self.setattr_argument('continuous_points',NumberValue(default=1000,ndecimals=0,step=1),group='Continuous Scan')#, tooltip="number of points to save to stats datasets. Points are overriden after this replacing oldest point taken.")
-            if continuous_plot is not False:
-                self.setattr_argument('continuous_plot',NumberValue(default=50,ndecimals=0,step=1),group='Continuous Scan')#, tooltip = "number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.")
-            if continuous_measure_point is not False:
-                self.setattr_argument('continuous_measure_point',NumberValue(default=0.0),group='Continuous Scan')#, tooltip = "point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this")
-            if continuous_save is not False:
-                self.setattr_argument('continuous_save',BooleanValue(default=False),group='Continuous Scan')#, tooltip = "Save points to external file when datasets will be overriden. Currently not implemented")
-        if self.enable_fitting and fit_options is not False:
+        # Don't display arguements for continuous scans in the GUI when the user has already set self.continous_scan
+        if hasattr(self, 'continuous_scan') == False or (hasattr(self, 'continuous_scan') and self.continuous_scan == None):
+            ### Set continuous scan argument options
+
+            # continuous_scan (Boolean): make this a continuous scan
+            if continuous_scan != False:
+                for k, v in {'default': False}.items():
+                    continuous_scan.setdefault(k, v)
+                self.setattr_argument('continuous_scan',BooleanValue(**continuous_scan),group='Continuous Scan')#, tooltip="make this a continuous scan.")
+            # continuous_points (Integer): number of points to save to stats datasets. Points are overriden after this replacing oldest point taken
+            if continuous_points != False:
+                for k, v in {'default': 1000, 'ndecimals': 0, 'step': 1}.items():
+                    continuous_points.setdefault(k, v)
+                self.setattr_argument('continuous_points',NumberValue(**continuous_points),group='Continuous Scan')#, tooltip="number of points to save to stats datasets. Points are overriden after this replacing oldest point taken.")
+            # continuous_plot (Integer): number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.
+            if continuous_plot != False:
+                for k, v in {'default': 50, 'ndecimals': 0, 'step': 1}.items():
+                    continuous_plot.setdefault(k, v)
+                self.setattr_argument('continuous_plot',NumberValue(**continuous_plot),group='Continuous Scan')#, tooltip = "number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.")
+            # continuous_measure_point (Float): point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this
+            if continuous_measure_point != False:
+                for k, v in {'default': 0.0}.items():
+                    continuous_measure_point.setdefault(k, v)
+                self.setattr_argument('continuous_measure_point',NumberValue(**continuous_measure_point),group='Continuous Scan')#, tooltip = "point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this")
+            # continuous_save (Boolean): Save points to external file when datasets will be overriden. Currently not implemented
+            if continuous_save != False:
+                for k, v in {'default': False}.items():
+                    continuous_save.setdefault(k, v)
+                self.setattr_argument('continuous_save',BooleanValue(**continuous_save),group='Continuous Scan')#, tooltip = "Save points to external file when datasets will be overriden. Currently not implemented")
+        if self.enable_fitting and fit_options != False:
+
             fovals = fit_options.pop('values')
             self.setattr_argument('fit_options', EnumerationValue(fovals, **fit_options), group='Fit Settings')
             if guesses:
-                 if guesses is True:
+                 if guesses == True:
                      for i in range(1, 6):
                          key = 'fit_guess_{0}'.format(i)
                          self.setattr_argument(key,
@@ -1128,11 +1178,17 @@ class Scan(HasEnvironment):
                                                        step=0.001,
                                                        fit_param=fit_param,
                                                        param_index=None))
+
+        if self.enable_simulations:
+            group = 'Simulation'
+            self.setattr_argument('simulate_scan', BooleanValue(default=False), group=group)
+            self.setattr_argument('noise_level', NumberValue(default=1, ndecimals=2, step=0.1), group=group)
+            self.setattr_argument('debug', NumberValue(default=0, ndecimals=0, scale=1, step=1), group=group)
         self._scan_arguments(**kwargs)
 
     # helper: for child class
     def register_model(self, model_instance, measurement=None, fit=None, calculation=None,
-                       init_datasets=True, **kwargs):
+                       init_datasets=True,nresults=1, **kwargs):
         """Register a model with the scan.  Models can be registered as a measurement model, fit model,
         calculation model, or combinations of these.
 
@@ -1194,11 +1250,11 @@ class Scan(HasEnvironment):
         """
 
         # map args
-        if calculation is True:
+        if calculation == True:
             calculation = 'main'
-        if measurement is True:
+        if measurement == True:
             measurement = 'main'
-        if fit is True:
+        if fit == True:
             fit = 'main'
 
         # maintain a list of all models registered so that, later, we can dynamically bind the scan to each model
@@ -1216,7 +1272,8 @@ class Scan(HasEnvironment):
             'measurement': measurement,
             'fit': fit,
             'calculation': calculation,
-            'name': model_instance.__class__.__name__
+            'name': model_instance.__class__.__name__,
+            'nresults':nresults
         }
 
         # tack on any additional user defined settings
@@ -1248,7 +1305,8 @@ class Scan(HasEnvironment):
 
         if measurement and measurement not in self.measurements:
             self.measurements.append(measurement)
-
+            self.nresults_array.append(nresults)
+            self.nmeasureresults+=nresults
     # helper method: for scan.py or child class
     @kernel
     def _run_scan_core(self, resume=False):
@@ -1263,6 +1321,9 @@ class Scan(HasEnvironment):
         """
         if self.enable_timing:
             self._timeit('compile')
+        if self.enable_pausing:
+            # cost: 3.6 ms slack, is blocking. This just checks at start of experiment if you wanted to pause before running experiment
+            self._check_pause = self.scheduler.check_pause()
         self._logger.debug("running scan on core device")
         self.lab_before_scan_core()
         self._loop(resume)
@@ -1284,19 +1345,28 @@ class Scan(HasEnvironment):
         self._loop(resume)
 
     # helper: for child class
-    def simulate_measure(self, point, measurement):
+    def simulate_measure(self, point):
+        measurement=self.measurement
         for entry in self._model_registry:
             if entry['measurement'] and entry['measurement'] == measurement:
                 model = entry['model']
-                #model = self._model_registry['measurements'][measurement]['model']
-                if hasattr(model, '_simulation_args'):
-                    simulation_args = model._simulation_args
+                if hasattr(model,"models"):
+                    ###if hasattr models this is a multiresult model and will loop through all models in that multiresult model
+                    models=model.models
                 else:
-                    simulation_args = model.simulation_args
-                # self._logger.debug('simulating measurement')
-                # self._logger.debug('simulation_args = {0}'.format(simulation_args))
-                value = model.simulate(point, self.noise_level, simulation_args)
-                return value
+                    ###else normal model, just make this an array so the for loop below behaves and only loops for the singular model
+                    models=[model]
+                i=0
+                for model in models:
+                    if hasattr(model, '_simulation_args'):
+                        simulation_args = model._simulation_args
+                    else:
+                        simulation_args = model.simulation_args
+                    #if multiresult model model.simulate will loop through the array of simulation_args and set measure_results array with points,
+                    #and return the first index to set _measure_results[0]. If normal model with only one result will simply ignore self._measure_results and return
+                    #one vaule
+                    self._measure_results[i]=model.simulate(point,self._measure_results, self.noise_level, simulation_args)
+                    i+=1
         return None
 
     # -------------------- Callbacks --------------------
@@ -1370,6 +1440,7 @@ class Scan(HasEnvironment):
             - runs anytime _run_scan_core() or _run_scan_host() is called
             - runs on the host or the core device
             - called after the 'before_scan' callback
+            - does not run if self.simulate_scan == True
         """
         pass
 
@@ -1738,9 +1809,6 @@ class Scan(HasEnvironment):
     @portable
     def _analyze_data(self, i_point, last_pass, last_point):
         pass
-
-
-
 
 from .scan_1d import *
 from .scan_2d import *

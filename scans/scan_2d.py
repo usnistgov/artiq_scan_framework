@@ -15,13 +15,13 @@ class Scan2D(Scan):
     def _load_points(self):
 
         # grab the points...
-        if self._points is None:
+        if self._points == None:
             points = list(self.get_scan_points())
         else:
             points = list(self._points)
 
         # warmup points
-        if self._warmup_points is None:
+        if self._warmup_points == None:
             warmup_points = self.get_warmup_points()
         else:
             warmup_points = list(self._warmup_points)
@@ -44,6 +44,7 @@ class Scan2D(Scan):
             warmup_points = _temp
 
         self.nwarmup_points = np.int32(len(warmup_points))
+        # edge case to help artiq compiler. Doesn't like looping through an empty array so always have a least warmup_points=[0], if nwarmup_points=0
         if self.nwarmup_points:
             self._warmup_points = np.array(warmup_points, dtype=np.float64)
         else:
@@ -59,7 +60,7 @@ class Scan2D(Scan):
         self._shape = np.array([len(points[0]), len(points[1])], dtype=np.int32)
 
         # shape of the current scan plot
-        if self._plot_shape is None:
+        if self._plot_shape == None:
             self._plot_shape = np.array([self._shape[0], self._shape[1]], dtype=np.int32)
 
         # initialize 2D data structures...
@@ -90,16 +91,16 @@ class Scan2D(Scan):
 
             # --- Beginning of dimension 1 scan ---
             # if dim1_scan_begin:
-            # if not self.hold_plot:
-            # clear out plot data from previous dimension 1 plots
-            #    dim1_model.init_plots(dimension=1)
+                # if not self.hold_plot:
+                    # clear out plot data from previous dimension 1 plots
+                #    dim1_model.init_plots(dimension=1)
 
             # --- Mutate Dimension 1 Plot ---
 
             # first store the point & mean to the dim1 plot x/y datasets
             # the value of the fitted parameter is plotted as the y value
             # at the current dimension-0 x value (i.e. x0)
-            dim1_model.mutate_plot(i_point=i_point, x=point[1], y=mean, error=None, dim=1)
+            dim1_model.mutate_plot(i_point=i_point, x=point[1], y=mean, error=error, dim=1)
 
             # --- End of dimension 1 scan ---
             if dim1_scan_end:
@@ -108,7 +109,7 @@ class Scan2D(Scan):
                 # perform a fit over the dimension 1 data
                 fit_performed = False
                 try:
-                    fit_performed, fit_valid, saved, errormsg = self._fit(entry,
+                    fit_performed, fit_valid, saved, errormsg = self._fit(entry,dim1_model,
                                                                           save=None,
                                                                           use_mirror=None,
                                                                           dimension=1,
@@ -147,9 +148,9 @@ class Scan2D(Scan):
             dim1_model.set('plots.trigger', 1, which='mirror')
             dim1_model.set('plots.trigger', 0, which='mirror')
 
-    def _fit(self, entry, save, use_mirror, dimension, i):
+    def _fit(self, entry, model, save, use_mirror, dimension, i):
         """Performs fits on dimension 0 and dimension 1"""
-        model = entry['model']
+        #model = entry['model']
         # dimension 1 fits
         if dimension == 1:
             # perform a fit on the completed dim1 plot and mutate the dim0 x/y datasets
