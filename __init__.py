@@ -1,3 +1,3 @@
 from .models import *
 from .scans import *
-from .analysis.curvefits import *
+import artiq_scan_framework.analysis.curvefits as curvefits

@@ -1,7 +1,11 @@
 import time, os
 import h5py
-from artiq.protocols import pyon
 from artiq import __version__ as artiq_version
+
+if float(artiq_version[0])<4:
+    from artiq.protocols import pyon
+else:
+    from sipyco import pyon
 
 
 class DataLogger:

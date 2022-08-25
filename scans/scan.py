@@ -200,7 +200,7 @@ class Scan(HasEnvironment):
             if self.continuous_scan:
                 self._init_continuous()
             #Check if nresults is greater than one, resize the _measure_results array to account for the maximum number of results for any individual measurement
-            if self.nresults_array:
+            if self.nresults_array.size:
                 self.nresults=max(self.nresults_array)
             else:
                 self.nresults_array = np.array([1], dtype=np.int32)
