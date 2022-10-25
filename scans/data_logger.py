@@ -27,14 +27,18 @@ class DataLogger:
 
     def append_continuous_data(self, data, name, first_pass):
         with h5py.File(self.filep, 'a') as f:
-            data_i=data.shape[0]
-            data_j=data.shape[1]
-            dataset = f['datasets']
+            data_shape=list(data.shape) #n element list for size of counts array, should be continuous_points*nrepeats or continuous_point*number of scan points of dim1 scan*nrepeats for 2D scan
+            data_i=data.shape[0] #number of continuous_points
+            dataset = f['datasets'] #dictionary of datasets in the created logging file
             if first_pass:
-                previous_data = dataset.create_dataset(name, data.shape,maxshape=(None,data_j))
-                dataset_i=0
+                max_shape=data_shape.copy() #make a copy of input data shape to set maxshape size tuple
+                max_shape[0]=None #number of continuous points is None for maxshape tuple
+                previous_data = dataset.create_dataset(name, data.shape,maxshape=tuple(max_shape)) #this creates a new dataset of the name given, with a chunk of data size of data.shape, with unlimited extension allowed of data[i] i index (added in chunks)
+                dataset_i=0 #no previous data so set previous_data[0:data_i]=data
             else:
-                previous_data = dataset[name]
-                dataset_i=previous_data.shape[0]
-                previous_data.resize((dataset_i+data_i,data_j))
-            previous_data[dataset_i:dataset_i+data_i]=data
+                previous_data = dataset[name] #get previous logged data
+                dataset_i=previous_data.shape[0] #get length of first index logged points
+                resize_shape=data_shape.copy() #create resize shape list to make a tuple  to resize array with new data
+                resize_shape[0]+=dataset_i #increase first index by number of previous data points
+                previous_data.resize(tuple(resize_shape))
+            previous_data[dataset_i:dataset_i+data_i]=data #set previous data array at new chunk entries to incoming data

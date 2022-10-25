@@ -48,7 +48,8 @@ class Scan2D(Scan):
         if self.nwarmup_points:
             self._warmup_points = np.array(warmup_points, dtype=np.float64)
         else:
-            self._warmup_points = np.array([0], dtype=np.float64)
+            #I believe this should actually be np.array([[0]] was previously np.array([0]
+            self._warmup_points = np.array([[0]], dtype=np.float64)
 
         # this turn's ARTIQ scan arguments into lists
         points = [p for p in points[0]], [p for p in points[1]]

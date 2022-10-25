@@ -138,7 +138,7 @@ class Model(HasEnvironment):
             varname = key
 
         # the initialized value
-        if shape != 0:
+        if shape is not 0:
             value = np.full(shape, fill_value, dtype)
         else:
             value = fill_value

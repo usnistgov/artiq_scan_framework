@@ -44,7 +44,7 @@ class ContinuousScan(HasEnvironment):
         parent = self.parent
         # grab the points
         points = [i for i in range(parent.continuous_points)]
-
+            
         # total number of scan points
         parent.npoints = np.int32(parent.continuous_points)
 
@@ -99,7 +99,7 @@ class ContinuousScan(HasEnvironment):
                     # get counts for measurement of the measurement model
                     if parent._terminated:
                         # if terminated only append subset of counts corresponding to last taken points
-                        counts = model.stat_model.counts[0:int(parent._idx)]
+                        counts = model.stat_model.counts[0:int(parent.continuous_index % parent.continuous_points)]
                     else:
                         counts = model.stat_model.counts
 

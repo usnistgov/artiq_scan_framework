@@ -6,6 +6,7 @@ import inspect
 import cProfile, pstats
 from .data_logger import DataLogger
 from ..exceptions import *
+from .continuous_scan_2d import ContinuousScan2D
 
 # allows @portable methods that use delay_mu to compile
 def delay_mu(duration):
@@ -121,6 +122,7 @@ class Scan(HasEnvironment):
         #self.npoints = 0
         # --- \end Bryce's changes
 
+        self._dim=1
         self.npasses = None
         self.nbins = None
         self.nrepeats = None
@@ -300,9 +302,14 @@ class Scan(HasEnvironment):
     
     def _init_continuous(self):
         "Override functions necessary to perform a continuous scan. Sets _load_points,_loop,_mutate_plot, _offset_points to be continuous versions"
-        self._load_points=ContinuousScan(self,self)._load_points
-        self._loop=ContinuousScan(self,self)._loop
-        self._mutate_plot=ContinuousScan(self,self)._mutate_plot
+        if self._dim==2:
+            self._load_points=ContinuousScan2D(self,self)._load_points
+            self._loop=ContinuousScan2D(self,self)._loop
+            self._mutate_plot=ContinuousScan2D(self,self)._mutate_plot
+        else:
+            self._load_points=ContinuousScan(self,self)._load_points
+            self._loop=ContinuousScan(self,self)._loop
+            self._mutate_plot=ContinuousScan(self,self)._mutate_plot
         self._offset_points=ContinuousScan(self,self)._offset_points
         if self.continuous_save:
             #Save all continuous data collected to an external hdf file with a resizeable array appended every time the points loop is filled
@@ -697,7 +704,6 @@ class Scan(HasEnvironment):
                             'before_compile': time()
                         }
                     self._logger.debug("compiling core scan...")
-
                     self._run_scan_core(resume)
                 else:
                     self._run_scan_host(resume)
@@ -879,7 +885,7 @@ class Scan(HasEnvironment):
 
             #Scan has ended, append remaining data collected to external hdf file if continuous scan saving enabled
             if hasattr(self, 'continuous_save') and self.continuous_save and hasattr(self, 'continuous_logger') and self.continuous_logger:
-                first_pass = self.continuous_points >= int(self.continuous_index)
+                first_pass = self.continuous_points > int(self.continuous_index)
                 ContinuousScan(self, self).continuous_logging(self, self.continuous_logger, first_pass)
 
     # interface: for child class (optional)
@@ -1129,7 +1135,7 @@ class Scan(HasEnvironment):
         if nbins != False:
             self.setattr_argument('nbins', NumberValue(**nbins), group='Scan Settings')
         
-        # Don't display arguements for continuous scans in the GUI when the user has already set self.continous_scan
+        # Don't display arguements for continuous scans in the GUI when the user has already set self.continuous_scan
         if hasattr(self, 'continuous_scan') == False or (hasattr(self, 'continuous_scan') and self.continuous_scan == None):
             ### Set continuous scan argument options
 

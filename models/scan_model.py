@@ -1013,7 +1013,7 @@ class ScanModel(Model):
                         fit_err_str=f'{fit_err:.2}'
                         n_dec=2-floor(log10(fit_err))
                         fit_val_str=str(round(fit_val*10**n_dec)/10**n_dec)
-                    self.fit_string="fit "+self.main_fit_param+":"+fit_val_str+'+/-'+fit_err_str
+                        self.fit_string="fit "+self.main_fit_param+":"+fit_val_str+'+/-'+fit_err_str
                 self.set('plots.fit_string',self.fit_string)
                 # append x/y dataset
                 self.fit.fitresults['x_dataset'] = self.get_xs_key()
