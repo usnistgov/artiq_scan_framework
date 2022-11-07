@@ -32,7 +32,7 @@ class Scan2D(Scan):
         # but not an array of floats.
         _temp = []
         if not warmup_points:
-            warmup_points = [[]]
+            warmup_points = []
         else:
             for p in warmup_points:
                 try:
