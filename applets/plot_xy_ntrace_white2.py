@@ -65,24 +65,16 @@ class XYNTracePlot(plot.Plot):
             'pen': pyqtgraph.mkPen(color=PyQt5.QtGui.QColor.fromHsvF(0.00, 0.7, 0.9, 0.85), width=2.0)
         },
         'plot': {
-            'symbol': ['o',  't', 'd', 's', 'd'],
+            'symbol': ['o',  't', 'd', 's', 'x', 'p', 'h', 'star'],
             'size': [8, 10, 12, 10, 10],
             'color': [
-                PyQt5.QtGui.QColor.fromHsvF(205 / 360, 0.828, 0.706, 0.9),
                 PyQt5.QtGui.QColor.fromHsvF(0 / 360, 0.828, 0.706, 0.9),
+                PyQt5.QtGui.QColor.fromHsvF(205 / 360, 0.828, 0.706, 0.9),
                 PyQt5.QtGui.QColor.fromHsvF(100 / 360, 0.828, 0.706, 0.9),
                 'm', 'c', 'y'],
             'pen': None,
             'pass_pen': None,
             'pass_color': [
-                [
-                    PyQt5.QtGui.QColor.fromHsvF(190 / 360, 0.528, 0.706, 0.9),
-                    PyQt5.QtGui.QColor.fromHsvF(195 / 360, 0.528, 0.706, 0.9),
-                    PyQt5.QtGui.QColor.fromHsvF(200 / 360, 0.528, 0.706, 0.9),
-                    PyQt5.QtGui.QColor.fromHsvF(205 / 360, 0.528, 0.706, 0.9),
-                    PyQt5.QtGui.QColor.fromHsvF(210 / 360, 0.528, 0.706, 0.9),
-                    PyQt5.QtGui.QColor.fromHsvF(215 / 360, 0.528, 0.706, 0.9)
-                ],
                 [
                     PyQt5.QtGui.QColor.fromHsvF(345 / 360, 0.528, 0.706, 0.9),
                     PyQt5.QtGui.QColor.fromHsvF(350 / 360, 0.528, 0.706, 0.9),
@@ -90,6 +82,14 @@ class XYNTracePlot(plot.Plot):
                     PyQt5.QtGui.QColor.fromHsvF(0 / 360, 0.528, 0.706, 0.9),
                     PyQt5.QtGui.QColor.fromHsvF(5 / 360, 0.528, 0.706, 0.9),
                     PyQt5.QtGui.QColor.fromHsvF(10 / 360, 0.528, 0.706, 0.9),
+                ],
+                [
+                    PyQt5.QtGui.QColor.fromHsvF(190 / 360, 0.528, 0.706, 0.9),
+                    PyQt5.QtGui.QColor.fromHsvF(195 / 360, 0.528, 0.706, 0.9),
+                    PyQt5.QtGui.QColor.fromHsvF(200 / 360, 0.528, 0.706, 0.9),
+                    PyQt5.QtGui.QColor.fromHsvF(205 / 360, 0.528, 0.706, 0.9),
+                    PyQt5.QtGui.QColor.fromHsvF(210 / 360, 0.528, 0.706, 0.9),
+                    PyQt5.QtGui.QColor.fromHsvF(215 / 360, 0.528, 0.706, 0.9)
                 ],
                 [
                     PyQt5.QtGui.QColor.fromHsvF(85 / 360, 0.528, 0.706, 0.9),

@@ -98,15 +98,18 @@ class Scan(HasEnvironment):
         #self.nresults = 1 #Number of results to return per measurement
         #self.result_names=None
         #self.nresults = None
+
         self.dtype = np.int32
         self.nmeasurements = 0
-        self.npoints = None
-        #self.npasses = 1  #: Number of passes
-        self.npasses = None
-        #self.nbins = 50  #: Number of histogram bins
+        # PK 01/13/2023 temporary monkey patch for new looper component
+        try:
+            self.npoints = None
+            self.npasses = None
+            self.nrepeats = None
+        except AttributeError:
+            pass
+
         self.nbins = None
-        #self.nrepeats = 1  #: Number of repeats
-        self.nrepeats = None
         self._x_offset = None
         self.debug = 0
         
@@ -131,7 +134,7 @@ class Scan(HasEnvironment):
         self.max_point = None
         self.tick = None
         self._points = None
-        self._warmup_points = None
+        self._warmup_points = []
         self.warming_up = False
 
         # this stores "flat" idx point index when a scan is paused.  the idx index is then restored from
@@ -179,18 +182,19 @@ class Scan(HasEnvironment):
 
         if not resume:
             if self.continuous_scan:
+                self._continuous_scan_obj = ContinuousScan(self, self)
                 #Set _load_points,_loop,_mutate_plot, _offset_points to be continuous versions
-                self._load_points=ContinuousScan(self,self)._load_points
-                self._loop=ContinuousScan(self,self)._loop
-                self._mutate_plot=ContinuousScan(self,self)._mutate_plot
-                self._offset_points=ContinuousScan(self,self)._offset_points
+                self._load_points=self._continuous_scan_obj._load_points
+                self._loop=self._continuous_scan_obj._loop
+                self._mutate_plot=self._continuous_scan_obj._mutate_plot
+                self._offset_points=self._continuous_scan_obj._offset_points
                 if self.continuous_save:
                     self.continuous_logger=DataLogger(self)
                 else:
                     self.continuous_logger=None
             ###nresults version
             #self._measure_results = [0 for _ in range(self.nresults)]
-            
+
             # load scan points
             self._load_points()
             self._logger.debug('loaded points')
@@ -352,11 +356,8 @@ class Scan(HasEnvironment):
         finally:
             self.cleanup()
 
-    # private: for scan.py
     @portable
-    def _point_loop(self, points, warmup_points, i_points, npoints, nwarmup_points, ncalcs, poffset, nrepeats,
-                    nmeasurements, measurements, last_pass=False):
-        # -- warm-up points
+    def run_warmup(self, nwarmup_points, warmup_points, nmeasurements, measurements):
         self.warming_up = True
         if nwarmup_points:
             self.warming_up = True
@@ -365,6 +366,13 @@ class Scan(HasEnvironment):
                     self.measurement = measurements[i_measurement]
                     self.warmup(wupoint)
             self.warming_up = False
+
+    # private: for scan.py
+    @portable
+    def _point_loop(self, points, warmup_points, i_points, npoints, nwarmup_points, ncalcs, poffset, nrepeats,
+                    nmeasurements, measurements, last_pass=False):
+        # -- warm-up points
+        self.run_warmup(nwarmup_points, warmup_points, nmeasurements, measurements)
 
         # -- loop over the scan points
         while self._idx < npoints - 1:
@@ -387,6 +395,28 @@ class Scan(HasEnvironment):
         # -- reset loop counter
         self._idx = 0
 
+    # ------- repeat loop helpers
+    @portable
+    def init_repeat_loop(self):
+        self._counts = self._counts_zero
+
+    @portable
+    def store_measurement(self, i_measurement, i_repeat, count):
+        self._data[i_measurement][i_repeat] = count
+        self._counts += count
+
+    @portable
+    def calculate_mean(self, nrepeats, nmeasurements):
+        return self._counts / (nrepeats * nmeasurements)
+
+    @portable
+    def check_pause(self):
+        # cost: 3.6 ms
+        check_pause = self.scheduler.check_pause()
+        if check_pause:
+            # yield
+            raise Paused
+
     # private: for scan.py
     @portable
     def _repeat_loop(self, point, measure_point, i_point, i_pass, nrepeats, nmeasurements, measurements, poffset, ncalcs,
@@ -394,12 +424,8 @@ class Scan(HasEnvironment):
 
         # check for higher priority experiment or termination requested
         if self.enable_pausing:
-
             # cost: 3.6 ms
-            check_pause = self.scheduler.check_pause()
-            if check_pause:
-                # yield
-                raise Paused
+            self.check_pause()
 
         # dynamically offset the scan point
         measure_point = self.offset_point(i_point, measure_point)
@@ -408,8 +434,8 @@ class Scan(HasEnvironment):
         self.set_scan_point(i_point, measure_point)
 
         # iterate over repeats
+        self.init_repeat_loop()
 
-        self._counts = self._counts_zero
         for i_repeat in range(nrepeats):
             # iterate over measurements
             for i_measurement in range(nmeasurements):
@@ -421,9 +447,7 @@ class Scan(HasEnvironment):
                 self.lab_before_measure(measure_point, self.measurement)
 
                 count = self.do_measure(measure_point)
-
-                self._data[i_measurement][i_repeat] = count
-                self._counts += count
+                self.store_measurement(i_measurement, i_repeat, count)
 
                 # callback
                 self.after_measure(measure_point, self.measurement)
@@ -431,7 +455,7 @@ class Scan(HasEnvironment):
 
         # update the dataset used to monitor counts
         #mean = counts / (nrepeats*nmeasurements*self.nresults)
-        mean = self._counts / (nrepeats*nmeasurements)
+        mean = self.calculate_mean(nrepeats, nmeasurements)
 
         # cost: 18 ms per point
         # mutate dataset values
@@ -466,7 +490,7 @@ class Scan(HasEnvironment):
         # rpc to host
         if self.enable_count_monitor:
             # cost: 2.7 ms
-            self._set_counts(mean)
+            self.set_counts(mean)
 
     # private: for scan.py
     def _private_map_arguments(self):
@@ -581,8 +605,8 @@ class Scan(HasEnvironment):
             entry['model'].reset_state()
 
     # private: for scan.py
-    def _init_model_datasets(self, shape, plot_shape, points, x, y, init_local, write_datasets):
-        """Set the contents and handling modes of all datasets in the scan."""
+    # def _init_model_datasets(self, shape, plot_shape, points, x, y, init_local, write_datasets):
+    #     """Set the contents and handling modes of all datasets in the scan."""
 
     # RPC
     # private: for scan.py
@@ -656,12 +680,12 @@ class Scan(HasEnvironment):
             
             # run the scan
             if not self.fit_only:
-                if resume:
-                    self._logger.debug(
-                        'resuming scan at (i_pass, i_point) = ({0}, {1})'.format(self._i_pass, self._i_point))
-                else:
-                    self._logger.debug(
-                        'starting scan at (i_pass, i_point) = ({0}, {1})'.format(self._i_pass, self._i_point))
+                # if resume:
+                #     self._logger.debug(
+                #         'resuming scan at (i_pass, i_point) = ({0}, {1})'.format(self._i_pass, self._i_point))
+                # else:
+                #     self._logger.debug(
+                #         'starting scan at (i_pass, i_point) = ({0}, {1})'.format(self._i_pass, self._i_point))
                 if self.run_on_core:
                     if self.enable_timing:
                         self._profile_times = {
@@ -760,9 +784,6 @@ class Scan(HasEnvironment):
             # self.logger.info('Passes: %i' % self.npasses)
             # self.logger.info('Repeats: %i' % self.nrepeats)
             # self.logger.info('Bins: %i' % self.nbins)
-            self._logger.debug('do_fit {0}'.format(self.do_fit))
-            self._logger.debug('save_fit {0}'.format(self.save_fit))
-            self._logger.debug('fit_only {0}'.format(self.fit_only))
             self._report()
 
     # interface: for child class (required)
@@ -841,7 +862,7 @@ class Scan(HasEnvironment):
         Yield to scheduled experiments with higher priority
         """
         try:
-            self.logger.warning("Yielding to higher priority experiment.")
+            #self.logger.warning("Yielding to higher priority experiment.")
             self.core.comm.close()
             self.scheduler.pause()
 
@@ -854,12 +875,12 @@ class Scan(HasEnvironment):
             self._terminated = True
             if hasattr(self, 'continuous_logger') and self.continuous_logger:
                 first_pass=self.continuous_points==int(self.continuous_index)
-                ContinuousScan(self,self).continuous_logging(self,self.continuous_logger,first_pass)
+                self._continuous_scan_obj.continuous_logging(self,self.continuous_logger,first_pass)
 
     # interface: for child class (optional)
     # RPC
     @rpc(flags={"async"})
-    def _set_counts(self, counts):
+    def set_counts(self, counts):
         """Interface method  (optional)
 
         Runs after a scan point completes.  By default, this method sets the :code:`counts` dataset

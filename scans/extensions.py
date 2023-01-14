@@ -186,13 +186,13 @@ class TimeFreqScan(Scan):
                     if self.frequency_center is None:
                         # set frequency center from saved fit values
                         self.frequency_center = fitted_freq
-                        self._logger.warn("auto set frequency_center to {0} from fits".format(fitted_freq))
+                        #self._logger.warn("auto set frequency_center to {0} from fits".format(fitted_freq))
 
                     # hasn't been set yet, ok to auto load
                     if self.pulse_time is None:
                         # set pulse time from saved fit values
                         self.pulse_time = fitted_time
-                        self._logger.warn("auto set pulse_time to {0} from fits".format(fitted_time))
+                        #self._logger.warn("auto set pulse_time to {0} from fits".format(fitted_time))
 
     def _get_main_fits(self, model):
         """Get's the last fitted frequency and time values"""
@@ -303,20 +303,22 @@ class ReloadingScan(Scan):
 
     @portable
     def _before_loop(self, resume):
-        try:
-            self.ion_checker.initialze(resume)
-        except LoadIon:
-            self._schedule_load_ion()
-            raise Paused
+        if self.check_for_ion:
+            try:
+                self.ion_checker.initialze(resume)
+            except LoadIon:
+                self._schedule_load_ion()
+                raise Paused
 
     @portable
     def _analyze_data(self, i_point, last_pass, last_point):
-        
+        last_point = last_pass and last_point
+
         if self.check_for_ion:
             try:
                 # iterate over scan points in the same order as is done in scan.py
                 for i_measurement in range(self.nmeasurements):
-                    self.ion_checker.ion_present(self._data[i_measurement], self.nrepeats, last_point=(last_pass and last_point)) 
+                    self.ion_checker.ion_present(self._data[i_measurement], self.nrepeats, last_point=last_point)
             except LostIon:
                 # rewind to the earliest scan point where the ion could have been lost.
                 self._rewind(num_points=self.ion_checker.rewind_num_points)
@@ -339,12 +341,12 @@ class ReloadingScan(Scan):
 
             # schedule a high priority experiment (e.g. ion_monitor) that will pause this scan
             # until the issue can be fixed.
-            self.logger.warning("Can't load ion, scheduling blocking experiment until issue is fixed.")
+            self.logger.error("Can't load ion, scheduling blocking experiment until issue is fixed.")
             self.loading.schedule_wait_experiment()
             self._yield()
             self._schedule_load_ion()
             return
         else:
             # schedule the load ion experiment
-            self.logger.warning("Scheduling ion reload.")
+            #self.logger.warning("Scheduling ion reload.")
             self.loading.schedule_load_ion(due_date=time.time(), synchronous=True)

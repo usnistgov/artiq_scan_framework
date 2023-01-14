@@ -30,10 +30,13 @@ class Scan2D(Scan):
         # compiles with a signature that accepts a float argument when self.warmup() is called.  Then, an array is passed to do_measure()
         # in _repeat_loop().  This results in a compilation error since do_measure() was already compiled expecting a single float argument
         # but not an array of floats.
-        _temp = []
+
         if not warmup_points:
-            warmup_points = [[]]
+            # bit of a hack so that the warmup method can compile, otherwise Artiq balks at the dimension of the point argument
+            self._warmup_points = np.array([[]], dtype=np.float64)
+            self.nwarmup_points = 0
         else:
+            _temp = []
             for p in warmup_points:
                 try:
                     # warmup points is a 2D array, and is therefore compatible with do_measure
@@ -41,13 +44,8 @@ class Scan2D(Scan):
                 # handle cases where warmup points is a 1D array and is therefore not compatible with do_measure
                 except TypeError:
                     _temp.append([p])
-            warmup_points = _temp
-
-        self.nwarmup_points = np.int32(len(warmup_points))
-        if self.nwarmup_points:
-            self._warmup_points = np.array(warmup_points, dtype=np.float64)
-        else:
-            self._warmup_points = np.array([0], dtype=np.float64)
+            self.nwarmup_points = np.int32(len(_temp))
+            self._warmup_points = np.array(_temp, dtype=np.float64)
 
         # this turn's ARTIQ scan arguments into lists
         points = [p for p in points[0]], [p for p in points[1]]
@@ -79,6 +77,8 @@ class Scan2D(Scan):
         self._i_points = np.array([
             (i1, i2) for i1 in range(self._shape[0]) for i2 in range(self._shape[1])
         ], dtype=np.int64)
+
+
 
     def _mutate_plot(self, entry, i_point, point, mean, error=None):
         """Mutates datasets for dimension 0 plots and dimension 1 plots"""

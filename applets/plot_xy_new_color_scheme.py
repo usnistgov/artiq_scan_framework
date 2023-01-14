@@ -27,6 +27,7 @@ class SimpleApplet(plot.SimpleApplet):
         # fit
         self.add_dataset("fit", "Fit values for each X value", required=False)
         self.add_dataset("fit_fine", "Fine fit values for each fine X value", required=False)
+        self.add_dataset("fit_fine2", "Fine fit values for each fine X value", required=False)
         self.add_dataset("x_fine", "Fine x values", required=False)
 
         # axes
@@ -66,6 +67,9 @@ class XYPlot(plot.Plot):
         },
         'fit': {
             'pen': pyqtgraph.mkPen(color=PyQt5.QtGui.QColor.fromHsvF(0.00, 0.7, 0.9, 0.85), width=2.0)
+        },
+        'fit2': {
+            'pen': pyqtgraph.mkPen(color=PyQt5.QtGui.QColor.fromHsvF(0.60, 0.7, 0.9, 0.85), width=2.0)
         },
         'plot': {
             'symbol': ['o',  't', 'd', 's', 'd'],
@@ -142,6 +146,7 @@ class XYPlot(plot.Plot):
 
         self._load(data, 'fit', default=None, ds_only=True)
         self._load(data, 'fit_fine', default=None, ds_only=True)
+        self._load(data, 'fit_fine2', default=None, ds_only=True)
         self._load(data, 'x_fine', default=None, ds_only=True)
         self._load(data, 'error', default=None, ds_only=True)
         self._load(data, 'rid', default=None)
@@ -175,6 +180,11 @@ class XYPlot(plot.Plot):
                     self.fit_fine = None
                 else:
                     self.fit_fine = np.array([self.fit_fine])
+            if self.fit_fine2 is not None:
+                if type(self.fit_fine2) == str:
+                    self.fit_fine2 = None
+                else:
+                    self.fit_fine2 = np.array([self.fit_fine2])
             if self.error is not None:
                 self.error = np.array([self.error])
 
@@ -192,6 +202,9 @@ class XYPlot(plot.Plot):
             if self.fit_fine is not None:
                 if not np.isnan(self.fit_fine).all():
                     self.fit_fine = self.fit_fine / self.y_scale
+            if self.fit_fine2 is not None:
+                if not np.isnan(self.fit_fine2).all():
+                    self.fit_fine2 = self.fit_fine2 / self.y_scale
 
     def validate(self):
         """Validate that the data can be plotted"""
@@ -205,7 +218,7 @@ class XYPlot(plot.Plot):
         if self.y is not None and self.x is not None:
             if hasattr(self.y, 'shape') and hasattr(self.x, 'shape'):
                 if self.y.shape != self.x.shape:
-                    print("plot_xy_new_color_scheme applet: x and y shapes don't agree")
+                    #print("plot_xy_new_color_scheme applet: x and y shapes don't agree")
                     #print(getattr(self.args, 'x'))
                     #print(getattr(self.args, 'y'))
                     return False
@@ -308,36 +321,48 @@ class XYPlot(plot.Plot):
                     self.plot(x, y2, pen=pen2, symbol=symbol2, size=size2, symbolBrush=brush2, symbolPen=None)
 
             # draw fit
-            if self.fit_fine is not None and self.x_fine is not None:
-                if hasattr(self.fit_fine[i], 'shape') and hasattr(self.x_fine[i], 'shape'):
-                    fit_fine = self.fit_fine[i]
-                    x_fine = self.x_fine[i]
-                    if fit_fine.shape == x_fine.shape:
+            try:
+                if self.fit_fine is not None and self.x_fine is not None:
+                    if hasattr(self.fit_fine[i], 'shape') and hasattr(self.x_fine[i], 'shape'):
+                        fit_fine = self.fit_fine[i]
+                        x_fine = self.x_fine[i]
+                        if x_fine[0] != np.nan and fit_fine.shape == x_fine.shape:
 
-                        # style
-                        pen = self.get_style('fit.pen')
-                        self.plot(x_fine, fit_fine, pen=pen)
+                            # style
+                            pen = self.get_style('fit.pen')
+                            self.plot(x_fine, fit_fine, pen=pen)
 
-            elif self.fit is not None and self.x is not None:
+                elif self.fit is not None and self.x is not None:
 
-                fit = self.fit[i]
-                if hasattr(fit, 'shape') and hasattr(x, 'shape'):
-                    if fit.shape == x.shape:
-                        # style
-                        pen = self.get_style('fit.pen')
-                        self.plot(x, fit, pen=pen)
+                    fit = self.fit[i]
+                    if hasattr(fit, 'shape') and hasattr(x, 'shape'):
+                        if fit.shape == x.shape:
+                            # style
+                            pen = self.get_style('fit.pen')
+                            self.plot(x, fit, pen=pen)
 
-            # draw error
+                if self.fit_fine2 is not None and self.x_fine is not None:
+                    if hasattr(self.fit_fine2[i], 'shape') and hasattr(self.x_fine[i], 'shape'):
+                        fit_fine2 = self.fit_fine2[i]
+                        x_fine = self.x_fine[i]
+                        if x_fine[0] != np.nan and (fit_fine2.shape == x_fine.shape):
+                            # style
+                            pen = self.get_style('fit2.pen')
+                            self.plot(x_fine, fit_fine2, pen=pen)
 
-            if self.error is not None:
-                error = self.error[i]
-                if not np.isnan(error).all():
-                    # See https://github.com/pyqtgraph/pyqtgraph/issues/211
-                    if hasattr(error, "__len__") and not isinstance(error, np.ndarray):
-                        error = np.array(error)
-                    errbars = pyqtgraph.ErrorBarItem(
-                        x=np.array(x), y=np.array(y), height=error)
-                    self.addItem(errbars)
+                # draw error
+
+                if self.error is not None:
+                    error = self.error[i]
+                    if not np.isnan(error).all():
+                        # See https://github.com/pyqtgraph/pyqtgraph/issues/211
+                        if hasattr(error, "__len__") and not isinstance(error, np.ndarray):
+                            error = np.array(error)
+                        errbars = pyqtgraph.ErrorBarItem(
+                            x=np.array(x), y=np.array(y), height=error)
+                        self.addItem(errbars)
+            except:
+                pass
 
 
 

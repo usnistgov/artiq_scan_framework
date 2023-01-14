@@ -243,7 +243,7 @@ class Model(HasEnvironment):
         :param default_fallback: If True and no value for the default argument is provided, attempt to
         use the default value stored in the default dataset for the specified key.  If no default dataset exists,
         and the main dataset do not exist, a KeyError exception is thrown.
-        :param mirror: Set to True to get the value of the datset stored under the mirror namespace
+        :param mirror: Set to True to get the value of the datsaet stored under the mirror namespace
         """
         if isinstance(key, list):
             vals = {}
@@ -323,6 +323,12 @@ class Model(HasEnvironment):
     def _call_validation_method(self, method, field, value, args):
         func = self._get_validation_func(method)
         if isinstance(args, dict):
+            if 'value' in args:
+                value = args['value']
+                del(args['value'])
+            if 'field' in args:
+                field = args['field']
+                del(args['field'])
             return func(field, value, **args)
         elif isinstance(args, list):
             return func(field, value, *args)

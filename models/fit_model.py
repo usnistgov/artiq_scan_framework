@@ -95,7 +95,7 @@ class FitModel(Model):
                 if ok:
                     self.valid = self._call_validation_method(method, field, value, args)
                     if not self.valid:
-                        raise BadFit(self.validation_errors[field])
+                        raise BadFit(self.validation_errors[f])
         return True
 
     def simulate(self, x, noise_level=0, simulation_args = None):
