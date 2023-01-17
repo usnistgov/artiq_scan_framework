@@ -175,7 +175,7 @@ class Loop2D(Loop):
                                  set=args['set'], save=args['save']):                   # fit the subscan
 
                     y, error = self.scan.calculate_dim0(model)                          # scan value
-                    self.mutate_plot_dim0(i_point=i_point, x=i_point[0],
+                    self.mutate_plot_dim0(i_point=i_point, x=meas_point[0],
                                           y=y, error=error)                             # plot scan
             trigger_plot(model)
         self.scan.print('return: Loop2D::mutate_datasets()', -2)
