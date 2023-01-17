@@ -199,6 +199,7 @@ class Loop2D(Loop):
         self.scan.print('return: Loop2D::mutate_datasets()', -2)
 
     def mutate_plot_dim1(self, entry, i_point, x, y, error=None):
+        """Plots results from dimension 1 sub-scans"""
         model = entry['model']
         model.set('plots.subplot.i_plot', i_point[0], which='mirror', broadcast=True, persist=True)
 
@@ -211,6 +212,7 @@ class Loop2D(Loop):
         model.mutate_plot(i_point=i_point, x=x, y=y, error=None, dim=1)
 
     def fit_dim1(self, model, i_point, validate, set, save):
+        """Performs fits on dimension 1 sub-scans"""
         try:
             self.scan.print(
                 '{}::fit_data(fit_function={}, guess={}, i={}, validate={}, set={}, save={}, man_bounds={}, man_scale={})'.format(
@@ -250,7 +252,7 @@ class Loop2D(Loop):
             entry['model'].mutate_plot(i_point=i_point, x=x, y=y, error=error, dim=0)
 
     def fit(self, entry, save, use_mirror, dimension, i):
-        """Performs fits on dimension 0 and dimension 1"""
+        """Performs fit on dimension 0 top level scan"""
         model = entry['model']
 
         # get the x/y data for the fit on dimension 0
