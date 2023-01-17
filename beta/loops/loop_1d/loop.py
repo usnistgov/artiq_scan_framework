@@ -173,25 +173,20 @@ class Loop1D(Loop):
 
     def fit(self, entry, save, use_mirror, dimension, i):
         """Perform the fit"""
-        self.scan.print('call: Loop1D.fit()', 2)
         model = entry['model']
         x_data, y_data = model.get_fit_data(use_mirror)
+        errors = model.stat_model.get('error', mirror=use_mirror)
 
         # for validation methods
         self.min_point = min(x_data)
         self.max_point = max(x_data)
 
-        errors = model.stat_model.get('error', mirror=use_mirror)
-        fit_function = model.fit_function
-
-        guess = self.scan._get_fit_guess(fit_function)
-        self.scan.print('return: Loop1D.fit()', -2)
         return model.fit_data(
             x_data=x_data,
             y_data=y_data,
             errors=errors,
             fit_function=fit_function,
-            guess=guess,
+            guess=self.scan._get_fit_guess(model.fit_function),
             validate=True,
             set=True,  # keep a record of the fit
             save=save,  # save the main fit to the root namespace?

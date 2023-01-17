@@ -179,18 +179,6 @@ class Loop2D(Loop):
                 }
                 args = {**defaults, **entry}                # settings in 'entry' always override default values
                 if self.fit_dim1(model, i_point, validate=args['validate'], set=args['set'], save=args['save']):   # fit the last dim1 scan data
-                    # -- plot fitline
-                    # set the fitline to the dimension 1 plot dataset
-                    model.mutate('plots.dim1.fitline',
-                                      ((i_point[0], i_point[0] + 1), (0, len(model.fit.fitline))),
-                                      model.fit.fitline)
-                    model.mutate('plots.dim1.fitline_fine',
-                                      ((i_point[0], i_point[0] + 1), (0, len(model.fit.fitline_fine))),
-                                      model.fit.fitline_fine)
-                    model.mutate('plots.dim1.x_fine',
-                                      ((i_point[0], i_point[0] + 1), (0, len(model.fit.fitline_fine))),
-                                      model.fit.x_fine)
-
                     # -- mutate dim0 plot
                     y, error = self.scan.calculate_dim0(model)
                     self.mutate_plot_dim0(i_point=i_point, x=i_point[0], y=y, error=error)
@@ -240,7 +228,20 @@ class Loop2D(Loop):
             valid = False
             saved = False
             errormsg = 'Runtime Error'
-        return performed and hasattr(model, 'fit')
+        success = performed and hasattr(model, 'fit')
+        if success:
+            # -- plot fitline
+            # set the fitline to the dimension 1 plot dataset
+            model.mutate('plots.dim1.fitline',
+                         ((i_point[0], i_point[0] + 1), (0, len(model.fit.fitline))),
+                         model.fit.fitline)
+            model.mutate('plots.dim1.fitline_fine',
+                         ((i_point[0], i_point[0] + 1), (0, len(model.fit.fitline_fine))),
+                         model.fit.fitline_fine)
+            model.mutate('plots.dim1.x_fine',
+                         ((i_point[0], i_point[0] + 1), (0, len(model.fit.fitline_fine))),
+                         model.fit.x_fine)
+        return success
 
     def mutate_plot_dim0(self, i_point, x, y, error):
         """Plot the value calculated from the dim1 scan"""
@@ -254,40 +255,26 @@ class Loop2D(Loop):
     def fit(self, entry, save, use_mirror, dimension, i):
         """Performs fit on dimension 0 top level scan"""
         model = entry['model']
-
-        # get the x/y data for the fit on dimension 0
-        x_data, y_data, errors = model.get_plot_data(mirror=True)
-
-        # default fit arguments
-        defaults = {
+        x_data, y_data, errors = model.get_plot_data(mirror=True)       # get the x/y data for the fit on dimension 0
+        defaults = {                                                    # default fit arguments
             'validate': True,
             'set': True,
             'save': save
         }
-        i = None
-        guess = self.scan._get_fit_guess(model.fit_function)
-
-        # settings in 'entry' always override default values
-        args = {**defaults, **entry}
-
-        # perform the fit
-        fit_function = model.fit_function
-        validate = args['validate']
-        set = args['set']  # save all info about the fit (fitted params, etc) to the 'fits' namespace?
-        save = args['save']  # save the main fit to the root namespace?
+        args = {**defaults, **entry}                                    # settings in 'entry' always override default values
         self.scan.print('{}::fit_data(fit_function={}, guess={}, i={}, validate={}, set={}, save={}, man_bounds={}, man_scale={})'.format(
-            model.__class__.__name__, fit_function.__name__, guess, i, validate, set, save, model.man_bounds, model.man_scale
+            model.__class__.__name__, model.fit_function.__name__, self.scan._get_fit_guess(model.fit_function), None, args['validate'], args['set'], args['save'], model.man_bounds, model.man_scale
         ))
-        return model.fit_data(
+        return model.fit_data(                                          # perform the fit
             x_data=x_data,
             y_data=y_data,
             errors=errors,
-            fit_function=fit_function,
-            guess=guess,
-            i=i,
-            validate=validate,
-            set=set,
-            save=save,
+            fit_function=model.fit_function,
+            guess=self.scan._get_fit_guess(model.fit_function),
+            i=None,
+            validate=args['validate'],
+            set=args['set'],  # save all info about the fit (fitted params, etc) to the 'fits' namespace?
+            save=args['save'],  # save the main fit to the root namespace?
             man_bounds=model.man_bounds,
             man_scale=model.man_scale
         )
