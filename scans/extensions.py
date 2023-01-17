@@ -2,9 +2,9 @@
 
 from artiq.language.core import *
 from .scan import *
-from .loading_interface import *
 from ..lib.ion_checker import *
 from ..exceptions import *
+from ..lib.loading_interface import LoadingInterface
 
 
 class TimeScan(Scan):

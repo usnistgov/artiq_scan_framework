@@ -6,6 +6,7 @@ import numpy as np
 import scipy.stats as stats
 from math import *
 import logging
+import copy
 
 
 class ScanModel(Model):
@@ -397,15 +398,20 @@ class ScanModel(Model):
         # --- 1D Scans ---
         if self._scan._dim == 1:
             dim0_shape = self.plot_shape
+            dim0_shape_fine = 10*self.plot_shape
             dim1_shape = None
         # --- 2D Scans ---
         else:
             dim0_shape = self.plot_shape[0]
+            dim0_shape_fine = 10 * self.plot_shape[0]
             dim1_shape = self.plot_shape
+            dim1_shape_fine = copy.copy(self.plot_shape)
+            dim1_shape_fine[1] = 10*dim1_shape_fine[1]
 
         # --- Dimension 0 Plots ---
         if dimension == 0:
             self.init_plots(shape=dim0_shape,
+                            shape_fine=dim0_shape_fine,
                             plot_title=self.plot_title,
                             x_label=self.x_label,
                             x_scale=self.x_scale,
@@ -418,6 +424,7 @@ class ScanModel(Model):
         # --- Dimension 1 Plots ---
         elif dimension == 1:
             self.init_sub_plots(shape=dim1_shape,
+                                shape_fine=dim1_shape_fine,
                                 plot_title=self.plot_title,
                                 x_label=self.x_label,
                                 x_scale=self.x_scale,
@@ -426,15 +433,15 @@ class ScanModel(Model):
                                 y_scale=self.y_scale,
                                 y_units=self.y_units)
 
-    def init_plots(self, shape, plot_title="", x_label="", x_scale=1, x_units="", y_label="", y_scale=1, y_units=""):
+    def init_plots(self, shape, shape_fine, plot_title="", x_label="", x_scale=1, x_units="", y_label="", y_scale=1, y_units=""):
         # data
         self.init('plots.x', shape, varname='x', init_local=True)
         self.init('plots.y', shape, varname='y', init_local=True)
         self.init('plots.y2', shape, varname='y2', init_local=True)
         self.init('plots.fitline', shape, varname='fitline', init_local=True)
-        self.init('plots.fitline_fine', shape, varname='fitline_fine', init_local=True)
-        self.init('plots.fitline_fine_nn', shape, varname='fitline_fine_nn', init_local=False)
-        self.init('plots.x_fine', shape, varname='x_fine', init_local=True)
+        self.init('plots.fitline_fine', shape_fine, varname='fitline_fine', init_local=True)
+        self.init('plots.fitline_fine_nn', shape_fine, varname='fitline_fine_nn', init_local=False)
+        self.init('plots.x_fine', shape_fine, varname='x_fine', init_local=True)
         self.init('plots.error', shape, init_local=False)
 
         # labels, etc.
@@ -446,13 +453,13 @@ class ScanModel(Model):
         self.set('plots.x_units', x_units)
         self.set('plots.y_units', y_units)
 
-    def init_sub_plots(self, shape, plot_title="", x_label="", x_scale=1, x_units="", y_label="", y_scale=1, y_units=""):
+    def init_sub_plots(self, shape, shape_fine, plot_title="", x_label="", x_scale=1, x_units="", y_label="", y_scale=1, y_units=""):
         # data
         self.init('plots.dim1.x', shape, varname='dim1_x', init_local=True)
         self.init('plots.dim1.y', shape, varname='dim1_y', init_local=True)
         self.init('plots.dim1.fitline', shape, varname='dim1_fitline', init_local=True)
-        self.init('plots.dim1.fitline_fine', shape, varname='dim1_fitline_fine', init_local=True)
-        self.init('plots.dim1.x_fine', shape, varname='dim1_x_fine', init_local=True)
+        self.init('plots.dim1.fitline_fine', shape_fine, varname='dim1_fitline_fine', init_local=True)
+        self.init('plots.dim1.x_fine', shape_fine, varname='dim1_x_fine', init_local=True)
 
         # labels, etc.
         self.set('plots.dim1.plot_title', plot_title)
