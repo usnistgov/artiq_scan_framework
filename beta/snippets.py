@@ -11,11 +11,22 @@ def check_pause(obj):
         raise Paused
 
 
-def get_registered_models(scan, measurement):
+def get_registered_models(scan, **kwargs):
     entries = []
     for entry in scan._model_registry:
-        # model registered for this measurement
-        if entry['measurement'] and entry['measurement'] == measurement:
+        append = True
+        for k, v in kwargs.items():
+            if entry[k]:
+                if isinstance(v, bool):
+                    pass
+                elif isinstance(v, list):
+                    if entry[k] not in v:
+                        append = False
+                    break
+                else:
+                    if entry[k] != v:
+                        append = False
+        if append:
             entries.append(entry)
     return entries
 

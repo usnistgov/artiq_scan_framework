@@ -76,8 +76,10 @@ class Loop2D(Loop):
             self.ncalcs = ncalcs
             self.nmeasurements = nmeasurements
             self.measurements = []
-            for m in self.scan.measurements:
-                self.measurements.append(m)
+            for i_meas, meas in enumerate(self.scan.measurements):
+                self.measurements.append(meas)
+                for entry in get_registered_models(self.scan, measurement=meas):
+                    entry['i_meas'] = i_meas
             self.data = Data(shape=(nmeasurements, self.nrepeats),
                              dtype=self.dtype)
 
@@ -153,137 +155,115 @@ class Loop2D(Loop):
     @rpc(flags={"async"})
     def mutate_datasets(self, i_point, i_pass, poffset, meas_point, data):
         self.scan.print('call: Loop2D::mutate_datasets()', 2)
-        for i_meas, meas in enumerate(self.measurements):
-            for entry in get_registered_models(self.scan, meas):
-                model = entry['model']
-                # mutate stats
-                self.scan.print('{}::mutate_datasets(i_point={}, i_pass={}, poffset={}, point={}'.format(
-                    model.__class__.__name__, i_point, i_pass, poffset, meas_point))
-                mean, error = model.mutate_datasets(
-                    i_point=i_point,
-                    i_pass=i_pass,
-                    poffset=poffset,
-                    point=meas_point,
-                    counts=data[i_meas],
-                )
-                # mutate plot x/y datasets
-                self.mutate_plot(entry, i_point=i_point, x=meas_point, y=mean, error=error, trigger=False)
 
-        # tell the current_scan applet to redraw itself
-        trigger_plot(model)
+        # -- dim1
+        for entry in get_registered_models(self.scan, measurement=True, dimension=1):
+            model = entry['model']
+            # -- mutate stats
+            self.scan.print('{}::mutate_datasets(i_point={}, i_pass={}, poffset={}, point={}'.format(
+                model.__class__.__name__, i_point, i_pass, poffset, meas_point))
+            mean, error = model.mutate_datasets(
+                i_point=i_point,
+                i_pass=i_pass,
+                poffset=poffset,
+                point=meas_point,
+                counts=data[entry['i_meas']],
+            )
+            # -- mutate dim1 plot
+            self.mutate_plot_dim1(entry, i_point=i_point, x=meas_point[1], y=mean, error=error)
+            if self.itr.at_end(i_point, dim=1):             # -- fit dim1: perform a fit on the completed dim1 plot and mutate the dim0 x/y datasets
+                defaults = {                                # default fit arguments
+                    'validate': True,
+                    'set': True,
+                    'save': False
+                }
+                args = {**defaults, **entry}                # settings in 'entry' always override default values
+                if self.fit_dim1(model, i_point, validate=args['validate'], set=args['set'], save=args['save']):   # fit the last dim1 scan data
+                    # -- plot fitline
+                    # set the fitline to the dimension 1 plot dataset
+                    model.mutate('plots.dim1.fitline',
+                                      ((i_point[0], i_point[0] + 1), (0, len(model.fit.fitline))),
+                                      model.fit.fitline)
+                    model.mutate('plots.dim1.fitline_fine',
+                                      ((i_point[0], i_point[0] + 1), (0, len(model.fit.fitline_fine))),
+                                      model.fit.fitline_fine)
+                    model.mutate('plots.dim1.x_fine',
+                                      ((i_point[0], i_point[0] + 1), (0, len(model.fit.fitline_fine))),
+                                      model.fit.x_fine)
+
+                    # -- mutate dim0 plot
+                    y, error = self.scan.calculate_dim0(model)
+                    self.mutate_plot_dim0(i_point=i_point, x=i_point[0], y=y, error=error)
+
+            trigger_plot(model)
         self.scan.print('return: Loop2D::mutate_datasets()', -2)
 
-    def mutate_plot(self, entry, i_point, x, y, error=None, trigger=True):
-        """Mutates datasets for dimension 0 plots and dimension 1 plots"""
+    def mutate_plot_dim1(self, entry, i_point, x, y, error=None):
+        model = entry['model']
+        model.set('plots.subplot.i_plot', i_point[0], which='mirror', broadcast=True, persist=True)
 
-        if entry['dimension'] == 1:
-            dim1_model = entry['model']
-            dim1_scan_end = i_point[1] == self.itr.shape[1] - 1
-            dim1_scan_begin = i_point[1] == 0 and i_point[0] > 0
-            dim1_model.set('plots.subplot.i_plot', i_point[0], which='mirror', broadcast=True, persist=True)
+        # first store the point & mean to the dim1 plot x/y datasets
+        # the value of the fitted parameter is plotted as the y value
+        # at the current dimension-0 x value (i.e. x0)
+        self.scan.print('{}::mutate_plot(i_point={}, x={}, y={}, error={}, dim={})'.format(
+            model.__class__.__name__, i_point, x, y, error, 1
+        ))
+        model.mutate_plot(i_point=i_point, x=x, y=y, error=None, dim=1)
 
-            # --- Mutate Dimension 1 Plot ---
+    def fit_dim1(self, model, i_point, validate, set, save):
+        try:
+            self.scan.print(
+                '{}::fit_data(fit_function={}, guess={}, i={}, validate={}, set={}, save={}, man_bounds={}, man_scale={})'.format(
+                    model.__class__.__name__, model.fit_function.__name__, None, i_point[0], validate, set, save, model.man_bounds,
+                    model.man_scale
+                ))
+            performed, valid, saved, errormsg = model.fit_data(
+                x_data=model.stat_model.points[i_point[0], :, 1] ,   # these are unsorted,
+                y_data=model.stat_model.means[i_point[0], :],
+                errors=model.stat_model.errors[i_point[0], :],       # use the errors in the dimension 1 mean values (std dev of mean) as the weights in the fit
+                fit_function=model.fit_function,
+                guess=None,
+                i=i_point[0],
+                validate=validate,
+                set=set,                           # save all info about the fit (fitted params, etc) to the 'fits' namespace?
+                save=save,                         # save the main fit to the root namespace?
+                man_bounds=model.man_bounds,
+                man_scale=model.man_scale
+            )
 
-            # first store the point & mean to the dim1 plot x/y datasets
-            # the value of the fitted parameter is plotted as the y value
-            # at the current dimension-0 x value (i.e. x0)
+        # handle cases when fit fails to converge so the scan doesn't just halt entirely with an
+        # unhandeled error
+        except RuntimeError:
+            performed = False
+            valid = False
+            saved = False
+            errormsg = 'Runtime Error'
+        return performed and hasattr(model, 'fit')
+
+    def mutate_plot_dim0(self, i_point, x, y, error):
+        """Plot the value calculated from the dim1 scan"""
+        # -- dim0
+        for entry in get_registered_models(self.scan, dimension=0):
             self.scan.print('{}::mutate_plot(i_point={}, x={}, y={}, error={}, dim={})'.format(
-                dim1_model.__class__.__name__, i_point, x[1], y, error, 1
+                entry['model'].__class__.__name__, i_point[0], x, y, error, 0
             ))
-            dim1_model.mutate_plot(i_point=i_point, x=x[1], y=y, error=None, dim=1)
-
-            # --- End of dimension 1 scan ---
-            if dim1_scan_end:
-                # --- Fit dimension 1 data ---
-                # perform a fit over the dimension 1 data
-                fit_performed = False
-                try:
-                    fit_performed, fit_valid, saved, errormsg = self.fit(entry,
-                                                                          save=None,
-                                                                          use_mirror=None,
-                                                                          dimension=1,
-                                                                          i=i_point[0])
-
-                # handle cases when fit fails to converge so the scan doesn't just halt entirely with an
-                # unhandeled error
-                except RuntimeError:
-                    fit_performed = False
-                    fit_valid = False
-                    saved = False
-                    errormsg = 'Runtime Error'
-
-                # fit went ok...
-                if fit_performed and hasattr(dim1_model, 'fit'):
-
-                    # --- Plot Dimension 1 Fitline ---
-                    # set the fitline to the dimension 1 plot dataset
-                    dim1_model.mutate('plots.dim1.fitline',
-                                      ((i_point[0], i_point[0] + 1), (0, len(dim1_model.fit.fitline))),
-                                      dim1_model.fit.fitline)
-                    dim1_model.mutate('plots.dim1.fitline_fine',
-                                      ((i_point[0], i_point[0] + 1), (0, len(dim1_model.fit.fitline_fine))),
-                                      dim1_model.fit.fitline_fine)
-                    dim1_model.mutate('plots.dim1.x_fine',
-                                      ((i_point[0], i_point[0] + 1), (0, len(dim1_model.fit.fitline_fine))),
-                                      dim1_model.fit.x_fine)
-
-                    # --- Mutate Dimension 0 Plot ---
-
-                    # get the name of the fitted parameter that will be plotted
-                    param, error = self.scan.calculate_dim0(dim1_model)
-
-                    # find the dimension 0 model
-                    for entry2 in self.scan._model_registry:
-                        if entry2['dimension'] == 0:
-                            dim0_model = entry2['model']
-
-                            # mutate the dimension 0 plot
-                            self.scan.print('{}::mutate_plot(i_point={}, x={}, y={}, error={}, dim={})'.format(
-                                dim0_model.__class__.__name__, i_point, x[0], param, error, 0
-                            ))
-                            dim0_model.mutate_plot(i_point=i_point, x=x[0], y=param, error=error, dim=0)
-
-            # --- Redraw Plots ---
-            # tell the current_scan applet to redraw itself
-            if trigger:
-                trigger_plot(dim1_model)
+            entry['model'].mutate_plot(i_point=i_point, x=x, y=y, error=error, dim=0)
 
     def fit(self, entry, save, use_mirror, dimension, i):
         """Performs fits on dimension 0 and dimension 1"""
         model = entry['model']
 
-        # dimension 1 fits
-        if dimension == 1:
-            # perform a fit on the completed dim1 plot and mutate the dim0 x/y datasets
+        # get the x/y data for the fit on dimension 0
+        x_data, y_data, errors = model.get_plot_data(mirror=True)
 
-            # get the x/y data for the fit on dimension 1
-            x_data = model.stat_model.points[i, :, 1]  # these are unsorted
-            y_data = model.stat_model.means[i, :]
-
-            # use the errors in the dimension 1 mean values (std dev of mean) as the weights in the fit
-            errors = model.stat_model.errors[i, :]
-
-            # default fit arguments
-            defaults = {
-                'validate': True,
-                'set': True,
-                'save': False
-            }
-            guess = None
-
-        # dimension 0 fits
-        elif dimension == 0:
-            # get the x/y data for the fit on dimension 0
-            x_data, y_data, errors = model.get_plot_data(mirror=True)
-
-            # default fit arguments
-            defaults = {
-                'validate': True,
-                'set': True,
-                'save': save
-            }
-            i = None
-            guess = self.scan._get_fit_guess(model.fit_function)
+        # default fit arguments
+        defaults = {
+            'validate': True,
+            'set': True,
+            'save': save
+        }
+        i = None
+        guess = self.scan._get_fit_guess(model.fit_function)
 
         # settings in 'entry' always override default values
         args = {**defaults, **entry}

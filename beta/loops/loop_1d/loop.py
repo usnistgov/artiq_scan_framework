@@ -143,7 +143,7 @@ class Loop1D(Loop):
     def mutate_datasets(self, i_point, i_pass, poffset, meas_point, data):
         self.scan.print('call: Loop1D::mutate_datasets()', 2)
         for i_meas, meas in enumerate(self.measurements):
-            for entry in get_registered_models(self.scan, meas):
+            for entry in get_registered_models(self.scan, measurement=meas):
                 model = entry['model']
                 # mutate stats
                 self.scan.print('{}::mutate_datasets(i_point={}, i_pass={}, poffset={}, point={}'.format(

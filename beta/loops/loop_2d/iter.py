@@ -50,9 +50,11 @@ class Iter2D(Iter):
             ret[1] = self.points1[self.i1]  # dim1 measure_point
         return done
 
+    def at_end(self, i_point, dim):
+        return i_point[dim] == self.shape[dim] - 1
+
     @portable
     def step(self):
-
         self.i += 1
         np = self.shape[0] * self.shape[1]
         self.i_pass = int(self.i / np)
@@ -60,6 +62,8 @@ class Iter2D(Iter):
         self.i1 = (self.i % np) % self.shape[1]
         self.i_point[0] = self.i0
         self.i_point[1] = self.i1
+
+
 
 
 

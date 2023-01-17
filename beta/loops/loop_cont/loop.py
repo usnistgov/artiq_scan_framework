@@ -103,7 +103,7 @@ class LoopCont(Loop):
     @rpc(flags={"async"})
     def mutate_datasets(self, i, i_point, i_plot, data):
         for i_meas, meas in enumerate(self.measurements):
-            for entry in get_registered_models(self.scan, meas):
+            for entry in get_registered_models(self.scan, measurement=meas):
                 model = entry['model']
                 # mutate stats
                 mean, error = model.mutate_datasets(i_point=i_point, i_pass=0, poffset=0, point=i, counts=data[i_meas])
