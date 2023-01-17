@@ -155,34 +155,28 @@ class Loop2D(Loop):
     @rpc(flags={"async"})
     def mutate_datasets(self, i_point, i_pass, poffset, meas_point, data):
         self.scan.print('call: Loop2D::mutate_datasets()', 2)
-
-        # -- dim1
-        for entry in get_registered_models(self.scan, measurement=True, dimension=1):
+        for entry in get_registered_models(self.scan, measurement=True, dimension=1):   # all subscan models
             model = entry['model']
-            # -- mutate stats
             self.scan.print('{}::mutate_datasets(i_point={}, i_pass={}, poffset={}, point={}'.format(
                 model.__class__.__name__, i_point, i_pass, poffset, meas_point))
-            mean, error = model.mutate_datasets(
-                i_point=i_point,
-                i_pass=i_pass,
-                poffset=poffset,
-                point=meas_point,
-                counts=data[entry['i_meas']],
-            )
-            # -- mutate dim1 plot
-            self.mutate_plot_dim1(entry, i_point=i_point, x=meas_point[1], y=mean, error=error)
-            if self.itr.at_end(i_point, dim=1):             # -- fit dim1: perform a fit on the completed dim1 plot and mutate the dim0 x/y datasets
-                defaults = {                                # default fit arguments
+            mean, error = model.mutate_datasets(i_point=i_point, i_pass=i_pass,         # mutate stats
+                                                poffset=poffset, point=meas_point,
+                                                counts=data[entry['i_meas']])
+            self.mutate_plot_dim1(entry, i_point=i_point, x=meas_point[1],
+                                  y=mean, error=error)                                  # plot subscan
+            if self.itr.at_end(i_point, dim=1):                                         # just finshed a subscan
+                defaults = {                                                            # default fit arguments
                     'validate': True,
                     'set': True,
                     'save': False
                 }
-                args = {**defaults, **entry}                # settings in 'entry' always override default values
-                if self.fit_dim1(model, i_point, validate=args['validate'], set=args['set'], save=args['save']):   # fit the last dim1 scan data
-                    # -- mutate dim0 plot
-                    y, error = self.scan.calculate_dim0(model)
-                    self.mutate_plot_dim0(i_point=i_point, x=i_point[0], y=y, error=error)
+                args = {**defaults, **entry}                                            # settings in 'entry' always override default values
+                if self.fit_dim1(model, i_point, validate=args['validate'],
+                                 set=args['set'], save=args['save']):                   # fit the subscan
 
+                    y, error = self.scan.calculate_dim0(model)                          # scan value
+                    self.mutate_plot_dim0(i_point=i_point, x=i_point[0],
+                                          y=y, error=error)                             # plot scan
             trigger_plot(model)
         self.scan.print('return: Loop2D::mutate_datasets()', -2)
 
