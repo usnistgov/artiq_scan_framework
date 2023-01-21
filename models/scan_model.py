@@ -350,7 +350,7 @@ class ScanModel(Model):
         self.plot_shape = plot_shape
 
         # allow below to work on either 1d or 2d scans
-        if self._scan._dim == 1:
+        if self._scan._dim == 1:  # 1D scans
             shape = np.array([shape])
         shape = list(shape)
 
@@ -593,7 +593,7 @@ class ScanModel(Model):
             
             #resize counts to full filled local array for statistics modeling
             counts=self.stat_model.counts[i_point[0],i_point[1],0:poffset+len(counts)]
-            
+
         # calculate the mean
         mean, pass_mean = self._calc_mean(counts, i_pass)
 
@@ -775,10 +775,10 @@ class ScanModel(Model):
         """Returns the dataset key of the 'means' dataset"""
         return self.stat_model.key('mean', mirror)
 
-    @property
-    def errors(self):
-        """Return the internal value of the 'errors' dataset"""
-        return self.stat_model.errors
+    # @property
+    # def errors(self):
+    #     """Return the internal value of the 'errors' dataset"""
+    #     return self.stat_model.errors
 
     @property
     def xs(self):

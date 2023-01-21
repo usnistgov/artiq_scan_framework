@@ -614,6 +614,9 @@ class Scan(HasEnvironment):
         if event == 'compile':
             elapsed = time() - self._profile_times['before_compile']
             self._logger.warning('core scan compiled in {0} sec'.format(elapsed))
+        if event == 'run':
+            elapsed = time() - self._profile_times['run_start']
+            self._logger.warning('core scan compiled in {0} sec'.format(elapsed))
 
     # private: for scan.py
     @portable
@@ -1047,45 +1050,45 @@ class Scan(HasEnvironment):
 
     # ------------------- Helper Methods ---------------------
     # helper: for child class
-    def setattr_argument(self, key, processor=None, group=None, show='auto'):
-        if show is 'auto' and hasattr(self, key) and getattr(self, key) is not None:
-            return
-        if show is False or key in self._hide_arguments:
-            if not key in self._hide_arguments:
-                self._hide_arguments[key] = True
-            return
-
-        # fit guesses
-        if isinstance(processor, FitGuess):
-            if group is None:
-                group = 'Fit Settings'
-            super().setattr_argument(key, NumberValue(default=processor.default_value,
-                                                      ndecimals=processor.ndecimals,
-                                                      step=processor.step,
-                                                      unit=processor.unit,
-                                                      min=processor.min,
-                                                      max=processor.max,
-                                                      scale=processor.scale), group)
-            use = None
-            if processor.use is 'ask':
-                super().setattr_argument('use_{0}'.format(key), BooleanValue(default=processor.use_default), group)
-                use = getattr(self, 'use_{0}'.format(key))
-            else:
-                use = processor.use
-
-            self._fit_guesses[key] = {
-                'fit_param': processor.fit_param,
-                'param_index': processor.param_index,
-                'use': use,
-                'value': getattr(self, key)
-            }
-        else:
-            super().setattr_argument(key, processor, group)
-
-        # set attribute to default value when class is built but not submitted
-        if hasattr(processor, 'default_value'):
-            if not hasattr(self, key) or getattr(self, key) is None:
-                setattr(self, key, processor.default_value)
+    # def setattr_argument(self, key, processor=None, group=None, show='auto', tooltip=None):
+    #     if show is 'auto' and hasattr(self, key) and getattr(self, key) is not None:
+    #         return
+    #     if show is False or key in self._hide_arguments:
+    #         if not key in self._hide_arguments:
+    #             self._hide_arguments[key] = True
+    #         return
+    #
+    #     # fit guesses
+    #     if isinstance(processor, FitGuess):
+    #         if group is None:
+    #             group = 'Fit Settings'
+    #         super().setattr_argument(key, NumberValue(default=processor.default_value,
+    #                                                   ndecimals=processor.ndecimals,
+    #                                                   step=processor.step,
+    #                                                   unit=processor.unit,
+    #                                                   min=processor.min,
+    #                                                   max=processor.max,
+    #                                                   scale=processor.scale), group)
+    #         use = None
+    #         if processor.use is 'ask':
+    #             super().setattr_argument('use_{0}'.format(key), BooleanValue(default=processor.use_default), group)
+    #             use = getattr(self, 'use_{0}'.format(key))
+    #         else:
+    #             use = processor.use
+    #
+    #         self._fit_guesses[key] = {
+    #             'fit_param': processor.fit_param,
+    #             'param_index': processor.param_index,
+    #             'use': use,
+    #             'value': getattr(self, key)
+    #         }
+    #     else:
+    #         super().setattr_argument(key, processor, group)
+    #
+    #     # set attribute to default value when class is built but not submitted
+    #     if hasattr(processor, 'default_value'):
+    #         if not hasattr(self, key) or getattr(self, key) is None:
+    #             setattr(self, key, processor.default_value)
 
     # helper: for child class
     def scan_arguments(self, npasses={}, nrepeats={}, nbins={}, fit_options={}, continuous_scan={}, continuous_points={}, continuous_plot={}, continuous_measure_point={},
@@ -1733,7 +1736,7 @@ class Scan(HasEnvironment):
     # -- callbacks for extensions
 
     # callback: for extensions
-    def _scan_arguments(self):
+    def _scan_arguments(self, *args, **kwargs):
         pass
 
     # callback: for extensions

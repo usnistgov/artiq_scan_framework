@@ -15,7 +15,9 @@ class Data():
 
     @portable
     def store(self, i, val):
-        self.data[i[0]][i[1]] = val
+        val = self.data
+        for ii in i:
+            val = val[ii]
         self.val += val
 
     @portable

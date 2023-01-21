@@ -318,6 +318,7 @@ class ReloadingScan(Scan):
             try:
                 # iterate over scan points in the same order as is done in scan.py
                 for i_measurement in range(self.nmeasurements):
+                    print('ion_checker.ion_present')
                     self.ion_checker.ion_present(self._data[i_measurement], self.nrepeats, last_point=last_point)
             except LostIon:
                 # rewind to the earliest scan point where the ion could have been lost.

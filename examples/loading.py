@@ -54,7 +54,7 @@ class Loading(Lib):
     loaded = False  #: Ion was successfully loaded by the last call to _load_ion()
     timedout = False
     no_pi = False
-    start_time = np.int64(0)
+    start_time = np.int32(0)
     elapsed = 0.0
     max_attempts = 3
 
@@ -352,7 +352,7 @@ class Loading(Lib):
     @kernel
     def measure_bright_rate(self, repeats=100):
         """Measure bright count rate (counts per detection in the bright state)"""
-        counts = np.int64(0)
+        counts = np.int32(0)
         for i in range(repeats):
             delay(100 * us)  # loop overhead, not optimized
             self.core.break_realtime()
@@ -368,7 +368,7 @@ class Loading(Lib):
     @kernel
     def measure_dark_rate(self, repeats=100):
         """Measure dark count rate (counts per detection in the dark state)"""
-        counts = np.int64(0)
+        counts = np.int32(0)
         for i in range(repeats):
             delay(100 * us)  # loop overhead, not optimized
             self.core.break_realtime()

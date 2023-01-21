@@ -151,7 +151,7 @@ class XYNTracePlot(plot.Plot):
                               'x_fine%i'%(i+1),
                               'error%i'%(i+1)], default=None, ds_only=True)
             if getattr(self, 'x%i'%(i+1)) is None and not getattr(self, 'y%i'%(i+1)) is None:
-                setattr(self, 'x%i'%(i+1), np.array([_ for _ in range(len(getattr(self, 'y%i'%(i+1)) ))], np.int64))
+                setattr(self, 'x%i'%(i+1), np.array([_ for _ in range(len(getattr(self, 'y%i'%(i+1)) ))], np.int32))
         # don't plot if not triggered
         if self.started and not self.trigger:
             return False

@@ -6,9 +6,10 @@ class Scan1D(Scan):
     this class."""
 
     def __init__(self, managers_or_parent, *args, **kwargs):
+        print("Scan1D::__init__")
         super().__init__(managers_or_parent, *args, **kwargs)
         self._dim = 1
-        self._i_point = np.int64(0)
+        self._i_point = np.int32(0)
 
     def _load_points(self):
         # grab the points
@@ -55,7 +56,7 @@ class Scan1D(Scan):
 
         # flattened 1D array of point indices as tuples
         # (these are used on the core to map the flat idx index to the 2D point index)
-        self._i_points = np.array(range(self.npoints), dtype=np.int64)
+        self._i_points = np.array(range(self.npoints), dtype=np.int32)
 
     def _mutate_plot(self, entry, i_point, point, mean, error=None):
         model = entry['model']

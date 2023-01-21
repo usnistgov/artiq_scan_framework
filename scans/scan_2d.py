@@ -9,7 +9,7 @@ class Scan2D(Scan):
     def __init__(self, managers_or_parent, *args, **kwargs):
         super().__init__(managers_or_parent, *args, **kwargs)
         self._dim = 2
-        self._i_point = np.array([0, 0], dtype=np.int64)
+        self._i_point = np.array([0, 0], dtype=np.int32)
 
     # private: for scan.py
     def _load_points(self):
@@ -76,7 +76,7 @@ class Scan2D(Scan):
         # (these are used on the core to map the flat idx index to the 2D point index)
         self._i_points = np.array([
             (i1, i2) for i1 in range(self._shape[0]) for i2 in range(self._shape[1])
-        ], dtype=np.int64)
+        ], dtype=np.int32)
 
 
 

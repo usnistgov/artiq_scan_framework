@@ -70,7 +70,7 @@ class ContinuousScan(HasEnvironment):
         parent.continuous_index = 0
 
         # --- Philip's addition
-        parent._i_points = np.array(range(parent.npoints), dtype=np.int64)
+        parent._i_points = np.array(range(parent.npoints), dtype=np.int32)
 
     def _mutate_plot(self, entry, i_point, point, mean, error=None):
         parent = self.parent

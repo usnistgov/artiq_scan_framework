@@ -4,10 +4,10 @@ from artiq_scan_framework.beta.iter import Iter
 
 
 class Iter2D(Iter):
+    kernel_invariants = {'npoints', 'niter'}
 
-    def build(self, npasses, nrepeats):
-        self.npasses = npasses
-        self.nrepeats = nrepeats
+    def build(self, looper):
+        self.looper = looper
 
         # indexes
         self.reset()
@@ -17,10 +17,10 @@ class Iter2D(Iter):
         self.i = np.int32(0)
         self.i0 = np.int32(0)
         self.i1 = np.int32(0)
-        self.i_point = np.array([0, 0], dtype=np.int64)
+        self.i_point = np.array([0, 0], dtype=np.int32)
         self.i_pass = np.int32(0)
 
-    def set_points(self, points):
+    def load_points(self, points):
         # this turn's ARTIQ scan arguments into lists
         points = [p for p in points[0]], [p for p in points[1]]
         self.points0, self.points1 = points
@@ -31,7 +31,7 @@ class Iter2D(Iter):
         self.shape = np.array([len(self.points0), len(self.points1)], dtype=np.int32)
         # shape of the current scan plot
         self.plot_shape = self.shape
-        self.niter = self.npasses * self.shape[0] * self.shape[1]
+        self.niter = self.looper.scan.npasses * self.shape[0] * self.shape[1]
         self.npoints = np.int32(self.shape[0] * self.shape[1])
 
     def points(self):

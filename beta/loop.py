@@ -17,7 +17,8 @@ class Loop(HasEnvironment):
         raise Exception("Loop::mutate_datasets() method needs to be implemented")
 
     def terminate(self):
-        pass
+        self.scan.print('Loop::terminate()', 2)
+        self.scan.print('Loop::terminate()', -2)
 
     def fit(self, entry, save, use_mirror, dimension, i):
         raise Exception("Loop::fit() method needs to be implemented")

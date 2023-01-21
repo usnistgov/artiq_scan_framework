@@ -138,7 +138,7 @@ class XYPlot(plot.Plot):
 
         self._load(data, 'pass_y', default=None)
         if self.x is None and not self.y is None:
-            self.x = np.array([i for i in range(len(self.y))], np.int64)
+            self.x = np.array([i for i in range(len(self.y))], np.int32)
         self._load(data, 'y2', default=None)
 
         self._load(data, 'i_plot', default=None)

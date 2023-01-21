@@ -1,33 +1,54 @@
-from artiq_scan_framework.beta.loop import *
-from artiq_scan_framework.beta.snippets import *
-from artiq_scan_framework.beta.data import *
+from artiq_scan_framework.snippets import *
+from artiq.experiment import *
+from .data import *
+
 import numpy as np
 from .iter import *
+from collections import OrderedDict
 
 
-class Loop2D(Loop):
-    kernel_invariants = {'nrepeats', 'npoints', 'nmeasurements'}
+class Loop2D(HasEnvironment):
+    kernel_invariants = {'nmeasurements'}
 
-    def build(self, scan, npasses, nrepeats):
+    def build(self, scan):
         self.scan = scan
         scan._dim = 2
         scan._i_point = np.array([0, 0], dtype=np.int32)
         self.dtype = np.int32
-        self.nrepeats = nrepeats
-        self.itr = Iter2D(self, npasses=npasses, nrepeats=nrepeats)
+        self.itr = Iter2D(self, looper=self)
 
-    def init(self, switch, *args, **kwargs): #nmeasurements, ncalcs, measurements):
-        def report(self, location='both'):
-            self.scan.print('Loop2D.report(location={})'.format(location))
-            if location == 'top' or location == 'both':
-                if self.nrepeats == 1:
-                    self.scan.logger.info('START {} / {} repeat'.format(self.scan._name, self.nrepeats))
-                else:
-                    self.scan.logger.info('START {} / {} repeats'.format(self.scan._name, self.nrepeats))
+    def set_kernel_invariants(self):
+        self.scan.kernel_invariants.add('nrepeats')
+        self.scan.kernel_invariants.add('npasses')
+
+    @staticmethod
+    def argdef():
+        """Define GUI arguments"""
+        argdef = OrderedDict()
+        argdef['npasses'] = {
+            'processor': NumberValue,
+            'processor_args': {'default': 1, 'ndecimals': 0, 'step': 1},
+            'group': 'Scan Settings',
+            'tooltip': None
+        }
+        argdef['nrepeats'] = {
+            'processor': NumberValue,
+            # default values, can be overridden by the user in their scan by passing arguments to self.scan_arguments().
+            # for example: self.scan_arguments(nrepeats={'default': 50}) changes the default number of repeats to 50 (instead of 100)
+            # for example: self.scan_arguments(nrepeats={'group': 'Looper'}) will place the argument in the group named 'Looper' (instead of 'Scan Settings')
+            'processor_args': {'default': 100, 'ndecimals': 0, 'step': 1},
+            'group': 'Scan Settings',
+            'tooltip': None
+        }
+        return argdef
+
+    def init(self, switch, *args, **kwargs):
+        # order of execution:
+        # 1. load_points, 2. report, 3. offset_points, 4. init_datasets or write_datasets, 5. init_loop
         def load_points(self):
             # points
             points = get_points(self.scan)
-            self.itr.set_points(points)
+            self.itr.load_points(points)
             self.scan.print(
                 'itr.shape={0.shape}, itr.plot_shape={0.plot_shape}, itr.nitr={0.niter}, itr.npoints={0.npoints}'.format(
                     self.itr))
@@ -56,45 +77,85 @@ class Loop2D(Loop):
                 warmup_points = np.array(_temp, dtype=np.float64)
             self.warmup_points = warmup_points
             self.nwarmup_points = nwarmup_points
+        def report(self, location='both'):
+            self.scan.print('Loop2D.report(location={})'.format(location))
+            if location == 'top' or location == 'both':
+                if self.scan.nrepeats == 1:
+                    self.scan.logger.info('START {} / {} repeat'.format(self.scan._name, self.scan.nrepeats))
+                else:
+                    self.scan.logger.info('START {} / {} repeats'.format(self.scan._name, self.scan.nrepeats))
         def offset_points(self, x_offset):
             self.scan.print('Loop2D.offset_points(x_offset={})'.format(x_offset))
             self.itr.offset_points(x_offset)
-        def init_datasets(self, model, dimension):
+        def init_datasets(self, entry):
+            self.scan.print('Loop2D.init.init_datasets(model={}, dimension={})'.format(entry['model'].__class__.__name__, entry['dimension']))
+
+            import pprint
+            pp = pprint.PrettyPrinter(indent=4)
+
+            # initialize the model's datasets
+            self.scan.print('{}::init_datasets('.format(entry['model'].__class__.__name__))
+            self.scan.print('   shapes={}'.format(
+                pp.pformat({
+                    'itr': self.itr.shape,
+                    'plot': self.itr.plot_shape,
+                    'pass_means': (self.scan.npasses, self.itr.shape),
+                    'stats.counts': (self.itr.shape, self.scan.npasses * self.scan.nrepeats),
+                    'stats.hist': (self.itr.shape, self.scan.nbins)
+                })
+            ))
+            self.scan.print('   points={}'.format(
+                self.itr.points()
+            ))
+            self.scan.print('   dtype={}'.format(
+                self.dtype
+            ))
+            self.scan.print('   dimension={})'.format(
+                entry['dimension']
+            ))
+
             # initialize the model's datasets
             self.scan.print('{0}::init_datasets(shape={1.shape}, plot_shape={1.plot_shape}, dimension={2})'.format(
-                model.__class__.__name__, self.itr, dimension))
-            model.init_datasets(
-                shape=self.itr.shape,
-                plot_shape=self.itr.plot_shape,
+                entry['model'].__class__.__name__, self.itr, entry['dimension']))
+            entry['model'].init_datasets(
+                shapes={
+                    'itr': self.itr.shape,
+                    'plot': self.itr.plot_shape,
+                    'pass_means': (self.scan.npasses, self.itr.npoints),
+                    'stats.counts': (self.itr.shape[0], self.itr.shape[1], self.scan.npasses * self.scan.nrepeats),
+                    'stats.hist': (self.itr.npoints, self.scan.nbins)
+                },
                 points=self.itr.points(),
-                dimension=dimension
+                dtype=self.dtype,
+                dimension=entry['dimension']
             )
-        def write_datasets(self, model, dimension):
+        def write_datasets(self, entry):
+            model = entry['model']
+            dimension = entry['dimension']
             model.write_datasets(dimension=dimension)
-        def init(self, nmeasurements, ncalcs, measurements):
-            self.measurements = measurements
+        def init_loop(self, ncalcs, measurements):
+            self.set_kernel_invariants()
             self.ncalcs = ncalcs
-            self.nmeasurements = nmeasurements
             self.measurements = []
-            for i_meas, meas in enumerate(self.scan.measurements):
+            for i_meas, meas in enumerate(measurements):
                 self.measurements.append(meas)
                 for entry in get_registered_models(self.scan, measurement=meas):
                     entry['i_meas'] = i_meas
-            self.data = Data(shape=(nmeasurements, self.nrepeats),
+            self.nmeasurements = len(self.measurements)
+            self.data = Data(shape=(self.nmeasurements, self.scan.nrepeats),
                              dtype=self.dtype)
-
-        if switch == 'report':
-            return report(self, *args, **kwargs)
-        elif switch == 'load_points':
+        if switch == 'load_points':
             return load_points(self, *args, **kwargs)
+        elif switch == 'report':
+            return report(self, *args, **kwargs)
         elif switch == 'offset_points':
             return offset_points(self, *args, **kwargs)
         elif switch == 'init_datasets':
             return init_datasets(self, *args, **kwargs)
         elif switch == 'write_datasets':
             return write_datasets(self, *args, **kwargs)
-        elif switch == 'init':
-            return init(self, *args, **kwargs)
+        elif switch == 'init_loop':
+            return init_loop(self, *args, **kwargs)
 
     @portable
     def loop(self, resume=False):
@@ -107,7 +168,7 @@ class Loop2D(Loop):
 
         meas_point = [0.0, 0.0]
         while not self.itr.done(meas_point):
-            self.scan.print('itr: i0={0.i0}, i1={0.i1}, i={0.i}, i_pass={0.i_pass}'.format(self.itr))
+            #self.scan.print('itr: i0={0.i0}, i1={0.i1}, i={0.i}, i_pass={0.i_pass}'.format(self.itr))
             i_point = self.itr.i_point
             i_pass = self.itr.i_pass
             self.scan._i_pass = i_pass
@@ -120,41 +181,47 @@ class Loop2D(Loop):
             meas_point = self.scan.offset_point(i_point, meas_point)  # user callback
             self.scan.set_scan_point(i_point, meas_point)  # user callback
             self.data.zero_val()
-            for i_repeat in range(self.itr.nrepeats):
+            for i_repeat in range(self.scan.nrepeats):
                 for i_meas in range(self.nmeasurements):
                     meas = self.measurements[i_meas]
-                    self.measurement = meas
                     self.scan.before_measure(meas_point, meas)  # user callback
                     self.scan.lab_before_measure(meas_point, meas)  # user callback
                     count = self.scan.do_measure(meas_point)  # call measure
                     self.data.store([i_meas, i_repeat], count)  # store value
                     self.scan.after_measure(meas_point, meas)  # user callback
                     self.scan.lab_after_measure(meas_point, meas)  # user callback
-            mean = self.data.mean(self.nmeasurements * self.nrepeats)  # mean value over repeats & meas
+            mean = self.data.mean(self.nmeasurements * self.scan.nrepeats)  # mean value over repeats & meas
             if self.scan.enable_mutate:
                 self.mutate_datasets(i_point=i_point,
                                      i_pass=i_pass,
-                                     poffset=self.itr.poffset(),
+                                     poffset=self.itr.i_pass * self.scan.nrepeats, #poffset,
                                      meas_point=meas_point,
                                      data=self.data.data)
             if self.ncalcs > 0:
                 self.scan._calculate_all(i_point, i_pass, meas_point)
-            for comp in self.scan.components:
-                comp.analyze(
-                    i_point=i_point,
-                    last_itr=self.itr.last_itr(),
-                    data=self.data.data
-                )  # component hook
+            # for comp in self.scan.components:
+            #     comp.analyze(
+            #         i_point=i_point,
+            #         last_itr=self.itr.last_itr(),
+            #         data=self.data.data
+            #     )  # component hook
             self.scan.after_scan_point(i_point, meas_point)  # user callback
             self.scan._after_scan_point(i_point, meas_point, mean)  # user callback
             if self.scan.enable_count_monitor:
-                set_counts(self, mean)
+                self.set_counts(mean)
             self.itr.step()
-        self.itr.reset()
+        #self.itr.reset()
+
+    @rpc(flags={"async"})
+    def set_counts(self, mean, digits=-1):
+        if digits >= 0:
+            mean = round(mean, digits)
+        self.set_dataset('counts', mean, broadcast=True, persist=True)
 
     @rpc(flags={"async"})
     def mutate_datasets(self, i_point, i_pass, poffset, meas_point, data):
-        self.scan.print('call: Loop2D::mutate_datasets()', 2)
+        self.scan.print('Loop2D::mutate_datasets()', 2)
+        model = None
         for entry in get_registered_models(self.scan, measurement=True, dimension=1):   # all subscan models
             model = entry['model']
             self.scan.print('{}::mutate_datasets(i_point={}, i_pass={}, poffset={}, point={}'.format(
@@ -177,8 +244,9 @@ class Loop2D(Loop):
                     y, error = self.scan.calculate_dim0(model)                          # scan value
                     self.mutate_plot_dim0(i_point=i_point, x=meas_point[0],
                                           y=y, error=error)                             # plot scan
+        if model:
             trigger_plot(model)
-        self.scan.print('return: Loop2D::mutate_datasets()', -2)
+        self.scan.print('Loop2D::mutate_datasets()', -2)
 
     def mutate_plot_dim1(self, entry, i_point, x, y, error=None):
         """Plots results from dimension 1 sub-scans"""
@@ -202,12 +270,12 @@ class Loop2D(Loop):
                     model.man_scale
                 ))
             performed, valid, saved, errormsg = model.fit_data(
-                x_data=model.stat_model.points[i_point[0], :, 1] ,   # these are unsorted,
-                y_data=model.stat_model.means[i_point[0], :],
-                errors=model.stat_model.errors[i_point[0], :],       # use the errors in the dimension 1 mean values (std dev of mean) as the weights in the fit
+                x_data=model.points[i_point[0], :, 1] ,   # these are unsorted,
+                y_data=model.means[i_point[0], :],
+                errors=model.errors[i_point[0], :],       # use the errors in the dimension 1 mean values (std dev of mean) as the weights in the fit
                 fit_function=model.fit_function,
                 guess=None,
-                i=i_point[0],
+                i="dim1.{}".format(i_point[0]),
                 validate=validate,
                 set=set,                           # save all info about the fit (fitted params, etc) to the 'fits' namespace?
                 save=save,                         # save the main fit to the root namespace?
