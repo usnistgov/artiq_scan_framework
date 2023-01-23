@@ -72,6 +72,15 @@ class InvCos(FitFunction):
         return amplitude / 2 * (-np.cos(np.pi * x / pi_time + phase) + 1) + y_min
 
     @staticmethod
+    def simulation_args():
+        return {
+            'amplitude': 10,
+            'pi_time': 10 * us,
+            'phase': 0,
+            'y_min': 0
+        }
+
+    @staticmethod
     def jacobian(x_data, amplitude, pi_time, phase, y_min):
         """Returns Jacobian matrix of partial derivatives of
         amplitude/2 (sin(pi*x/pi_time + phase) + 1) + y_min, evaluated for all values x

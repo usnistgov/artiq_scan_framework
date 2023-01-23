@@ -883,7 +883,7 @@ class ScanModel(Model):
                                the fir param value will be fetched from the datasets.
         value.
         """
-
+        print('ScanModel::get_main_fit()')
         if use_fit_result:
             if self.main_fit_param is None:
                 raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
@@ -896,6 +896,7 @@ class ScanModel(Model):
                 default = self.defaults_model.get(self.main_fit_ds, archive=archive)
             else:
                 default = NoDefault
+            print('main_fit_ds is', self.main_fit_ds)
             return self.get(self.main_fit_ds, default=default, archive=archive)
 
     def set_main_fit(self, value):
@@ -956,6 +957,7 @@ class ScanModel(Model):
         :param man_scale: Dictionary containing the scale of each fit param.  Keys specify fit param names and values
                           are set to floats that specify the scale of that fit param.
         """
+        self._scan.print('call: ScanModel::fit_data(save={})'.format(save), 2)
         # class name of the last run scan
         class_name = self.get('class_name', mirror=True)
         if class_name != self._scan.__class__.__name__:
@@ -978,6 +980,7 @@ class ScanModel(Model):
 
         # - pre-validate data
         if validate:
+            self._scan.print('validating')
             try:
                 valid_pre = self.validate_fit('pre', x_data, y_data)
             except CantFit as msg:
@@ -986,6 +989,7 @@ class ScanModel(Model):
 
         # - fit
         if not validate or valid_pre:
+            self._scan.print('fitting')
             # get data to fit
             guess = guess or self.get_guess(x_data, y_data)
             hold = self.hold or {}
@@ -998,6 +1002,7 @@ class ScanModel(Model):
 
         # - post-validation & save fits
         if fit_performed:
+            self._scan.print('fit was performed')
             if not hasattr(self, 'fit'):
                 self.logger.warn('No fit was performed')
             else:
@@ -1013,6 +1018,7 @@ class ScanModel(Model):
 
                 # - post-validate the fit
                 if validate:
+                    self._scan.print('post validating fit')
                     # - strong validations:
                     #   * fit params not saved if this fails.
                     try:
@@ -1039,11 +1045,16 @@ class ScanModel(Model):
 
                 # - save fitted params to datasets
                 # is it ok to save the fit params?
+                self._scan.print('valid_strong is {}'.format(valid_strong))
+                self._scan.print('save is {}'.format(save))
                 if save and (not validate or valid_strong):
+                    self._scan.print('saving')
                     # - save the main fit
                     if self.main_fit_param and self.main_fit_ds:
                         self.save_fit(fitparam=self.main_fit_param, dskey=self.main_fit_ds, broadcast=True, persist=True, save=True)
                         saved = True
+                    else:
+                        self.logger.warning("Fits cannot be saved because a main fit param has not be specified in the model")
 
                     # - save other fits
                     for fitparam, dskey in self.fits_to_save.items():
@@ -1071,7 +1082,7 @@ class ScanModel(Model):
         self.fit_model.set('fit_valid', self.fit_valid)
         self.fit_model.set('fit_saved', self._fit_saved)
         self.fit_model.set('fit_errormsg', errormsg)
-
+        self._scan.print('return: ScanModel::fit_data()', -2)
         return fit_performed, self.fit_valid, saved, errormsg
 
     def before_validate(self, fit):
@@ -1229,10 +1240,10 @@ class ScanModel(Model):
                                      )
 
     # --- simulation
-    @property
-    def simulation_args(self):
-        """Function arguments passed to the fit function when running simulations"""
-        raise NotImplementedError('Your model needs to implement the simulation_args property')
+    # @property
+    # def simulation_args(self):
+    #     """Function arguments passed to the fit function when running simulations"""
+    #     raise NotImplementedError('Your model needs to implement the simulation_args property')
 
     def simulate(self, x, noise_level=0, simulation_args=None):
         simulation_args = simulation_args or self.simulation_args

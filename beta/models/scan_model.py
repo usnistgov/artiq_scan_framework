@@ -62,6 +62,26 @@ class BetaScanModel(ScanModel):
     def npasses(self):
         return self._scan.npasses
 
+    def simulate(self, x, simulation_args = None):
+        if simulation_args is None and hasattr(self, 'simulation_args'):
+            #try:
+            simulation_args = self.simulation_args
+            #except(NotImplementedError):
+            #    simulation_args = self.fit_function.simulation_args()
+        lam = self.fit_function.value(x, **simulation_args)
+
+        return int(np.random.poisson(lam, 1)[0])
+        # # convert expectation value to quantized value
+        # f = floor(value)
+        # c = ceil(value)
+        # if np.random.random() > (value - f):
+        #     value = f
+        # else:
+        #     value = c
+        #
+        # noise = (2.0 * np.random.random() - 1.0) * noise_level
+        # return int(abs(value + noise))
+
     def bind(self):
         """Bind the scan model to it's namespace and additional sub-spaces for fits, stats, hists, and defaults."""
 

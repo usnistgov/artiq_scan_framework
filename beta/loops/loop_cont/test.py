@@ -37,7 +37,7 @@ class TestContScan(beta_scan.BetaScan, EnvExperiment):
     def initialize_devices(self):
         self.core.reset()
 
-    @kernel
+    @portable
     def measure(self, point):
         if int(self.looper.itr.i / 22) % 8 == 7:
             return 22**2

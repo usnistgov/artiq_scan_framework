@@ -3,6 +3,8 @@ from artiq_scan_framework.snippets import *
 import time
 import importlib
 from collections import OrderedDict
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 
 class BetaScan(Scan):
@@ -14,7 +16,7 @@ class BetaScan(Scan):
         class_name = ''.join(x.capitalize() for x in name.split('_'))
         class_ = getattr(module, class_name)
         instance = class_(self, self, *args, **kwargs)
-        #self.components.append(instance)
+        self.components.append(instance)
 
     def build(self, **kwargs):
         self.print('BetaScan::build()', 2)
@@ -24,99 +26,124 @@ class BetaScan(Scan):
         super().build(**kwargs)
         self.print('BetaScan::build()', -2)
 
+    @staticmethod
+    def argdef(kwargs):
+        argdef = OrderedDict()
+        argdef['nbins'] = {
+            'processor': NumberValue,
+            'processor_args': {'default': 50, 'ndecimals': 0, 'step': 1},
+            'group': 'Scan Settings',
+            'tooltip': None
+        }
+        argdef['fit_options'] = {
+            'processor': EnumerationValue,
+            'processor_args': {
+                'choices': ['No Fits', 'Fit', "Fit and Save", "Fit Only", "Fit Only and Save"],
+                'default': 'Fit'
+            },
+            'group': "Fit Settings",
+            'tooltip': None,
+            'condition': lambda scan, kwargs: scan.enable_fitting
+        }
+        # fit guesses
+        # fit_options = kwargs['fit_options']
+        # fovals = fit_options.pop('values')
+        # self.setattr_argument('fit_options', EnumerationValue(fovals, **fit_options), group='Fit Settings')
+        # del kwargs['fit_options']
+
+        if 'guesses' in kwargs:
+            if kwargs['guesses'] is True:
+                for i in range(1, 6):
+                    argdef['fit_guess_{0}'.format(i)] = {
+                        'processor': FitGuess,
+                        'processor_args': {
+                            'default': 1.0,
+                            'use_default': False,
+                            'ndecimals': 6,
+                            'step': 0.001,
+                            'fit_param': None,
+                            'param_index': i
+                        },
+                        'condition': lambda scan, kwargs: scan.enable_fitting and kwargs['guesses'] and (
+                                    'fit_options' not in kwargs or kwargs['fit_options'] is not False)
+                    }
+            else:
+                for fit_param in kwargs['guesses']:
+                    argdef['fit_guess_{0}'.format(fit_param)] = {
+                        'processor': FitGuess,
+                        'processor_args': {
+                            'default': 1.0,
+                            'use_default': False,
+                            'ndecimals': 1,
+                            'step': 0.001,
+                            'fit_param': fit_param,
+                            'param_index': None
+                        },
+                        'condition': lambda scan, kwargs: scan.enable_fitting and kwargs['guesses'] and (
+                                    'fit_options' not in kwargs or kwargs['fit_options'] is not False)
+                    }
+        return argdef
+
     def scan_arguments(self, classes=[], init_only=False, **kwargs):
         if type(classes) != list:
             classes = [classes]
-        self.print('BetaScan.scan_arguments(classes={}, init_only={}, kwargs={})'.format([c.__name__ for c in classes], init_only, kwargs), 2)
+        #self.print('BetaScan.scan_arguments(classes={}, init_only={}, kwargs={})'.format([c.__name__ for c in classes], init_only, kwargs), 2)
 
+        # collect argdefs from other classes; i.e. loops, extensions, etc.
         if not hasattr(self, '_argdefs'):
             self._argdefs = []
         for c in classes:
             self._argdefs.append(c.argdef())
 
+        # early exit; only initing self._argdefs, not actually creating the arguments
         if init_only:
-            self.print('BetaScan.scan_arguments()', -2)
+            #self.print('BetaScan.scan_arguments()', -2)
             return
-        #print('self._argdefs')
-        #pp.pprint(self._argdefs)
 
-        # default scan arugments
-        kwargs_default = OrderedDict()
-        kwargs_default['nbins'] = {
-                'processor': NumberValue,
-                'processor_args': {'default': 50, 'ndecimals': 0, 'step': 1},
-                'group': 'Scan Settings',
-                'tooltip': None
-            }
-        kwargs_default['fit_options'] = {
-                'processor': EnumerationValue,
-                'processor_args': {
-                    'choices': ['No Fits', 'Fit', "Fit and Save", "Fit Only", "Fit Only and Save"],
-                    'default': 'Fit'
-                },
-                'group': "Fit Settings",
-                'tooltip': None
-            }
-        kwargs_default['guesses'] = False
-        for argdef in self._argdefs:
-            kwargs_default.update(argdef)
+        # full list of argdefs from all classes
+        argdefs = BetaScan.argdef(kwargs)
+        for d in self._argdefs:
+            argdefs.update(d)
+
+        # user overrides, specified as keyword arguments to scan_arguments()
         for k, v in kwargs.items():
-            if k in kwargs_default:
+            if k in argdefs:
+                # user doesn't want to show this argument
                 if v is False:
-                    del(kwargs_default[k])
+                    del(argdefs[k])
                 else:
+                    # user has overridden the default options for the argument
                     if type(v) == dict:
-                        user_processor_args = {kk:v for kk,v in v.items() if kk not in ['group']}
-                        kwargs_default[k]['processor_args'].update(user_processor_args)
+                        for uk, uv in v.items():
+                            # overrides of the processor options
+                            if uk in argdefs[k]['processor_args']:
+                                argdefs[k]['processor_args'][uk] = uv
+                            # overrides of the argument options
+                            if uk in argdefs[k]:
+                                argdefs[k][uk] = uv
+                            # overrides of the default arguments
+                            if 'default_args' in argdefs[k]:
+                                if uk in argdefs[k]['default_args']:
+                                    argdefs[k]['default_args'][uk] = uv
 
-                        user_defaults = {kk: v for kk, v in v.items() if kk in ['group']}
-                        kwargs_default[k].update(user_defaults)
-        kwargs = kwargs_default
-        if self.enable_fitting and 'fit_options' in kwargs and kwargs['fit_options'] is not False:
-            # fit_options = kwargs['fit_options']
-            # fovals = fit_options.pop('values')
-            # self.setattr_argument('fit_options', EnumerationValue(fovals, **fit_options), group='Fit Settings')
-            # del kwargs['fit_options']
-            guesses = kwargs['guesses']
-            if guesses:
-                if guesses is True:
-                    for i in range(1, 6):
-                        key = 'fit_guess_{0}'.format(i)
-                        self.setattr_argument(key,
-                                              FitGuess(default=1.0,
-                                                       use_default=False,
-                                                       ndecimals=6,
-                                                       step=0.001,
-                                                       fit_param=None,
-                                                       param_index=i))
-                else:
-                    for fit_param in guesses:
-                        key = 'fit_guess_{0}'.format(fit_param)
-                        self.setattr_argument(key,
-                                              FitGuess(default=1.0,
-                                                       use_default=True,
-                                                       ndecimals=1,
-                                                       step=0.001,
-                                                       fit_param=fit_param,
-                                                       param_index=None))
-            del(kwargs['guesses'])
-
-        for key, argdef in kwargs_default.items():
-            if key == 'fit_options' and not self.enable_fitting:
-                continue
-            if 'processor_args' not in argdef:
-                processor_args = {}
-            else:
-                processor_args = argdef['processor_args'].copy()
-            if 'condition' not in argdef or argdef['condition'](self):
-                if 'default_args' in processor_args:
-                    default = processor_args['default'](**processor_args['default_args'])
-                else:
-                    default = processor_args['default']
-                del(processor_args['default'])
-                setattr_argument(self, key=key, processor=argdef['processor'](default, **processor_args), group=argdef['group'], tooltip=argdef['tooltip'])
+        # create the GUI arguments and set them as attributes of the scan
+        for key, argdef in argdefs.items():
+            #print('***argument: {}'.format(key))
+            #print('argdef: {}'.format(pp.pformat(argdef)))
+            if 'condition' not in argdef or argdef['condition'](self, kwargs):
+                if 'processor_args' not in argdef:
+                    argdef['processor_args'] = {}
+                if 'default_args' in argdef:
+                    argdef['processor_args']['default'] = argdef['processor_args']['default'](**argdef['default_args'])
+                    del(argdef['default_args'])
+                #pp.pprint(argdef['processor_args'])
+                setattr_argument(self,
+                                 key=key,
+                                 processor=argdef['processor'](**argdef['processor_args']),
+                                 group=argdef['group'],
+                                 tooltip=argdef['tooltip'])
         self._scan_arguments(**kwargs)
-        self.print('BetaScan.scan_arguments', -2)
+        #self.print('BetaScan.scan_arguments', -2)
 
     def setattr_argument(self, key, processor=None, group=None, show='auto', tooltip=None):
         if show is 'auto' and hasattr(self, key) and getattr(self, key) is not None:
@@ -198,6 +225,48 @@ class BetaScan(Scan):
             elapsed = self._profile_times[event]['end'] - self._profile_times[event]['start']
             self._profile_times[event]['elapsed'] = elapsed
             self._logger.warning('{} took {:0.2} sec'.format(event, elapsed))
+
+    def _initialize(self, resume):
+        """Initialize the scan"""
+        self.print("Scan::_initialize(resume={})".format(resume), level=2)
+        self._paused = False                            # initialize _paused state variable
+        self.measurement = ""                           # initialize measurement state variable
+        if not resume:
+            self.looper.init('load_points')             # -- Load points
+        self.prepare_scan()                             # Callback: user callback (self.npoints must be available)
+        self.lab_prepare_scan()                         # Callback: user callback (self.npoints must be available)
+        location ='top' if not resume else 'both'       # -- Report
+        self.report(location=location)
+        if not resume:                                  # -- Attach models, init storage, reset model states
+            self._private_map_arguments()               # map gui arguments to class variables
+            self._attach_models()                       # -- Attach models to scan
+            if not self.measurements:
+                self.measurements = ['main']            # there must be at least one measurement
+            self.looper.init('offset_points', self._x_offset)   # -- Offset points: self._x_offset must be set
+            self._attach_to_models()                    # -- Attach scan to models
+            # self._init_simulations()                  # initialize simulations (needs self._x_offset/self.frequency_center)
+            self.report(location='bottom')              # display scan info
+            self.reset_model_states()                   # reset model states
+        self.before_scan()                              # Callback: user callback
+                                                        # -- Initialize or write datasets
+        if not self.fit_only:                           # datasets are only initialized/written when a scan can run
+            for entry in self._model_registry:          # for every registered model...
+                if not resume:                          # datasets are only initialized when the scan begins
+                    if entry['init_datasets']:          # initialize datasets if requested by the user
+                        self.looper.init('init_datasets', entry)
+                        entry['datasets_initialized'] = True
+                if resume:                              # datasets are only written when resuming a scan
+                    self.looper.init('write_datasets', entry)         # restore data when resuming a scan by writing the model's
+                    entry['datasets_written'] = True
+                                                        # local variables to it's datasets
+        if not (hasattr(self, 'scheduler')):            # we must have a scheduler
+            raise NotImplementedError('The scan has no scheduler attribute.  Did you forget to call super().build()?')
+        self.looper.init('init_loop',                             # -- Initialize looper --
+            ncalcs=len(self.calculations),
+            measurements=self.measurements
+        )
+        self.print("return: Scan::_initialize()", -2)
+
     def run(self, resume=False):
         """Helper method
         Initializes the scan, executes the scan, yields to higher priority experiments,
@@ -252,47 +321,6 @@ class BetaScan(Scan):
             self.print('Scan::run()', -2)
             if self.enable_timing:
                 self._timeit('run', False)
-
-    def _initialize(self, resume):
-        """Initialize the scan"""
-        self.print("Scan::_initialize(resume={})".format(resume), level=2)
-        self._paused = False                            # initialize _paused state variable
-        self.measurement = ""                           # initialize measurement state variable
-        if not resume:
-            self.looper.init('load_points')             # -- Load points
-        self.prepare_scan()                             # Callback: user callback (self.npoints must be available)
-        self.lab_prepare_scan()                         # Callback: user callback (self.npoints must be available)
-        location ='top' if not resume else 'both'       # -- Report
-        self.report(location=location)
-        if not resume:                                  # -- Attach models, init storage, reset model states
-            self._private_map_arguments()               # map gui arguments to class variables
-            self._attach_models()                       # attach models to scan
-            if not self.measurements:
-                self.measurements = ['main']            # there must be at least one measurement
-            self.looper.init('offset_points', self._x_offset)   # -- Offset points: self._x_offset must be set
-            self._attach_to_models()                    # -- Attach scan to models
-            # self._init_simulations()                  # initialize simulations (needs self._x_offset/self.frequency_center)
-            self.report(location='bottom')              # display scan info
-            self.reset_model_states()                   # reset model states
-        self.before_scan()                              # Callback: user callback
-                                                        # -- Initialize or write datasets
-        if not self.fit_only:                           # datasets are only initialized/written when a scan can run
-            for entry in self._model_registry:          # for every registered model...
-                if not resume:                          # datasets are only initialized when the scan begins
-                    if entry['init_datasets']:          # initialize datasets if requested by the user
-                        self.looper.init('init_datasets', entry)
-                        entry['datasets_initialized'] = True
-                if resume:                              # datasets are only written when resuming a scan
-                    self.looper.init('write_datasets', entry)         # restore data when resuming a scan by writing the model's
-                    entry['datasets_written'] = True
-                                                        # local variables to it's datasets
-        if not (hasattr(self, 'scheduler')):            # we must have a scheduler
-            raise NotImplementedError('The scan has no scheduler attribute.  Did you forget to call super().build()?')
-        self.looper.init('init_loop',                             # -- Initialize looper --
-            ncalcs=len(self.calculations),
-            measurements=self.measurements
-        )
-        self.print("return: Scan::_initialize()", -2)
 
     def _yield(self):
         """Interface method  (optional)
@@ -477,7 +505,7 @@ class BetaScan(Scan):
 
                         # params not saved warning occurred
                         if save and not main_fit_saved:
-                            self.logger.warning("Fitted params not saved.")
+                            self.logger.warning("Main fit param was not saved.")
 
                         # callback
                         self._main_fit_saved = main_fit_saved

@@ -51,6 +51,7 @@ class Loop1D(HasEnvironment):
             self.scan.print('Loop1D.init.load_points')
             # scan points
             points = get_points(self.scan)
+            self.scan.print('get_points = {}'.format(points))
             self.itr.load_points(points)
             # warmup points
             load_warmup_points(self)
@@ -62,8 +63,8 @@ class Loop1D(HasEnvironment):
                 else:
                     self.scan.logger.info('START {} / {} repeats'.format(self.scan._name, self.scan.nrepeats))
         def offset_points(self, x_offset):
+            self.scan.print('Loop1D.init.offset_points(x_offset={})'.format(x_offset))
             if x_offset is not None:
-                self.scan.print('Loop1D.init.offset_points(x_offset=)'.format(x_offset))
                 self.itr.offset_points(x_offset)
         def init_datasets(self, entry):
             import pprint
@@ -106,7 +107,7 @@ class Loop1D(HasEnvironment):
             self.scan.print('Loop1D.init.write_datasets(model={})'.format(model.__class__.__name__))
             model.write_datasets(dimension=0)
         def init_loop(self, ncalcs, measurements):
-            self.scan.print('Loop1D.init.init(ncalcs={}, measurements={})'.format(ncalcs, measurements))
+            self.scan.print('Loop1D.init_loop(ncalcs={}, measurements={})'.format(ncalcs, measurements))
             self.set_kernel_invariants()
             self.measurements = measurements
             self.nmeasurements = len(measurements)
@@ -224,7 +225,6 @@ class Loop1D(HasEnvironment):
         # for validation methods
         self.scan.min_point = min(x_data)
         self.scan.max_point = max(x_data)
-
         return model.fit_data(
             x_data=x_data,
             y_data=y_data,

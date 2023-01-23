@@ -98,24 +98,25 @@ class FitModel(Model):
                         raise BadFit(self.validation_errors[f])
         return True
 
-    def simulate(self, x, noise_level=0, simulation_args = None):
+    def simulate(self, x, simulation_args = None):
         if simulation_args is None:
             try:
                 simulation_args = self.simulation_args
             except(NotImplementedError):
                 simulation_args = self.fit_function.simulation_args()
-        value = self.fit_function.value(x, **simulation_args)
+        lam = self.fit_function.value(x, **simulation_args)
 
-        # convert expectation value to quantized value
-        f = floor(value)
-        c = ceil(value)
-        if np.random.random() > (value - f):
-            value = f
-        else:
-            value = c
-
-        noise = (2.0 * np.random.random() - 1.0) * noise_level
-        return int(abs(value + noise))
+        return int(np.random.poisson(lam, 1)[0])
+        # # convert expectation value to quantized value
+        # f = floor(value)
+        # c = ceil(value)
+        # if np.random.random() > (value - f):
+        #     value = f
+        # else:
+        #     value = c
+        #
+        # noise = (2.0 * np.random.random() - 1.0) * noise_level
+        # return int(abs(value + noise))
 
     @staticmethod
     def reg_err(y, fitline):

@@ -558,27 +558,25 @@ class Scan(HasEnvironment):
 
     # private: for scan.py
     def __load_x_offset(self):
-        self._x_offset = self.__get_x_offset()
+        # offset has been manually set by the user
+        if self._x_offset is not None:
+            self._x_offset = self.__get_x_offset()
         if self._x_offset:
             self._logger.debug("set _x_offset to {0}".format(self._x_offset))
 
     # private: for scan.py
     def __get_x_offset(self):
-        # offset has been manually set by the user:
-        if self._x_offset is not None:
-            return self._x_offset
-        # automatic determination of x_offset:
-        else:
-            if self.enable_auto_tracking:
-                for entry in self._model_registry:
-                    model = entry['model']
-                    if 'auto_track' in entry and entry['auto_track']:
-                        # use the last performed fit
-                        if entry['auto_track'] == 'fitresults' and hasattr(model, 'fit'):
-                            return model.fit.fitresults[model.main_fit]
-                        # use dataset value
-                        elif entry['auto_track'] == 'fit' or entry['auto_track'] is True:
-                            return model.get_main_fit(archive=False)
+        # automatic determination of x_offset
+        if self.enable_auto_tracking:
+            for entry in self._model_registry:
+                model = entry['model']
+                if 'auto_track' in entry and entry['auto_track']:
+                    # use the last performed fit
+                    if entry['auto_track'] == 'fitresults' and hasattr(model, 'fit'):
+                        return model.fit.fitresults[model.main_fit]
+                    # use dataset value
+                    elif entry['auto_track'] == 'fit' or entry['auto_track'] is True:
+                        return model.get_main_fit(archive=False)
 
         # default to no offset if none of the above cases apply
         return 0.0
