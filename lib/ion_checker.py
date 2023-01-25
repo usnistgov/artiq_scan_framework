@@ -1,6 +1,5 @@
 from artiq.experiment import *
-from ..exceptions import *
-from ..snippets import *
+from ..language import *
 
 
 @portable
