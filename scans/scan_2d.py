@@ -13,9 +13,9 @@ class Scan2D(Scan):
         #         method call:
         #         self.scan_arguments(Loop1D, init_only=True)  # must be called first
         #         self.looper = Loop1D(self, scan=self)        # must be called second
-        self.print('Scan2D.build()', 2)
+        #self.print('Scan2D.build()', 2)
         self.scan_arguments(Loop2D, init_only=True)
         self.looper = Loop2D(self, scan=self)
         super().build(**kwargs)
-        self.print('Scan2D.build()', -2)
+        #self.print('Scan2D.build()', -2)
 

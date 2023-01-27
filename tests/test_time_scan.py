@@ -14,10 +14,10 @@ class TestTimeFreqScan(Scan1D, TimeScan, EnvExperiment):
 
 
     def build(self, **kwargs):
-        self.print('TestTimeScan::build()', 2)
+        #self.print('TestTimeScan::build()', 2)
         super().build(**kwargs)
 
-        self.print('creating scan arguments')
+        #self.print('creating scan arguments')
         self.scan_arguments(
             times={'start': 0*us, 'stop': 40*us, 'npoints': 50, 'ndecimals': 0, 'global_step': 1*us},
             nrepeats={'default': 100}
@@ -29,7 +29,7 @@ class TestTimeFreqScan(Scan1D, TimeScan, EnvExperiment):
         self.setattr_argument('enable_reporting', BooleanValue(default=True), show=True)
         self.setattr_argument('enable_fitting', BooleanValue(default=True), show=True)
         self.setattr_argument('enable_timing', BooleanValue(default=True), show=True)
-        self.print('TestTimeScan::build()', -2)
+        #self.print('TestTimeScan::build()', -2)
         self.last_i = -1
 
     def prepare(self):
@@ -38,7 +38,7 @@ class TestTimeFreqScan(Scan1D, TimeScan, EnvExperiment):
 
     def simulate(self, time, i) -> TInt32:
         if i != self.last_i:
-            self.print('measure(time={:0.1f} us)'.format(time/us))
+            #self.print('measure(time={:0.1f} us)'.format(time/us))
             self.last_i = i
         lam = 20*np.sin(np.pi*time/(20*us))**2
         return int(np.random.poisson(lam, 1)[0])

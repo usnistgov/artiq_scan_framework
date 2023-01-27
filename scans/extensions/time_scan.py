@@ -7,10 +7,10 @@ class TimeScan(Scan):
     """Scan class for scanning over time values."""
 
     def build(self, **kwargs):
-        self.print('TimeScan.build()', 2)
+        #self.print('TimeScan.build()', 2)
         self.scan_arguments(TimeScan, init_only=True)
         super().build(**kwargs)
-        self.print('TimeScan.build()', -2)
+        #self.print('TimeScan.build()', -2)
 
     @staticmethod
     def argdef():

@@ -6,14 +6,14 @@ from ..iter import Iter
 class IterCont(Iter):
 
     def build(self, looper):
-        looper.scan.print('IterCont.build(looper={})'.format(looper.__class__.__name__), 2)
+        #looper.scan.print('IterCont.build(looper={})'.format(looper.__class__.__name__), 2)
         self.looper = looper
         self.points = np.array([i for i in range(self.looper.scan.continuous_points)], dtype=np.float64)  # 1D array of scan points (these are saved to the stats.points dataset)
         # indexes
         self.i = np.int32(0)  # unbounded index
         self.i_point = np.int32(0)  # unbounded index MOD self.nds -- index into stats datasets where values at the current iteration are stored
         self.i_plot = np.int32(0)  # unbounded index MOD self.nplot -- index into plot datasets where values at the current iteration are stored
-        self.looper.scan.print('IterCont.build()', -2)
+        #self.looper.scan.print('IterCont.build()', -2)
 
     def __str__(self):
         return "".join([

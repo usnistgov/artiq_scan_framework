@@ -23,17 +23,16 @@ class AutoTrack:
 
     def get(self, model, use_fit_result, _type):
         def get_mapping(mapping):
-            print(mapping)
             if type(mapping) != list:
                 mapping = [mapping, mapping]
             return mapping
-        print('get', model, use_fit_result, _type)
+        #print('get', model, use_fit_result, _type)
 
         # would like to migrate to this method, or something similar.  more explicit
         # model defines the dataset name for the fit param explicitly
         type_attrib = '{}_fit'.format(_type)
         if hasattr(model, type_attrib):
-            print('has attr', type_attrib)
+            #print('has attr', type_attrib)
             param_name, ds_name = get_mapping(getattr(model, type_attrib))
             if use_fit_result:
                 if hasattr(model, 'fit'):
@@ -47,7 +46,7 @@ class AutoTrack:
         # depending on the value of it's 'type' attribute
         elif hasattr(model, 'type'):
             restore = model.type
-            model.type = type
+            model.type = _type
             model.bind()
             param_value = model.get_main_fit(archive=False)
             model.type = restore
@@ -55,19 +54,19 @@ class AutoTrack:
         else:
             raise Exception('Cannot get fitted param.  Model has not {} attribute or type attribute'.format(type_attrib))
         return param_value
-
-    def get_main_fit(self, use_fit_result=False, i=None, archive=False) -> TFloat:
-        """Helper method. Fetches the value of the main fit from its dataset or from the fitresults.
-
-        :param use_fit_result: If True, the fit param value in the models fit object is returned. Otherwise
-                               the fir param value will be fetched from the datasets.
-        value.
-        """
-        if use_fit_result:
-            if self.main_fit_param is None:
-                raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
-            return self.fit.fitresults[self.main_fit_param]
-        else:
-            if self.main_fit_ds is None:
-                raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
-            return self.get(self.main_fit_ds, archive=archive)
+    #
+    # def get_main_fit(self, use_fit_result=False, i=None, archive=False) -> TFloat:
+    #     """Helper method. Fetches the value of the main fit from its dataset or from the fitresults.
+    #
+    #     :param use_fit_result: If True, the fit param value in the models fit object is returned. Otherwise
+    #                            the fir param value will be fetched from the datasets.
+    #     value.
+    #     """
+    #     if use_fit_result:
+    #         if self.main_fit_param is None:
+    #             raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
+    #         return self.fit.fitresults[self.main_fit_param]
+    #     else:
+    #         if self.main_fit_ds is None:
+    #             raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
+    #         return self.get(self.main_fit_ds, archive=archive)

@@ -55,14 +55,14 @@ class TestTimeFreqScan(Scan1D, TimeFreqScan, EnvExperiment):
 
 
     def build(self, **kwargs):
-        self.print('TestTimeFreqScan::build()', 2)
+        #self.print('TestTimeFreqScan::build()', 2)
         super().build(**kwargs)
         #
         # self.enable_auto_tracking = False
         # self.frequency_center = 0
         # self.pulse_time = 0
 
-        self.print('creating scan arguments')
+        #self.print('creating scan arguments')
         self.scan_arguments(
             fit_options={'default': 'Fit and Save'},
             nrepeats={'default': 50},
@@ -86,7 +86,7 @@ class TestTimeFreqScan(Scan1D, TimeFreqScan, EnvExperiment):
         #     fit_options={'default': 'Fit and Save'},
         #     scan=False,
         # )
-        self.print('TestTimeFreqScan::build()', -2)
+        #self.print('TestTimeFreqScan::build()', -2)
 
     def prepare(self):
         if self.manually_offset_x:

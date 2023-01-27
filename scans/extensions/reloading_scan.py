@@ -20,9 +20,9 @@ class ReloadingScan(Scan):
     loading_repeats = 100
 
     def build(self):
-        self.print('ReloadingScan::build()', 2)
+        #self.print('ReloadingScan::build()', 2)
         super().build()
-        self.print('ReloadingScan::build()', -2)
+        #self.print('ReloadingScan::build()', -2)
 
 
     # ====== Scan Interface Methods ======

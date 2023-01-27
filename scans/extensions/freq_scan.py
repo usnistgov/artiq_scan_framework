@@ -8,10 +8,10 @@ class FreqScan(Scan):
     _freq_center_manual = None
 
     def build(self, **kwargs):
-        self.print('FreqScan.build()', 2)
+        #self.print('FreqScan.build()', 2)
         self.scan_arguments(FreqScan, init_only=True)
         super().build(**kwargs)
-        self.print('FreqScan.build()', -2)
+        #self.print('FreqScan.build()', -2)
 
     @staticmethod
     def argdef():

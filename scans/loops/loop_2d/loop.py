@@ -46,7 +46,7 @@ class Loop2D(Loop):
         # order of execution:
         # 1. load_points, 2. report, 3. offset_points, 4. init_datasets or write_datasets, 5. init_loop
         def load_points(self):
-            self.scan.print('Loop2D.init.load_points()', 2)
+            #self.scan.print('Loop2D.init.load_points()', 2)
             self.scan._i_pass = np.int32(0)
             self.scan._i_point = np.array([0, 0], dtype=np.int32)
 
@@ -82,7 +82,7 @@ class Loop2D(Loop):
                 warmup_points = _temp
             self.warmup_points = warmup_points
             print("self.warmup_points={}".format(self.warmup_points))
-            self.scan.print('Loop2D.init.load_points()', 2)
+            #self.scan.print('Loop2D.init.load_points()', 2)
         def report(self, location='both'):
             #self.scan.print('Loop2D.report(location={})'.format(location))
             if location == 'top' or location == 'both':
@@ -94,7 +94,7 @@ class Loop2D(Loop):
             #self.scan.print('Loop2D.offset_points(x_offset={})'.format(x_offset))
             self.itr.offset_points(x_offset)
         def init_datasets(self, entry):
-            self.scan.print('Loop2D.init.init_datasets(model={}, dimension={})'.format(entry['model'].__class__.__name__, entry['dimension']))
+            #self.scan.print('Loop2D.init.init_datasets(model={}, dimension={})'.format(entry['model'].__class__.__name__, entry['dimension']))
 
             import pprint
             pp = pprint.PrettyPrinter(indent=4)
@@ -306,9 +306,9 @@ class Loop2D(Loop):
         """Plot the value calculated from the dim1 scan"""
         # -- dim0
         for entry in get_registered_models(self.scan, dimension=0):
-            self.scan.print('{}::mutate_plot(i_point={}, x={}, y={}, error={}, dim={})'.format(
-                entry['model'].__class__.__name__, i_point[0], x, y, error, 0
-            ))
+            #self.scan.print('{}::mutate_plot(i_point={}, x={}, y={}, error={}, dim={})'.format(
+            #    entry['model'].__class__.__name__, i_point[0], x, y, error, 0
+            #))
             entry['model'].mutate_plot(i_point=i_point, x=x, y=y, error=error, dim=0)
 
     def fit(self, entry, save, use_mirror, dimension, i):

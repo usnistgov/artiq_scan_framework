@@ -18,7 +18,7 @@ class LoopCont(Loop):
         self.dtype = np.int32  # data type of the values returned by measure() and stored in self.data.data
         self.cont_logger = None
         self.itr = IterCont(self, looper=self)
-        self.scan.print('Loop1D.build()', -2)
+        #self.scan.print('Loop1D.build()', -2)
 
     def set_kernel_invariants(self):
         self.scan.kernel_invariants.add('nrepeats')
@@ -85,7 +85,7 @@ class LoopCont(Loop):
         """
         # 1.
         def load_points(self):
-            self.scan.print('Loop1D.init.load_points')
+            #self.scan.print('Loop1D.init.load_points')
             # warmup points
             load_warmup_points(self)
         # 2.
@@ -100,27 +100,27 @@ class LoopCont(Loop):
         def init_datasets(self, entry):
             import pprint
             pp = pprint.PrettyPrinter(indent=4)
-            self.scan.print('LoopCont.init.init_datasets(model={}, dimension={})'.format(entry['model'].__class__.__name__, entry['dimension']))
+            #self.scan.print('LoopCont.init.init_datasets(model={}, dimension={})'.format(entry['model'].__class__.__name__, entry['dimension']))
             # initialize the model's datasets
-            self.scan.print('{}::init_datasets('.format(entry['model'].__class__.__name__))
-            self.scan.print('   shapes={}'.format(
-                pp.pformat({
-                    'itr': self.scan.continuous_points,
-                    'plot': self.scan.continuous_plot,
-                    'pass_means': (1, self.scan.continuous_points),
-                    'stats.counts': (self.scan.continuous_points, self.scan.nrepeats),
-                    'stats.hist': (self.scan.continuous_points, self.scan.nbins)
-                })
-            ))
-            self.scan.print('   points={}'.format(
-                self.itr.points,
-            ))
-            self.scan.print('   dtype={}'.format(
-                self.dtype,
-            ))
-            self.scan.print('   dimension={})'.format(
-                entry['dimension']
-            ))
+            #self.scan.print('{}::init_datasets('.format(entry['model'].__class__.__name__))
+            #self.scan.print('   shapes={}'.format(
+            #     pp.pformat({
+            #         'itr': self.scan.continuous_points,
+            #         'plot': self.scan.continuous_plot,
+            #         'pass_means': (1, self.scan.continuous_points),
+            #         'stats.counts': (self.scan.continuous_points, self.scan.nrepeats),
+            #         'stats.hist': (self.scan.continuous_points, self.scan.nbins)
+            #     })
+            # ))
+            #self.scan.print('   points={}'.format(
+            #    self.itr.points,
+            #))
+            #self.scan.print('   dtype={}'.format(
+            #    self.dtype,
+            #))
+            #self.scan.print('   dimension={})'.format(
+            #    entry['dimension']
+            #))
             entry['model'].init_datasets(
                 shapes={
                     'itr': self.scan.continuous_points,
@@ -135,7 +135,7 @@ class LoopCont(Loop):
             )
         def write_datasets(self, entry):
             model = entry['model']
-            self.scan.print('Loop1D.init.write_datasets(model={})'.format(model.__class__.__name__))
+            #self.scan.print('Loop1D.init.write_datasets(model={})'.format(model.__class__.__name__))
             model.write_datasets(dimension=0)
         def init_loop(self, ncalcs, measurements):
             self.set_kernel_invariants()

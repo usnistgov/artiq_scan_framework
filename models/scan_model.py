@@ -893,7 +893,7 @@ class ScanModel(Model):
                                the fir param value will be fetched from the datasets.
         value.
         """
-        print('ScanModel::get_main_fit()')
+        #print('ScanModel::get_main_fit()')
         if use_fit_result:
             if self.main_fit_param is None:
                 raise Exception("Can't get the main fit.  The 'main_fit' attribute needs to be set in the scan model.")
@@ -906,7 +906,7 @@ class ScanModel(Model):
                 default = self.defaults_model.get(self.main_fit_ds, archive=archive)
             else:
                 default = NoDefault
-            print('main_fit_ds is', self.main_fit_ds)
+            #print('main_fit_ds is', self.main_fit_ds)
             return self.get(self.main_fit_ds, default=default, archive=archive)
 
     def set_main_fit(self, value):

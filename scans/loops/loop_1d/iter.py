@@ -23,13 +23,13 @@ class Iter1D(Iter):
 
     def load_points(self, points):
         """called by Loop1D::init to assign the scan points defined in the user's scan class to the iterator"""
-        self.looper.scan.print('call: Iter1D::load_points(points={})'.format(points), 2)
+        #self.looper.scan.print('call: Iter1D::load_points(points={})'.format(points), 2)
         self.points = np.array([p for p in points], dtype=np.float64)
         self.npoints = np.int32(len(self.points))
         self.niter = self.npoints * self.looper.scan.npasses
         self.shape = self.npoints
         self.plot_shape = self.npoints
-        self.looper.scan.print('return: Iter1D', -2)
+        #self.looper.scan.print('return: Iter1D', -2)
 
     def offset_points(self, x_offset):
         self.points += x_offset

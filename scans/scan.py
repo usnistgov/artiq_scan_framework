@@ -163,8 +163,8 @@ class Scan(HasEnvironment):
         and performs fits on completion on the scan."""
         if self.enable_timing:
             self._timeit('run', True)
-        self.print('**** Start Scan {} ****'.format(self.__class__.__name__))
-        self.print('Scan::run(resume={})'.format(resume), 2)
+        #self.print('**** Start Scan {} ****'.format(self.__class__.__name__))
+        #self.print('Scan::run(resume={})'.format(resume), 2)
 
         try:
             # start the profiler (if it's enabled)
@@ -206,7 +206,7 @@ class Scan(HasEnvironment):
         finally:
             # stop the profiler (if it's enabled)
             self._profile(stop=True)
-            self.print('Scan::run()', -2)
+            #self.print('Scan::run()', -2)
             if self.enable_timing:
                 self._timeit('run', False)
         # callback with default behavior: for child class
@@ -215,7 +215,7 @@ class Scan(HasEnvironment):
     def _initialize(self, resume):
         """Initialize the scan"""
 
-        self.print("Scan::_initialize(resume={})".format(resume), level=2)
+        #self.print("Scan::_initialize(resume={})".format(resume), level=2)
         self._paused = False  # initialize _paused state variable
         self.measurement = ""  # initialize measurement state variable
         if not resume:
@@ -258,7 +258,7 @@ class Scan(HasEnvironment):
                          ncalcs=len(self.calculations),
                          measurements=self.measurements
                          )
-        self.print("return: Scan::_initialize()", -2)
+        #self.print("return: Scan::_initialize()", -2)
 
     @staticmethod
     def argdef(kwargs):
@@ -684,7 +684,7 @@ class Scan(HasEnvironment):
             self._profile_times[event]['end'] = time.time()
             elapsed = self._profile_times[event]['end'] - self._profile_times[event]['start']
             self._profile_times[event]['elapsed'] = elapsed
-            self._logger.warning('{} took {:0.2} sec'.format(event, elapsed))
+            self._logger.warning('{} took {:0.2f} sec'.format(event, elapsed))
 
 
     @kernel
@@ -702,8 +702,8 @@ class Scan(HasEnvironment):
             # measure compilation time
             if self.enable_timing:
                 self._timeit('compile', False)
-            self.print("_run_scan_core()", 2)
-            self.print('on core device')
+            #self.print("_run_scan_core()", 2)
+            #self.print('on core device')
 
             # callback: lab_before_scan_core
             # self.print('lab_before_scan_core()', 2)
@@ -719,20 +719,20 @@ class Scan(HasEnvironment):
             # self.print('initialize_devices()', -2)
 
             # main loop
-            self.print('call loop()', 2)
+            #self.print('call loop()', 2)
             self.looper.loop(
                 resume=resume
             )
-            self.print('loop()', -2)
+            #self.print('loop()', -2)
         except Paused:
-            self.print('loop()', -2)
-            self.print('caught Paused exception')
+            #self.print('loop()', -2)
+            #self.print('caught Paused exception')
             self._paused = True
         finally:
 
-            self.print('cleanup()', 2)
+            #self.print('cleanup()', 2)
             self.cleanup()
-            self.print('cleanup()', -2)
+            #self.print('cleanup()', -2)
 
         # callback: after_scan_core
         # self.print('after_scan_core()', 2)
@@ -744,7 +744,7 @@ class Scan(HasEnvironment):
         self.lab_after_scan_core()
         # self.print('lab_after_scan_core()', -2)
 
-        self.print("return: _run_scan_core()", -2)
+        #self.print("return: _run_scan_core()", -2)
 
     # helper method: for scan.py or child class
     def _run_scan_host(self, resume=False):
@@ -758,24 +758,24 @@ class Scan(HasEnvironment):
                        started for the first time.
         """
         try:
-            self.print("_run_scan_host()", 2)
-            self.print('on host device')
+            #self.print("_run_scan_host()", 2)
+            #self.print('on host device')
 
             # for comp in self.components:
             #     comp.before_loop(resume)
 
             # main loop
-            self.print('call loop()', 2)
+            #self.print('call loop()', 2)
             self.looper.loop(
                 resume=resume
             )
-            self.print('loop()', -2)
+            #self.print('loop()', -2)
         except Paused:
-            self.print('loop()', -2)
-            self.print('caught Paused exception')
+            #self.print('loop()', -2)
+            #self.print('caught Paused exception')
             self._paused = True
 
-        self.print("return: _run_scan_host()", -2)
+        #self.print("return: _run_scan_host()", -2)
 
     # private: for scan.py
     def _calculate(self, i_point, i_pass, point, calculation, entry):
@@ -918,24 +918,25 @@ class Scan(HasEnvironment):
         """
         try:
             # self.logger.warning("Yielding to higher priority experiment.")
-            self.print('Scan::_yield()', 2)
-            self.print(self.looper.itr)
+            #self.print('Scan::_yield()', 2)
+            #self.print(self.looper.itr)
             self.core.comm.close()
             self.scheduler.pause()
 
             # resume
-            self.print('*** Resuming ***')
-            self.print(self.looper.itr)
+            #self.print('*** Resuming ***')
+            #self.print(self.looper.itr)
             self.logger.warning("Resuming")
             self.run(resume=True)
 
         except TerminationRequested:
-            self.print('*** Terminated ***')
+            #self.print('*** Terminated ***')
             self.logger.warning("Scan terminated.")
             self._terminated = True
             self.looper.terminate()
         finally:
-            self.print('Scan::_yield()', -2)
+            pass
+            #self.print('Scan::_yield()', -2)
 
     # interface: for child class (optional)
     # RPC

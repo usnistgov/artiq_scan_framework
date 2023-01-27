@@ -14,10 +14,10 @@ class TimeFreqScan(Scan):
     enable_auto_tracking = True
 
     def build(self, **kwargs):
-        self.print('TimeFreqScan.build()', 2)
+        #self.print('TimeFreqScan.build()', 2)
         self.scan_arguments(TimeFreqScan, init_only=True)
         super().build(**kwargs)
-        self.print('TimeFreqScan.build()', -2)
+        #self.print('TimeFreqScan.build()', -2)
 
     @staticmethod
     def argdef():
@@ -63,10 +63,10 @@ class TimeFreqScan(Scan):
 
     def _attach_models(self):
         auto_track = AutoTrack()
-        self.print('TimeFreqScan::_attach_models()', 2)
+        #self.print('TimeFreqScan::_attach_models()', 2)
         self.__bind_models()
-        self.print('self._x_offset={}'.format(self._x_offset))
-        self.print('self.frequency_center={}'.format(self.frequency_center))
+        #self.print('self._x_offset={}'.format(self._x_offset))
+        #self.print('self.frequency_center={}'.format(self.frequency_center))
         if not self.fit_only:
             # the frequency center is auto-loaded from the fits by this class...
             if self.enable_auto_tracking:
@@ -76,10 +76,10 @@ class TimeFreqScan(Scan):
                         if self.frequency_center is None:
                             if entry['auto_track'] == 'fitresults':
                                 self.frequency_center = auto_track.get(model, use_fit_result=True, _type='frequency')
-                                self.print('auto set frequency_center to {0} from fits'.format(self.frequency_center))
+                                #self.print('auto set frequency_center to {0} from fits'.format(self.frequency_center))
                             elif entry['auto_track'] == 'fit' or entry['auto_track'] is True:
                                 self.frequency_center = auto_track.get(model, use_fit_result=False, _type='frequency')
-                                self.print('auto set frequency_center to {0} from fits'.format(self.frequency_center))
+                                #self.print('auto set frequency_center to {0} from fits'.format(self.frequency_center))
 
                         if self.pulse_time is None:
                             if entry['auto_track'] == 'fitresults':
@@ -109,7 +109,7 @@ class TimeFreqScan(Scan):
         # this is done even when not auto-tracking in case the user has manually set frequency_center
         if self.scan == 'frequency' and self.frequency_center is not None and self._x_offset is None:
             self._x_offset = self.frequency_center
-        self.print('TimeFreqScan::_attach_models()', -2)
+        #self.print('TimeFreqScan::_attach_models()', -2)
 
     def __bind_models(self):
         # bind each registered model to the scan type (frequency or time)

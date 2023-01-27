@@ -10,12 +10,12 @@ from collections import OrderedDict
 class Loop1D(Loop):
     kernel_invariants = {'nmeasurements'}
 
-    def build(self, scan):
+    def build(self, scan, dtype=np.int32):
         #scan.print('Loop1D.build(scan={})'.format(scan.__class__.__name__), 2)
         self.scan = scan
         scan._dim = 1
         scan._i_point = np.int32(0)
-        self.dtype = np.int32  # data type of values returned by measure() and stored in self.data.data
+        self.dtype = dtype  # data type of values returned by measure() and stored in self.data.data
         #self.scan.print('Iter1D.build(looper=self)', 2)
         self.itr = Iter1D(self, looper=self)
         #self.scan.print('Iter1D.build()', -2)
@@ -49,48 +49,48 @@ class Loop1D(Loop):
         # order of execution:
         # 1. load_points, 2. report, 3. offset_points, 4. init_datasets or write_datasets, 5. init_loop
         def load_points(self):
-            self.scan.print('Loop1D.init.load_points')
+            #self.scan.print('Loop1D.init.load_points')
             # scan points
             points = get_scan_points(self.scan)
-            self.scan.print('get_points = {}'.format(points))
+            #self.scan.print('get_points = {}'.format(points))
             self.itr.load_points(points)
             # warmup points
             load_warmup_points(self)
         def report(self, location='both'):
-            self.scan.print('Loop1D.init.report(location={})'.format(location))
+            #self.scan.print('Loop1D.init.report(location={})'.format(location))
             if location == 'top' or location == 'both':
                 if self.scan.nrepeats == 1:
                     self.scan.logger.info('START {} / {} repeat'.format(self.scan._name, self.scan.nrepeats))
                 else:
                     self.scan.logger.info('START {} / {} repeats'.format(self.scan._name, self.scan.nrepeats))
         def offset_points(self, x_offset):
-            self.scan.print('Loop1D.init.offset_points(x_offset={})'.format(x_offset))
+            #self.scan.print('Loop1D.init.offset_points(x_offset={})'.format(x_offset))
             if x_offset is not None:
                 self.itr.offset_points(x_offset)
         def init_datasets(self, entry):
             import pprint
             pp = pprint.PrettyPrinter(indent=4)
-            self.scan.print('Loop1D.init.init_datasets(model={}, dimension={})'.format(entry['model'].__class__.__name__, entry['dimension']))
+            #self.scan.print('Loop1D.init.init_datasets(model={}, dimension={})'.format(entry['model'].__class__.__name__, entry['dimension']))
             # initialize the model's datasets
-            self.scan.print('{}::init_datasets('.format(entry['model'].__class__.__name__))
-            self.scan.print('   shapes={}'.format(
-                pp.pformat({
-                    'itr': self.itr.shape,
-                    'plot': self.itr.shape,
-                    'pass_means': (self.scan.npasses, self.itr.shape),
-                    'stats.counts': (self.itr.shape, self.scan.npasses * self.scan.nrepeats),
-                    'stats.hist': (self.itr.shape, self.scan.nbins)
-                })
-            ))
-            self.scan.print('   points={}'.format(
-                self.itr.points,
-            ))
-            self.scan.print('   dtype={}'.format(
-                self.dtype,
-            ))
-            self.scan.print('   dimension={})'.format(
-                entry['dimension']
-            ))
+            #self.scan.print('{}::init_datasets('.format(entry['model'].__class__.__name__))
+            #self.scan.print('   shapes={}'.format(
+            #     pp.pformat({
+            #         'itr': self.itr.shape,
+            #         'plot': self.itr.shape,
+            #         'pass_means': (self.scan.npasses, self.itr.shape),
+            #         'stats.counts': (self.itr.shape, self.scan.npasses * self.scan.nrepeats),
+            #         'stats.hist': (self.itr.shape, self.scan.nbins)
+            #     })
+            # ))
+            #self.scan.print('   points={}'.format(
+            #     self.itr.points,
+            # ))
+            #self.scan.print('   dtype={}'.format(
+            #     self.dtype,
+            # ))
+            #self.scan.print('   dimension={})'.format(
+            #     entry['dimension']
+            # ))
             entry['model'].init_datasets(
                 shapes={
                     'itr': self.itr.shape,
@@ -105,10 +105,10 @@ class Loop1D(Loop):
             )
         def write_datasets(self, entry):
             model = entry['model']
-            self.scan.print('Loop1D.init.write_datasets(model={})'.format(model.__class__.__name__))
+            #self.scan.print('Loop1D.init.write_datasets(model={})'.format(model.__class__.__name__))
             model.write_datasets(dimension=0)
         def init_loop(self, ncalcs, measurements):
-            self.scan.print('Loop1D.init_loop(ncalcs={}, measurements={})'.format(ncalcs, measurements))
+            #self.scan.print('Loop1D.init_loop(ncalcs={}, measurements={})'.format(ncalcs, measurements))
             self.set_kernel_invariants()
             self.measurements = measurements
             self.nmeasurements = len(measurements)
