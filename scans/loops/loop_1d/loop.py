@@ -19,6 +19,7 @@ class Loop1D(Loop):
         #self.scan.print('Iter1D.build(looper=self)', 2)
         self.itr = Iter1D(self, looper=self)
         #self.scan.print('Iter1D.build()', -2)
+        self.measurement = ""
 
     def set_kernel_invariants(self):
         self.scan.kernel_invariants.add('nrepeats')
@@ -153,15 +154,16 @@ class Loop1D(Loop):
             self.scan.set_scan_point(i_point, meas_point)                       # user callback
             for i_repeat in range(nrepeats):                                    # loop over each repeat
                 for i_meas in range(nmeasurements):                             # loop over each measurement
-                    meas = self.measurements[i_meas]                            # get the name of the current measurement so that it can be passed to the user callbacks
+                    self.scan.measurement = self.measurements[i_meas]                            # get the name of the current measurement so that it can be passed to the user callbacks
+
                     # throws AttributeError: 'NoneType' object has no attribute 'begin' commenting out for now
-                    #self.scan.measurement = meas                               # legacy
-                    self.scan.before_measure(meas_point, meas)                  # user callback
-                    self.scan.lab_before_measure(meas_point, meas)              # user callback
+                    #self.scan.measurement = meas                                # legacy
+                    self.scan.before_measure(meas_point, self.scan.measurement)                  # user callback
+                    self.scan.lab_before_measure(meas_point, self.scan.measurement)              # user callback
                     val = self.scan.do_measure(meas_point)                      # call the user's measure() method
                     self.data.store([i_meas, i_repeat], val)                    # store the value returned by measure() into the data store object
-                    self.scan.after_measure(meas_point, meas)                   # user callback
-                    self.scan.lab_after_measure(meas_point, meas)               # user callback
+                    self.scan.after_measure(meas_point, self.scan.measurement)                   # user callback
+                    self.scan.lab_after_measure(meas_point, self.scan.measurement)               # user callback
             mean = self.data.mean(nmeasurements * nrepeats)                     # get the mean value returned by measure() over all repeats & all measurements
             if self.scan.enable_count_monitor:
                 self.set_counts(mean)                                          # set the mean value to the count monitor dataset

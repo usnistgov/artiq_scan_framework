@@ -18,6 +18,7 @@ class LoopCont(Loop):
         self.dtype = np.int32  # data type of the values returned by measure() and stored in self.data.data
         self.cont_logger = None
         self.itr = IterCont(self, looper=self)
+        self.measurement = ""
         #self.scan.print('Loop1D.build()', -2)
 
     def set_kernel_invariants(self):
@@ -187,14 +188,14 @@ class LoopCont(Loop):
             self.scan.set_scan_point(i_point, meas_point)                       # user callback
             for i_repeat in range(nrepeats):                                    # loop over each repeat
                 for i_meas in range(nmeasurements):                             # loop over each measurement
-                    meas = self.measurements[i_meas]                            # get the name of the current measurement so that it can be passed to the user callbacks
+                    self.measurement = self.measurements[i_meas]                            # get the name of the current measurement so that it can be passed to the user callbacks
                     #self.scan.measurement = meas                               # legacy
-                    self.scan.before_measure(meas_point, meas)                  # user callback
-                    self.scan.lab_before_measure(meas_point, meas)              # user callback
+                    self.scan.before_measure(meas_point, self.measurement)                  # user callback
+                    self.scan.lab_before_measure(meas_point, self.measurement)              # user callback
                     val = self.scan.measure(meas_point)                         # call measure
                     self.data.store([i_meas, i_repeat], val)                    # store value
-                    self.scan.after_measure(meas_point, meas)                   # user callback
-                    self.scan.lab_after_measure(meas_point, meas)               # user callback
+                    self.scan.after_measure(meas_point, self.measurement)                   # user callback
+                    self.scan.lab_after_measure(meas_point, self.measurement)               # user callback
             mean = self.data.mean(nmeasurements * nrepeats)                     # get the mean value returned by measure() over all repeats & all measurements
             if self.scan.enable_count_monitor:
                 self.set_counts(mean)                                     # RPC: set the mean value to the count monitor dataset

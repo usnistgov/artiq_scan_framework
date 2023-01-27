@@ -146,9 +146,6 @@ def get_warmup_points(scan):
 def load_warmup_points(obj):
     warmup_points = get_warmup_points(obj.scan)
     warmup_points = [p for p in warmup_points]
-    nwarmup_points = np.int32(len(warmup_points))
-    if not nwarmup_points:
-        warmup_points = [0]
     warmup_points = np.array(warmup_points, dtype=np.float64)
     obj.warmup_points = warmup_points
 

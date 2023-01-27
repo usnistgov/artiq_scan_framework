@@ -16,6 +16,7 @@ class Loop2D(Loop):
         scan._i_point = np.array([0, 0], dtype=np.int32)
         self.dtype = np.int32
         self.itr = Iter2D(self, looper=self)
+        self.measurement = ""
 
     def set_kernel_invariants(self):
         self.scan.kernel_invariants.add('nrepeats')
@@ -186,13 +187,13 @@ class Loop2D(Loop):
             self.data.zero_val()
             for i_repeat in range(self.scan.nrepeats):
                 for i_meas in range(self.nmeasurements):
-                    meas = self.measurements[i_meas]
-                    self.scan.before_measure(meas_point, meas)  # user callback
-                    self.scan.lab_before_measure(meas_point, meas)  # user callback
+                    self.scan.measurement = self.measurements[i_meas]
+                    self.scan.before_measure(meas_point, self.scan.measurement)  # user callback
+                    self.scan.lab_before_measure(meas_point, self.scan.measurement)  # user callback
                     count = self.scan.do_measure(meas_point)  # call measure
                     self.data.store([i_meas, i_repeat], count)  # store value
-                    self.scan.after_measure(meas_point, meas)  # user callback
-                    self.scan.lab_after_measure(meas_point, meas)  # user callback
+                    self.scan.after_measure(meas_point, self.scan.measurement)  # user callback
+                    self.scan.lab_after_measure(meas_point, self.scan.measurement)  # user callback
             mean = self.data.mean(self.nmeasurements * self.scan.nrepeats)  # mean value over repeats & meas
             if self.scan.enable_mutate:
                 self.mutate_datasets(i_point,  # i_point
