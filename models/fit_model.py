@@ -2,14 +2,7 @@ from .model import *
 from ..analysis.curvefits import *
 import numpy as np
 from math import *
-
-
-class BadFit(Exception):
-    pass
-
-
-class CantFit(Exception):
-    pass
+from ..language.exceptions import *
 
 
 class FitModel(Model):

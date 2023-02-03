@@ -7,6 +7,7 @@ import scipy.stats as stats
 from math import *
 import logging
 import copy
+from ..language.exceptions import *
 
 
 class ScanModel(Model):
@@ -234,7 +235,7 @@ class ScanModel(Model):
     _fit_saved = None        #: Set to True by the Scan class after the main fit has been broadcast, saved, and persisted to the datasets.
 
     type = None              #: Set by the TimeFreqScan class to either 'time' or 'frequency' to indiciate to the model if it will be processing data from a time scan or from a frequency scan.
-
+    state_attribs = []
 
     def report(self):
         """Generate a report string that displays the values of the stat datasets."""
@@ -344,7 +345,7 @@ class ScanModel(Model):
     def init_datasets(self, shapes, points, dtype, dimension=0):
         """Initializes all datasets pertaining to scans.  This method is called by the scan during the initialization
         stage."""
-        self.set('class_name', self._scan.__class__.__name__, which='mirror')
+
         self.shape = shapes['itr']
         self.plot_shape = shapes['plot']
         # allow below to work on either 1d or 2d scans
@@ -359,8 +360,21 @@ class ScanModel(Model):
             raise NotImplementedError('The scan has no scheduler attribute.  Did you forget to call super().build()?')
         self.set('rid', self._scan.scheduler.rid)
 
+        # save info about currently running scans to current_scan dataset (used in scan state applet)
+        self.set('class_name', self._scan.__class__.__name__, which='mirror')
+        self.set('state.pass', np.nan, which='mirror', broadcast=True, save=True, persist=True)
+        self.set('state.npasses', self._scan.npasses, which='mirror', broadcast=True, save=True, persist=True)
+        self.set('state.nrepeats', self._scan.nrepeats, which='mirror', broadcast=True, save=True, persist=True)
+        self.set('state.attribs', "-".join(self.state_attribs + ['pass', 'npasses', 'nrepeats', 'class_name']), which='mirror', broadcast=True, save=True, persist=True)
+        for a in self.state_attribs:
+            if hasattr(self, a):
+                self.set('state.{}'.format(a), getattr(self, a), which='mirror', broadcast=True, save=True, persist=True)
+            elif hasattr(self._scan, a):
+                self.set('state.{}'.format(a), getattr(self._scan, a), which='mirror', broadcast=True, save=True, persist=True)
+
         # don't draw plots while initializing
         self.set('plots.trigger', 0)
+
 
         # initialize scan points
         self.set('stats.points', points)
@@ -479,7 +493,8 @@ class ScanModel(Model):
         self.write('plots.y', varname='y')
         self.write('plots.fitline', varname='fitline')
         self.write('plots.fitline_fine', varname='fitline_fine')
-        self.write('plots.fitline_fine_nn', varname='fitline_fine_nn')
+        if hasattr(self, 'fitline_fine_nn'):
+            self.write('plots.fitline_fine_nn', varname='fitline_fine_nn')
         self.write('plots.x_fine', varname='x_fine')
         self.set('plots.plot_title', self.plot_title)
         self.set('plots.y_label', self.y_label)
@@ -495,7 +510,8 @@ class ScanModel(Model):
         self.write('plots.dim1.y', varname='dim1_y')
         self.write('plots.dim1.fitline', varname='dim1_fitline')
         self.write('plots.dim1.fitline_fine', varname='dim1_fitline_fine')
-        self.write('plots.dim1.fitline_fine_nn', varname='dim1_fitline_fine_nn')
+        if hasattr(self, 'dim1_fitline_fine_nn'):
+            self.write('plots.dim1.fitline_fine_nn', varname='dim1_fitline_fine_nn')
         self.write('plots.dim1.x_fine', varname='dim1_x_fine')
         self.set('plots.dim1.plot_title', self.plot_title)
         self.set('plots.dim1.y_label', self.y_label)
@@ -514,7 +530,8 @@ class ScanModel(Model):
     def set_fitline(self, fit, which='both'):
         self.set('plots.fitline', fit.fitline, which=which)
         self.set('plots.fitline_fine', fit.fitline_fine, which=which)
-        self.set('plots.fitline_fine_nn', fit.fitline_fine_nn, which=which)
+        if hasattr(fit, 'fitline_fine_nn'):
+            self.set('plots.fitline_fine_nn', fit.fitline_fine_nn, which=which)
         self.set('plots.x_fine', fit.x_fine, which=which)
 
     def set_sub_plots(self, x, y, which='both', fit=None):
@@ -523,7 +540,8 @@ class ScanModel(Model):
         if fit is not None:
             self.set('plots.dim1.fitline', fit.fitline, which=which)
             self.set('plots.dim1.fitline_fine', fit.fitline_fine, which=which)
-            self.set('plots.dim1.fitline_fine_nn', fit.fitline_fine_nn, which=which)
+            if hasattr(fit, 'fitline_fine_nn'):
+                self.set('plots.dim1.fitline_fine_nn', fit.fitline_fine_nn, which=which)
             self.set('plots.dim1.x_fine', fit.x_fine, which=which)
 
     def write_datasets(self, dimension):

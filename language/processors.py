@@ -1,5 +1,6 @@
 from artiq.language import NumberValue
 
+
 class FitGuess(NumberValue):
     def __init__(self, fit_param=None, param_index=None, use_default=True, use=True, i_result=None, *args, **kwargs):
         self.i_result = i_result
