@@ -34,7 +34,7 @@ class CoreScanRunner(HasEnvironment):
         # call prepare
         self.scan.prepare()
 
-        for key, val in addtl.items:
+        for key, val in addtl.items():
             if key == 'TimeFreqScan':
                 self._initialize_time_freq_scan(val['_type'])
 
@@ -105,7 +105,6 @@ class CoreScanRunner(HasEnvironment):
         """Executes one run of the scan on the core and fits the data after the run is complete"""
 
         # run the scan
-        self.logger.debug('calibration: running core scan')
         self.scan._run_scan_core()
         if self.scan._paused:
             self.pause()
@@ -115,8 +114,6 @@ class CoreScanRunner(HasEnvironment):
 
             self.scan.after_scan()
 
-            # perform fit on host, this is an RPC call
-            self.logger.debug('calibration: fitting')
             self.scan._analyzed = False
             self.scan._analyze()
 
