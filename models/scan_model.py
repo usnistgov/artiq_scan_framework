@@ -1115,7 +1115,7 @@ class ScanModel(Model):
         self.fit_model.set('fit_performed', fit_performed)
         self.fit_model.set('fit_valid', self.fit_valid)
         self.fit_model.set('fit_saved', self._fit_saved)
-        self.fit_model.set('fit_errormsg', errormsg)
+        self.fit_model.set('fit_errormsg', str(errormsg))
         #self._scan.print('return: ScanModel::fit_data()', -2)
         return fit_performed, self.fit_valid, saved, errormsg
 
