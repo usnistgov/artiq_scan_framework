@@ -5,9 +5,8 @@ import time
 import cProfile, pstats
 from ..language import *
 from collections import OrderedDict
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
 from ..components.fit_arguments import FitArguments
+import traceback
 
 
 # allows @portable methods that use delay_mu to compile
@@ -153,7 +152,7 @@ class Scan(HasEnvironment):
         self.__dict__.update(kwargs)
         self.setattr_device('scheduler')
         self.setattr_device("core")
-        super().build(**kwargs)
+        super().build()
 
 
     # helper: for child class (optional)
@@ -163,8 +162,6 @@ class Scan(HasEnvironment):
         and performs fits on completion on the scan."""
         if self.enable_timing:
             self._timeit('run', True)
-        #self.print('**** Start Scan {} ****'.format(self.__class__.__name__))
-        #self.print('Scan::run(resume={})'.format(resume), 2)
 
         try:
             # start the profiler (if it's enabled)
@@ -202,11 +199,12 @@ class Scan(HasEnvironment):
 
             # callback
             self.lab_after_scan()
-
+        except Exception as e:
+            self.logger.error("An error occured during the run() method.")
+            self.logger.error(traceback.format_exc())
         finally:
             # stop the profiler (if it's enabled)
             self._profile(stop=True)
-            #self.print('Scan::run()', -2)
             if self.enable_timing:
                 self._timeit('run', False)
         # callback with default behavior: for child class
@@ -215,10 +213,10 @@ class Scan(HasEnvironment):
     def _initialize(self, resume):
         """Initialize the scan"""
 
-        #self.print("Scan::_initialize(resume={})".format(resume), level=2)
         self._paused = False  # initialize _paused state variable
         self.measurement = ""  # initialize measurement state variable
         if not resume:
+            self.looper.itr.reset()
             self.looper.init('load_points')  # -- Load points
         self.prepare_scan()  # Callback: user callback (self.npoints must be available)
         self.lab_prepare_scan()  # Callback: user callback (self.npoints must be available)
@@ -258,7 +256,6 @@ class Scan(HasEnvironment):
                          ncalcs=len(self.calculations),
                          measurements=self.measurements
                          )
-        #self.print("return: Scan::_initialize()", -2)
 
     @staticmethod
     def argdef(kwargs):
@@ -353,7 +350,6 @@ class Scan(HasEnvironment):
     def scan_arguments(self, classes=[], init_only=False, **kwargs):
         if type(classes) != list:
             classes = [classes]
-        # self.print('BetaScan.scan_arguments(classes={}, init_only={}, kwargs={})'.format([c.__name__ for c in classes], init_only, kwargs), 2)
 
         # collect argdefs from other classes; i.e. loops, extensions, etc.
         if not hasattr(self, '_argdefs'):
@@ -363,7 +359,6 @@ class Scan(HasEnvironment):
 
         # early exit; only initing self._argdefs, not actually creating the arguments
         if init_only:
-            # self.print('BetaScan.scan_arguments()', -2)
             return
 
         # full list of argdefs from all classes
@@ -394,22 +389,18 @@ class Scan(HasEnvironment):
 
         # create the GUI arguments and set them as attributes of the scan
         for key, argdef in argdefs.items():
-            # print('***argument: {}'.format(key))
-            # print('argdef: {}'.format(pp.pformat(argdef)))
             if 'condition' not in argdef or argdef['condition'](self, kwargs):
                 if 'processor_args' not in argdef:
                     argdef['processor_args'] = {}
                 if 'default_args' in argdef:
                     argdef['processor_args']['default'] = argdef['processor_args']['default'](**argdef['default_args'])
                     del (argdef['default_args'])
-                # pp.pprint(argdef['processor_args'])
                 setattr_argument(self,
                                  key=key,
                                  processor=argdef['processor'](**argdef['processor_args']),
                                  group=argdef['group'] if 'group' in argdef else None,
                                  tooltip=argdef['tooltip'] if 'tooltip' in argdef else None)
         self._scan_arguments(**kwargs)
-        # self.print('BetaScan.scan_arguments', -2)
 
     # helper: for child class
     def register_model(self, model_instance, measurement=None, fit=None, calculation=None,
@@ -556,11 +547,6 @@ class Scan(HasEnvironment):
             if level > 0:
                 self.print_level += level
 
-    # disable printing
-    #@portable
-    #def print(self, msgs, level=0):
-    #    pass
-
     def load_component(self, name, *args, **kwargs):
         # create instance of component
         module = importlib.import_module('artiq_scan_framework.beta.components.{}'.format(name))
@@ -626,7 +612,6 @@ class Scan(HasEnvironment):
     # private: for scan.py
     def _attach_models(self):
         """Attach a single model to the scan"""
-
         # load x_offset
         if self._x_offset is None:  # offset has not been manually set by the user
             # automatic determination of x_offset
@@ -702,49 +687,23 @@ class Scan(HasEnvironment):
             # measure compilation time
             if self.enable_timing:
                 self._timeit('compile', False)
-            #self.print("_run_scan_core()", 2)
-            #self.print('on core device')
-
             # callback: lab_before_scan_core
-            # self.print('lab_before_scan_core()', 2)
             self.lab_before_scan_core()
-            # self.print('lab_before_scan_core()', -2)
-
-            # for comp in self.components:
-            #     comp.before_loop(resume)
-
+            self._before_loop(resume)
             # callback: initialize_devices
-            # self.print('call initialize_devices()', 2)
             self.initialize_devices()
-            # self.print('initialize_devices()', -2)
-
             # main loop
-            #self.print('call loop()', 2)
             self.looper.loop(
                 resume=resume
             )
-            #self.print('loop()', -2)
         except Paused:
-            #self.print('loop()', -2)
-            #self.print('caught Paused exception')
             self._paused = True
         finally:
-
-            #self.print('cleanup()', 2)
             self.cleanup()
-            #self.print('cleanup()', -2)
-
         # callback: after_scan_core
-        # self.print('after_scan_core()', 2)
         self.after_scan_core()
-        # self.print('after_scan_core()', -2)
-
         # callback: lab_after_scan_core
-        # self.print('lab_after_scan_core()', 2)
         self.lab_after_scan_core()
-        # self.print('lab_after_scan_core()', -2)
-
-        #self.print("return: _run_scan_core()", -2)
 
     # helper method: for scan.py or child class
     def _run_scan_host(self, resume=False):
@@ -758,24 +717,12 @@ class Scan(HasEnvironment):
                        started for the first time.
         """
         try:
-            #self.print("_run_scan_host()", 2)
-            #self.print('on host device')
-
-            # for comp in self.components:
-            #     comp.before_loop(resume)
-
             # main loop
-            #self.print('call loop()', 2)
             self.looper.loop(
                 resume=resume
             )
-            #self.print('loop()', -2)
         except Paused:
-            #self.print('loop()', -2)
-            #self.print('caught Paused exception')
             self._paused = True
-
-        #self.print("return: _run_scan_host()", -2)
 
     # private: for scan.py
     def _calculate(self, i_point, i_pass, point, calculation, entry):
@@ -918,25 +865,19 @@ class Scan(HasEnvironment):
         """
         try:
             # self.logger.warning("Yielding to higher priority experiment.")
-            #self.print('Scan::_yield()', 2)
-            #self.print(self.looper.itr)
             self.core.comm.close()
             self.scheduler.pause()
 
             # resume
-            #self.print('*** Resuming ***')
-            #self.print(self.looper.itr)
             self.logger.warning("Resuming")
             self.run(resume=True)
 
         except TerminationRequested:
-            #self.print('*** Terminated ***')
             self.logger.warning("Scan terminated.")
             self._terminated = True
             self.looper.terminate()
         finally:
             pass
-            #self.print('Scan::_yield()', -2)
 
     # interface: for child class (optional)
     # RPC
