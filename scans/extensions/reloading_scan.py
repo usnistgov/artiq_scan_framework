@@ -18,6 +18,7 @@ class ReloadingScan(Scan):
     loading_timeout = 120 * s
     loading_windows = 2
     loading_repeats = 100
+    _last_good_i = 0
 
     def build(self, **kwargs):
         super().build(**kwargs)
@@ -46,6 +47,8 @@ class ReloadingScan(Scan):
 
     def _initialize(self, resume):
         super()._initialize(resume)
+        if resume:
+            self.logger.warning("Reloding scan: resuming at looper.itr.i = {}".format(self.looper.itr.i))
         if self.enable_reloading and not hasattr(self, 'loading'):
             raise Exception(
                 "An instance of the Loading subcomponent needs to be assigned to self.loading to use reloading.")
@@ -68,28 +71,37 @@ class ReloadingScan(Scan):
             try:
                 self.ion_checker.initialze(resume)
             except LoadIon:
-                self._schedule_load_ion()
-                raise Paused
+                self.load_ion()
 
     @portable
     def _analyze_data(self, i_point, itr, data):
+        ok = True
         if self.check_for_ion:
             try:
                 # iterate over scan points in the same order as is done in scan.py
                 for i_measurement in range(self.looper.nmeasurements):
-                    self.ion_checker.ion_present(data.data[i_measurement], self.nrepeats, last_point=itr.last_itr())
+                    self.ion_checker.ion_present(data.data[i_measurement], self.nrepeats, itr=itr, last_point=itr.last_itr())
             except LostIon:
+
                 # rewind to the earliest scan point where the ion could have been lost.
-                self.looper.itr.rewind(num_points=self.ion_checker.rewind_num_points)
+                i_rewound = self.looper.itr.get_i_rewound(self.ion_checker.rewind_num_points)
+                if i_rewound >= self._last_good_i:
+                    self._last_good_i = i_rewound
+                    self.looper.itr.rewind(num_points=self.ion_checker.rewind_num_points)
 
                 # Schedule an experiment to load an ion.
-                self.logger.error("Ion lost, reloading...")
-                self._schedule_load_ion()
-
+                self.print_rewound(self.looper.itr.i, self._last_good_i)
+                #self._schedule_load_ion()
+                self.load_ion()
+                ok = False
                 # break main loop in scan.py
-                raise Paused
+                #raise Paused
             except IonPresent:
                 pass
+        return ok
+
+    def print_rewound(self, i, last_good_i):
+        self.logger.warning('Rewound iterator to i={}.  All data is valid up to i={}.'.format(i, last_good_i-1))
 
     # ====== Local Methods ======
     def _schedule_load_ion(self):
@@ -109,3 +121,28 @@ class ReloadingScan(Scan):
             # schedule the load ion experiment
             # self.logger.warning("Scheduling ion reload.")
             self.loading.schedule_load_ion(due_date=time.time(), synchronous=True)
+
+    @kernel
+    def load_ion(self):
+        # try to load or wait if tried too many times
+
+        # ion loading can't be performed for some reason
+        if not self.loading.can_load():
+
+            # schedule a high priority experiment (e.g. ion_monitor) that will pause this scan
+            # until the issue can be fixed.
+            self.logger.error("Can't load ion, scheduling blocking experiment until issue is fixed.")
+            self.loading.schedule_wait_experiment()
+            self._yield()
+            self._schedule_load_ion()
+            return
+        else:
+            # schedule the load ion experiment
+            # self.logger.warning("Scheduling ion reload.")
+            #self.loading.schedule_load_ion(due_date=time.time(), synchronous=True)
+            self.logger.error("Loading an ion.")
+            self.loading.load_ion()
+
+    @kernel
+    def _cleanup(self):
+        pass

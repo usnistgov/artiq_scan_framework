@@ -12,7 +12,6 @@ class LoopCont(Loop):
     kernel_invariants = {'nmeasurements'}
 
     def build(self, scan):
-        scan.print('Loop1D.build(scan={})'.format(scan.__class__.__name__), 2)
         self.scan = scan
         scan._dim = 1
         self.dtype = np.int32  # data type of the values returned by measure() and stored in self.data.data
@@ -63,7 +62,7 @@ class LoopCont(Loop):
             #   to the GUI argument, which are not set by default since they cannot be known in general
             # for example: self.scan_arguments(LoopCont, continuous_measure_point={'group': 'Scan Settings'}) will place the argument in
             #   the group named 'Looper' (instead of 'Continuous Scan')
-            'processor_args': {'default': 0.0},
+            'processor_args': {'default': 0.0, 'scale':1, 'unit':''},
             'group': 'Continuous Scan',
             'tooltip': "point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this."
         }

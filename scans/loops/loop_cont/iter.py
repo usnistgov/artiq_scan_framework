@@ -15,6 +15,11 @@ class IterCont(Iter):
         self.i_plot = np.int32(0)  # unbounded index MOD self.nplot -- index into plot datasets where values at the current iteration are stored
         #self.looper.scan.print('IterCont.build()', -2)
 
+    def reset(self):
+        self.i = np.int32(0)
+        self.i_point = np.int32(0)
+        self.i_plot = np.int32(0)
+
     def __str__(self):
         return "".join([
             '{}: '.format(self.__class__.__name__),
@@ -22,6 +27,11 @@ class IterCont(Iter):
             ', i_point: {}'.format(self.i_point),
             ', i_plot: {}'.format(self.i_plot)
         ])
+
+    @portable
+    def last_itr(self):
+        # there is never a last point for continuous loops
+        return False
 
     def offset_points(self, x_offset):
         if x_offset is not None:
@@ -49,6 +59,15 @@ class IterCont(Iter):
         return self.i_point == self.looper.scan.continuous_points - 1
 
     @portable
+    def get_i_rewound(self, num_points):
+        i_rewond = self.i
+        if num_points > 0:
+            i_rewond -= num_points
+            if i_rewond < 0:
+                i_rewond = 0
+        return i_rewond
+
+    @portable
     def rewind(self, num_points):
         """Rewind the cursor from the current continuous (i.e. unbounded) index by the specified number of points.
         The cursor cannot be rewound past the first point of the first pass.
@@ -56,9 +75,7 @@ class IterCont(Iter):
           :param num_points: The current cursor will be moved to this number of scan points before its current value.
         """
         if num_points > 0:
-            self.i -= num_points
-            if self.i < 0:
-                self.i = 0
+            self.i = self.get_i_rewound(num_points)
             # Make sure to update self.i_plot and self.i_point!!! -- loop.py uses self.i_point not self.i!!!
             self.update_indexes()
 

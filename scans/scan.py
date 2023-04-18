@@ -116,6 +116,7 @@ class Scan(HasEnvironment):
         # -- scan state
         self._paused = False  #: scan is currently paused
         self._terminated = False  #: scan has been terminated
+        self._error = False  #: an error occured during the scan
         self.measurement = ''  #: the current measurement
 
         # -- class variables
@@ -192,7 +193,17 @@ class Scan(HasEnvironment):
             self.after_scan()
 
             # perform fits
-            self._analyze()
+            if self._error:
+                self.logger.warning('Warning: The _analyze() method was not called by the scan framework because of a prior error that occurred in the run() method.')
+                self.logger.warning("         This means that fits were not performed for this scan.")
+            elif self._analyzed:
+                self.logger.warning('Warning: The _analyze() method was not called by the scan framework because it has already been called.')
+                self.logger.warning("         This means that fits might not have been performed for this scan.")
+            elif self._terminated:
+                self.logger.warning('Warning: The _analyze() method was not called by the scan framework because the scan was terminated.')
+                self.logger.warning("         This means that fits were not performed for this scan.")
+            else:
+                self._analyze()
 
             self.after_analyze()
             self.lab_after_analyze()
@@ -200,7 +211,8 @@ class Scan(HasEnvironment):
             # callback
             self.lab_after_scan()
         except Exception as e:
-            self.logger.error("An error occured during the run() method.")
+            self._error = True
+            self.logger.error("An error occurred in the run() method provided by the scan framework.")
             self.logger.error(traceback.format_exc())
         finally:
             # stop the profiler (if it's enabled)
@@ -669,7 +681,7 @@ class Scan(HasEnvironment):
             self._profile_times[event]['end'] = time.time()
             elapsed = self._profile_times[event]['end'] - self._profile_times[event]['start']
             self._profile_times[event]['elapsed'] = elapsed
-            self._logger.warning('{} took {:0.2f} sec'.format(event, elapsed))
+            self._logger.warning('It took {:0.2f} seconds to {}.'.format(elapsed, event))
 
 
     @kernel

@@ -72,7 +72,7 @@ class IonChecker(HasEnvironment):
         # self.logger.warn(self.thresholds)
     
     @kernel
-    def ion_present(self, data, length, last_point=False):
+    def ion_present(self, data, length, itr, last_point=False):
         if last_point:
             if not self.ion_present_detection():
                 raise LostIon

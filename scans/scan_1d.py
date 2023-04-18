@@ -12,8 +12,6 @@ class Scan1D(Scan):
         #         method call:
         #         self.scan_arguments(Loop1D, init_only=True)  # must be called first
         #         self.looper = Loop1D(self, scan=self)        # must be called second
-        #self.print('Scan1D.build()', 2)
         self.scan_arguments(Loop1D, init_only=True)
         self.looper = Loop1D(self, scan=self, dtype=self.dtype)
         super().build(**kwargs)
-        #self.print('Scan1D.build()', -2)

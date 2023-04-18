@@ -108,10 +108,14 @@ class Loop1D(Loop):
         )
         ret = [0.0]
         while not self.itr.done(ret):                                           # iterate over each measure point (a.k.a. scan point)
+
             meas_point = ret[0]                                                 # get the measure point (a.k.a. scan point)
             self.data.reset()                                                   # zero the accumulators in the data store object
             i_point = self.itr.i_point                                          # init local variables
             i_pass = self.itr.i_pass
+            #print(self.itr.i)
+            # print(i_point)
+            # print(i_pass)
             #self.scan._i_pass = i_pass                                         # legacy
             #self.scan._i_point = i_point
             if self.scan.enable_pausing:
@@ -145,10 +149,11 @@ class Loop1D(Loop):
                                          self.data.data[i_meas])
             if ncalcs > 0:
                 self.calculate(i_point, i_pass, meas_point)                      # user callback
-            self.scan._analyze_data(i_point, itr=self.itr, data=self.data)       # extension callback (e.g. ReloadingScan)
+            ok = self.scan._analyze_data(i_point, itr=self.itr, data=self.data)       # extension callback (e.g. ReloadingScan)
             self.scan.after_scan_point(i_point, meas_point)                      # user callback
             self.scan._after_scan_point(i_point, meas_point, mean)               # user callback
-            self.itr.step()                                                      # move to the next scan point
+            if ok:
+                self.itr.step()                                                      # move to the next scan point
 
     @rpc(flags={"async"})
     def set_counts(self, mean, digits=-1):
