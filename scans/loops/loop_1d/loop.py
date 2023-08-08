@@ -149,9 +149,9 @@ class Loop1D(Loop):
                                          self.data.data[i_meas])
             if ncalcs > 0:
                 self.calculate(i_point, i_pass, meas_point)                      # user callback
-            ok = self.scan._analyze_data(i_point, itr=self.itr, data=self.data)       # extension callback (e.g. ReloadingScan)
             self.scan.after_scan_point(i_point, meas_point)                      # user callback
             self.scan._after_scan_point(i_point, meas_point, mean)               # user callback
+            ok = self.scan._analyze_data(i_point, itr=self.itr, data=self.data)  # extension callback (e.g. ReloadingScan)
             if ok:
                 self.itr.step()                                                      # move to the next scan point
 

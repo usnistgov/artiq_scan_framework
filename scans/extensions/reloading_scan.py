@@ -125,7 +125,6 @@ class ReloadingScan(Scan):
     @kernel
     def load_ion(self):
         # try to load or wait if tried too many times
-
         # ion loading can't be performed for some reason
         if not self.loading.can_load():
 
