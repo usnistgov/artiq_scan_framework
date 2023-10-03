@@ -488,7 +488,7 @@ class Fitting:
                     if f in value:
                         value = value[f]
                     else:
-                        self.logger.warning("Validation skipped, {0} is not in fitresults".format(field))
+                        self.logger.error("Validation skipped, {0} is not in fitresults".format(field))
                         ok = False
                         break
                 if ok:
