@@ -22,3 +22,11 @@ class LoadIon(Exception):
 
 class ExitScan(Exception):
     pass
+
+
+class BadFit(Exception):
+    pass
+
+
+class CantFit(Exception):
+    pass

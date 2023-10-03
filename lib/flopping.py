@@ -74,12 +74,9 @@ def rabi(ng, nl, lambd, carrier_omega=1, use_debeyew=False, spect_lambd=None, sp
     # omega = abs(exp(-lambd ** 2 / 2) * carrier_omega * (1/fact) ** 0.5 * lambd ** (ng - nl)
     #             * genlag(nl, ng - nl, lambd ** 2))
 
-    print('rabi(', ng, nl)
-
     glag = 0
     for m in range(nl):
         glag += (-1)**m * ncr(nl, ng - nl) * (lambd**2)**m / factorial(m)
-    print(glag)
     omega = abs(exp(-lambd**2/2)*carrier_omega * (factorial(nl) / factorial(ng))**0.5 * lambd**(ng - nl)
                 * glag
                 # * genlag(nl, ng - nl, lambd**2)

@@ -1,4 +1,4 @@
-from .scan import *
+from .scan_1d import Scan1D
 
 
 # NOTE: MetaScan has been deprecated by Scan2D

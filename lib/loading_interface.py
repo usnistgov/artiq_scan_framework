@@ -1,7 +1,4 @@
-from artiq.experiment import HasEnvironment
-from artiq.language import *
-from ..models.model import *
-
+from artiq_scan_framework import *
 
 # TODO: needs commenting
 class LoadingInterface(HasEnvironment):
@@ -18,11 +15,16 @@ class LoadingInterface(HasEnvironment):
     def wait(self):
         pass
 
-    @kernel
+    @portable
     def measure_dark_rate(self):
-        pass
+        return 1.0
 
-    @kernel
+    @portable
     def ion_present(self, repeats, threshold):
         """Returns true if an ion is present in the trap."""
         return True
+
+    @portable
+    def measure_bright_rate(self, repeats=100):
+        return 20.0
+

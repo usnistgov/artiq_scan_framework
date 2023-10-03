@@ -2,14 +2,7 @@ from .model import *
 from ..analysis.curvefits import *
 import numpy as np
 from math import *
-
-
-class BadFit(Exception):
-    pass
-
-
-class CantFit(Exception):
-    pass
+from ..language.exceptions import *
 
 
 class FitModel(Model):
@@ -89,33 +82,59 @@ class FitModel(Model):
                     if f in value:
                         value = value[f]
                     else:
-                        self.logger.warning("Validation skipped, {0} is not in fitresults".format(field))
+                        self.logger.error("Validation skipped, {0} is not in fitresults".format(field))
                         ok = False
                         break
                 if ok:
                     self.valid = self._call_validation_method(method, field, value, args)
                     if not self.valid:
-                        raise BadFit(self.validation_errors[field])
+                        raise BadFit(self.validation_errors[f])
         return True
 
-    def simulate(self, x, noise_level=0, simulation_args = None):
+    def simulate(self, x, noise_level=0, simulation_args=None, noise_type='rectangular'):
+        """Simulates scan data using a fit function with optional noise added.
+
+        :param x: Value at which the fit function is evaluated.
+        :param noise_level: amount of noise added to fit function value.  Only applicable when noise_type='rectangular'.
+        Noise signal takes on values between -noise_level and +noise_level.
+        :param simulation_args: Additional arguments passed to the fit function.  If set to None, simulation_args defaults to
+        either self.simulation_args (if defined, first choice) or self.fit_function.simulation_args() (if self.simulation_args is not
+        defined, second choice).
+        :param noise_type: What type of noise to simulate.  Allowable values are
+        'poisson' - models noise using a poisson distribution (e.g. PMT counts), 'rectangular' - models noise using a rectangular
+        distribution, None - no noise is added.  Any other value will result in an exception being raised.
+        :return:  Value of fit function, evaluated at x, with optional noise added.
+        """
         if simulation_args == None:
             try:
                 simulation_args = self.simulation_args
             except(NotImplementedError):
                 simulation_args = self.fit_function.simulation_args()
-        value = self.fit_function.value(x, **simulation_args)
 
-        # convert expectation value to quantized value
-        f = floor(value)
-        c = ceil(value)
-        if np.random.random() > (value - f):
-            value = f
+        # -- get the value of the fit function
+        ffun_val = self.fit_function.value(x, **simulation_args)
+
+        # -- add noise to the fit function value
+        # model noise using a poisson distribution
+        if noise_type == 'poisson':
+            withnoise = np.random.poisson(ffun_val, 1)[0]
+        # model noise using a rectangular distribution
+        elif noise_type == 'rectangular':
+            # convert expectation value to quantized value
+            f = floor(ffun_val)
+            c = ceil(ffun_val)
+            if np.random.random() > (ffun_val - f):
+                value = f
+            else:
+                value = c
+            noise = (2.0 * np.random.random() - 1.0) * noise_level
+            withnoise = abs(value + noise)
+        # no noise
+        elif noise_type is None:
+            withnoise = ffun_val
         else:
-            value = c
-
-        noise = (2.0 * np.random.random() - 1.0) * noise_level
-        return round(abs(value + noise))
+            raise Exception("Unknown noise_type {} specified".format(noise_type))
+        return round(withnoise)
 
     @staticmethod
     def reg_err(y, fitline):

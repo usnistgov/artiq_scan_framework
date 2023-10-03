@@ -1,5 +1,6 @@
 from .scan import *
 
+
 class ContinuousScan(HasEnvironment):
     def build(self, parent):
         self.parent = parent

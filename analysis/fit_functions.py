@@ -72,6 +72,15 @@ class InvCos(FitFunction):
         return amplitude / 2 * (-np.cos(np.pi * x / pi_time + phase) + 1) + y_min
 
     @staticmethod
+    def simulation_args():
+        return {
+            'amplitude': 10,
+            'pi_time': 10 * us,
+            'phase': 0,
+            'y_min': 0
+        }
+
+    @staticmethod
     def jacobian(x_data, amplitude, pi_time, phase, y_min):
         """Returns Jacobian matrix of partial derivatives of
         amplitude/2 (sin(pi*x/pi_time + phase) + 1) + y_min, evaluated for all values x
@@ -457,6 +466,37 @@ class SincInv(FitFunction):
         else:
             x_scale['frequency'] = 1 * MHz
 
+        return cls.autoguess_outputs(g, x_scale, bounds, hold, man_guess, man_bounds, man_scale)
+
+class Sinc2Inv(FitFunction):
+    @classmethod
+    def names(cls):
+        return ['y0', 'A', 'line_width', 'f0']
+
+    @staticmethod
+    def value(x, y0, A, line_width, f0):
+        """Value of lineshape at f"""
+        tau = 1/line_width
+        return y0 + A*np.sinc((x-f0)*tau)**2
+
+    @classmethod
+    def autoguess(cls, x, y, hold={}, man_guess={}, man_bounds={}, man_scale={}):
+        # guesses
+        g = {
+            'y0': max(y),
+            'A': min(y) - max(y),
+            'line_width': 1/tpi_fwhm(x, y, inverse=True),
+            'f0': x_at_min_y(x, y)
+        }
+
+        bounds = ([-np.inf, -np.inf, -np.inf, -np.inf],
+                  [np.inf, np.inf, np.inf, np.inf])
+        x_scale = {
+            'y0': abs(g['y0']),
+            'A': abs(g['A']),
+            'line_width': abs(g['line_width']),
+            'f0': abs(g['f0'])
+        }
         return cls.autoguess_outputs(g, x_scale, bounds, hold, man_guess, man_bounds, man_scale)
 
 
@@ -974,45 +1014,37 @@ class IonPosFit(FitFunction):
                                      man_bounds, man_scale)
 
 
-class TrapSampleDistFit(FitFunction):
-    """Fit function for trap to sample distance fit.  This model assumes a reference frame that is stationary
-    with respect to the laser beam.  i.e. in a frame where the trap and sample are moving instead of the beam."""
+class KnifeEdgeFit(FitFunction):
 
     @classmethod
     def names(cls):
-        return ['P0', 'w', 'xtl', 'xtr', 'ytt', 'h', 'xsl', 'xsr', 'hs', 'Pb']
+        return ['x0', 'h', 'w', 'Pb', 'P0']
 
     @staticmethod
-    def value(x, P0, w, xtl, xtr, ytt, h, xsl, xsr, hs, Pb):
-        """
-        w: beam radius
-        xtl: x position of the left side of the trap
-        xtr: x position of the right side of the trap
-        ytt: y position of the top surface of the trap
-        h: height of sample above trap (y distance from top of trap to bottom of sample)
-        xsl: x position of the left side of the sample
-        xsr: x position of the right side of the sample
-        hs: height of sample above its bottom surface
-        """
-        # fraction of the beam power blocked by the trap
-        Ft = 0.25 * (sp.erf(2 ** .5 * xtr / w) - sp.erf(2 ** .5 * xtl / w)) * \
-             (
-                1 + sp.erf(2 ** .5 * (x - ytt) / w)
-             )
+    def value(x, x0, h, w, Pb, P0):
+        a = (x-x0) - h/2.0
+        b = (x-x0) + h/2.0
+        return Pb + 0.5*P0*(sp.erf(2**.5 * b / w) - sp.erf(2**.5 * a / w))
 
-        # fraction of the beam power blocked by the sample
-        Fs = 0.25 * (sp.erf(2 ** .5 * xsr / w) - sp.erf(2 ** .5 * xsl / w)) * \
-             (
-                sp.erf(2 ** .5 * ((ytt - h) - x) / w)
-                -
-                sp.erf(2 ** .5 * ((ytt - h - hs) - x) / w)
-             )
-
-        return P0 * (1 - Ft - Fs) + Pb
+    @staticmethod
+    def jacobian(xdata, x0, h, w, Pb, P0):
+        xs = np.atleast_1d(xdata)
+        jacmat = np.zeros((xs.shape[0], 3))
+        for i, x in enumerate(xs):
+            # dy/dx0
+            jacmat[i, 0] = ((-np.exp(-(h + 2*x - 2*x0)**2/(2.*w**2)) + np.exp(-(h - 2*x + 2*x0)**2/(2.*w**2)))*P0*np.sqrt(2/np.pi))/w
+            # dy/dh
+            jacmat[i, 1] =  ((np.exp((h + 2*x - 2*x0)**2/(2.*w**2)) + np.exp((h - 2*x + 2*x0)**2/(2.*w**2)))*P0)/(np.exp((h**2 + 4*(x - x0)**2)/w**2)*np.sqrt(2*np.pi)*w)
+            # dy/dw
+            jacmat[i, 2] = (P0*np.sqrt(2/np.pi)*((-0.5*h + x - x0)/np.exp((h - 2*x + 2*x0)**2/(2.*w**2)) + (-0.5*h - x + x0)/np.exp((h + 2*x - 2*x0)**2/(2.*w**2))))/w**2
+            # dy/dPb
+            jacmat[i, 3] = 1
+            # dy/dP0
+            jacmat[i, 4] = (sp.erf((h + 2*x - 2*x0)/(np.sqrt(2)*w)) - sp.erf((np.sqrt(2)*(-0.5*h + x - x0))/w))/2.
+        return jacmat
 
     @classmethod
-    def autoguess(cls, x, y, hold={}, man_guess={}, man_bounds={},
-                  man_scale={}):
+    def autoguess(cls, x, y, hold={}, man_guess={}, man_bounds={}, man_scale={}):
         """Returns automated guesses for fit parameter starting points and
         bounds for parameter search.  Manual guesses, bounds, and scales
         provided in dictionaries will override automatic values unless
@@ -1020,53 +1052,25 @@ class TrapSampleDistFit(FitFunction):
         """
 
         y = np.asarray(y)
-        mid_y = (max(y) - min(y))/2 + min(y)
-        # better guess for ytt and h
-        first = False
-        h = 150e-6
-        ytt = 0.8e-3
-        for i in range(len(y)):
-            ii = len(y) - 1 - i
-            if not first and y[ii] > mid_y:
-                i_tt = ii
-                # linear interpolate to find best x
-                perc = (mid_y - y[ii+1])/(y[ii] - y[ii+1])
-                ytt = x[ii] + perc * (x[ii+1] - x[ii])
-                first = True
-            if first and y[ii] < mid_y:
-                # linear interpolate to find best x
-                perc = (mid_y - y[ii]) / (y[ii+1] - y[ii])
-                yst = x[ii] + perc * (x[ii + 1] - x[ii])
-                h = ytt - yst
-                break
-
-        g = {'P0': max(y) - min(y),
-             'w': 39e-6,
-             'xtl': -60e-6,
-             'xtr': 60e-6,
-             'ytt': ytt,
-             'h': h,
-             'xsl': -500e-6,
-             'xsr': 500e-6,
-             'hs': 1,
-             'Pb': min(y)}
-
-        bounds = ([-np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf],
-                  [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf])
-
+        g = {
+            'x0': (max(x) + min(x))/2,
+            'h':  (max(x) - min(x))/2,
+            'w': 32e-6,
+            'Pb': 10e-6,
+            'P0': 0.4e-3,
+        }
+        bounds = ([-np.inf, 0, 0, 0, 0],
+                  [np.inf, np.inf, np.inf, np.inf, np.inf])
+        #'x0', 'h', 'w', 'Pb', 'P0'
 
         # generate rough natural scale values
-        xsc = {}
-        xsc['P0'] = 10e-9
-        xsc['w'] = 10e-6
-        xsc['xtl'] = 100e-6
-        xsc['xtr'] = 100e-6
-        xsc['ytt'] = 1e-3
-        xsc['h'] = 100e-6
-        xsc['xsl'] = 500e-6
-        xsc['xsr'] = 500e-6
-        xsc['hs'] = 1
-        xsc['Pb'] = 1e-9
+        xsc = {
+            'x0': 10,
+            'h': 100,
+            'w': 30,
+            'Pb': 1,
+            'P0': 0.01
+        }
         return cls.autoguess_outputs(g, xsc, bounds, hold, man_guess, man_bounds, man_scale)
 
 
@@ -1165,7 +1169,6 @@ class RamanFlop2ModesFast(FitFunction):
             nbars=[nbar1, nbar2],
             ns=RamanFlopPreCalc['mode_ns']
         )
-        print(len(t), A, y0, nbar1, nbar2)
         # Probability of each Fock state |l,m,n> in the tensor product space M1 x M2 x M3
         P_lmn = kron2_flat(mode_dists[0], mode_dists[1])
 
@@ -1274,7 +1277,6 @@ class RamanFlop2Modes(FitFunction):
             'carr_pitime': us
         }
         return cls.autoguess_outputs(g, x_scale, bounds, hold, man_guess, man_bounds, man_scale)
-
 
 
 class RamanFlop1Mode(FitFunction):

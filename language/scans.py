@@ -1,59 +1,9 @@
-from artiq.experiment import *
-from .exceptions import Paused
-import time
-from .scans.scan import FitGuess
+from artiq.language.environment import *
+from .processors import FitGuess
+from .environment import setattr_argument
+import numpy as np
 
 
-# for debugging purposes
-def print_caller():
-    import inspect
-    frm = inspect.stack()[2]
-    mod = inspect.getmodule(frm[0])
-    print('Caller: {1}.{0}'.format(frm[3], mod.__name__))
-
-
-@kernel
-def trig_timestamp(ttl, rate):
-    ttl.gate_rising(rate)
-    _ = now_mu()
-    mu_trig = now_mu()
-    while _ > 0:
-        mu_trig = _
-        _ = ttl.timestamp_mu()
-    return mu_trig
-
-
-def pause(self):
-    try:
-        self.core.comm.close()
-        self.scheduler.pause()
-        return True
-    except TerminationRequested:
-        return False
-
-
-@portable
-def check_pause(self):
-    if self.scheduler.check_pause():
-        raise Paused
-
-
-def wait_for_action(self):
-    """Block the caller until the user performs some action and manually sets the 'wait' dataset to 0"""
-    self.set_dataset('wait', 1, broadcast=True, save=True, persist=True)
-    time.sleep(2)
-    while self.get_dataset('wait', archive=False) == 1:
-        time.sleep(1)
-
-
-def setattr_argument(self, key, processor=None, group=None, show='auto'):
-    if show is 'auto' and hasattr(self, key) and getattr(self, key) is not None:
-        return
-    self.setattr_argument(key, processor, group)
-    # set attribute to default value when class is built but not submitted
-    if hasattr(processor, 'default_value'):
-        if not hasattr(self, key) or getattr(self, key) is None:
-            setattr(self, key, processor.default_value)
 
 
 def scan_arguments(self, npasses={}, nrepeats={}, nbins={}, fit_options={}, guesses=False):
@@ -102,3 +52,80 @@ def scan_arguments(self, npasses={}, nrepeats={}, nbins={}, fit_options={}, gues
                                                    step=0.001,
                                                    fit_param=fit_param,
                                                    param_index=None))
+
+
+
+
+def get_registered_models(scan, **kwargs):
+    entries = []
+    for entry in scan._model_registry:
+        append = True
+        for k, v in kwargs.items():
+            if k in entry:
+                if isinstance(v, bool) and v:
+                    pass
+                elif isinstance(v, list):
+                    if entry[k] not in v:
+                        append = False
+                        break
+                elif entry[k] != v:
+                    append = False
+                    break
+        if append:
+            entries.append(entry)
+    return entries
+
+
+
+def get_scan_points(scan):
+    if scan.scan_points is None:
+        return scan.get_scan_points()
+    else:
+        return scan.scan_points
+    return points
+
+
+def get_warmup_points(scan):
+    if scan.warmup_points is None:
+        return scan.get_warmup_points()
+    else:
+        return scan.warmup_points
+
+
+def load_warmup_points(obj):
+    warmup_points = get_warmup_points(obj.scan)
+    warmup_points = [p for p in warmup_points]
+    warmup_points = np.array(warmup_points, dtype=np.float64)
+    obj.warmup_points = warmup_points
+
+
+def trigger_plot(model):
+    model.set('plots.trigger', 1, which='mirror')
+    model.set('plots.trigger', 0, which='mirror')
+
+
+def mutate_plot(model, i_point, x, y, error):
+    return model.mutate_plot(i_point=i_point, x=x, y=y, error=error)
+
+
+def mutate_stats(model, i_point, i_pass, poffset, meas_point, data):
+    mean, error = model.mutate_datasets(i_point=i_point, i_pass=i_pass, poffset=poffset, point=meas_point, counts=data)
+    return mean, error
+
+
+def mutate_datasets_calc(model, i_point, i_pass, meas_point, calculation):
+    calced_value = model.mutate_datasets_calc(i_point=i_point, i_pass=i_pass, point=meas_point, calculation=calculation)
+    return calced_value
+
+
+def get_fit_data(model, use_mirror):
+    x_data, y_data = model.get_fit_data(use_mirror)
+    errors = get_errors(model, use_mirror)
+    return x_data, y_data, errors
+
+
+def get_errors(model, use_mirror):
+    errors = model.get('stats.error', mirror=use_mirror)
+    return errors
+
+
