@@ -287,7 +287,7 @@ class Fit():
             else:
                 return self.func.value(x, *popt)
 
-    def fit_data(self, hold={}, man_guess={}, man_bounds={}, man_scale={}):
+    def fit_data(self, hold={}, man_guess={}, man_bounds={}, man_scale={}, max_nfev=10000, **kwargs):
         """Fit data x and y to function f, y = f(x).  Calculates optimal fit
         parameters and their associated uncertainties, including full
         covariance matrix.  By default, function makes automatic guesses
@@ -565,8 +565,8 @@ class Fit():
             try:
                 popt, pcov = curve_fit(_wrap_func, x, y, p0=guess, sigma=yerr,
                                        absolute_sigma=False, bounds=bounds,
-                                       max_nfev=10000, x_scale=x_scale,
-                                       method='trf',
+                                       max_nfev=max_nfev, x_scale=x_scale,
+                                       method='trf', **kwargs
                                        )
             except:
                 logger.error(func.__name__ + " fit failed!")
