@@ -361,7 +361,7 @@ class Scan(HasEnvironment):
         # del kwargs['fit_options']
 
         if 'guesses' in kwargs:
-            if kwargs['guesses'] is True:
+            if kwargs['guesses'] == True:
                 for i in range(1, 6):
                     argdef['fit_guess_{0}'.format(i)] = {
                         'processor': FitGuess,
@@ -374,7 +374,7 @@ class Scan(HasEnvironment):
                             'param_index': i
                         },
                         'condition': lambda scan, kwargs: scan.enable_fitting and kwargs['guesses'] and (
-                                'fit_options' not in kwargs or kwargs['fit_options'] is not False)
+                                'fit_options' not in kwargs or kwargs['fit_options'] != False)
                     }
             else:
                 for fit_param in kwargs['guesses']:
@@ -389,14 +389,14 @@ class Scan(HasEnvironment):
                             'param_index': None
                         },
                         'condition': lambda scan, kwargs: scan.enable_fitting and kwargs['guesses'] and (
-                                'fit_options' not in kwargs or kwargs['fit_options'] is not False)
+                                'fit_options' not in kwargs or kwargs['fit_options'] != False)
                     }
         return argdef
 
     def setattr_argument(self, key, processor=None, group=None, show='auto', tooltip=None, scan_points=None, warmup_points=None):
-        if show is 'auto' and hasattr(self, key) and getattr(self, key) is not None:
+        if show is 'auto' and hasattr(self, key) and getattr(self, key) != None:
             return
-        if show is False or key in self._hide_arguments:
+        if show == False or key in self._hide_arguments:
             if not key in self._hide_arguments:
                 self._hide_arguments[key] = True
             return
@@ -448,7 +448,7 @@ class Scan(HasEnvironment):
         for k, v in kwargs.items():
             if k in argdefs:
                 # user doesn't want to show this argument
-                if v is False:
+                if v == False:
                     del (argdefs[k])
                 else:
                     # user has overridden the default options for the argument
@@ -1005,7 +1005,7 @@ class Scan(HasEnvironment):
             # Perform a fit for each registered fit model and save the fitted params to datasets.
             #
             # If self.save_fit is true, the main fit is broadcast to the ARTIQ master,
-            # persisted and saved.  If self.save_fit is False, the main fit is not broadcasted or persisted but is saved
+            # persisted and saved.  If self.save_fit == False, the main fit is not broadcasted or persisted but is saved
             # so that it can still be retrieved using normal get_datset methods before the experiment has completed.
 
             # for every registered model...
@@ -1022,13 +1022,13 @@ class Scan(HasEnvironment):
                     for model in models:
 
                         # callback
-                        if self.before_fit(model) is not False:
+                        if self.before_fit(model) != False:
 
                             # what's the correct data source?
                             #   When fitting only (no scan is performed) the fit is performed on data from the last
                             #   scan that ran, which is assumed to be in the 'current_scan' namespace.
                             #   Otherwise, the fit is performed on data in the model's namespace.
-                            use_mirror = model.mirror is True and self.fit_only
+                            use_mirror = model.mirror == True and self.fit_only
                             save = self.save_fit
 
                             # dummy values, these are only used in 2d scans
