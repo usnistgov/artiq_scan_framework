@@ -103,7 +103,7 @@ class Scan(HasEnvironment):
         #self.result_names=None
 
         self.nmeasurements = 0
-        self.npoints = 0
+        #self.npoints = 0
         #self.npasses = 1  #: Number of passes
 
         #multiresult models use the below initializations
@@ -124,7 +124,7 @@ class Scan(HasEnvironment):
 
         # PK 01/13/2023 temporary monkey patch for new looper component
         try:
-            self.npoints = None
+            #self.npoints = None
             self.npasses = None
             self.nrepeats = None
         except AttributeError:
@@ -606,6 +606,10 @@ class Scan(HasEnvironment):
     def npoints(self):
         return self.looper.itr.npoints
 
+    @npoints.setter
+    def npoints(self, val):
+        self.looper.iter.npoints = val
+
     def print(self, msgs, level=0):
         if type(msgs) != str:
             msgs = str(msgs)
@@ -1017,43 +1021,14 @@ class Scan(HasEnvironment):
                         models=[model]
                     for model in models:
 
-
-                    # callback
-                    if self.before_fit(model) is not False:
-
-                        # what's the correct data source?
-                        #   When fitting only (no scan is performed) the fit is performed on data from the last
-                        #   scan that ran, which is assumed to be in the 'current_scan' namespace.
-                        #   Otherwise, the fit is performed on data in the model's namespace.
-                        use_mirror = model.mirror is True and self.fit_only
-                        save = self.save_fit
-
-                        # dummy values, these are only used in 2d scans
-                        dimension = 0
-                        i = 0
-
-                        # perform the fit
-                        fit_performed, valid, main_fit_saved, errormsg = self.looper.fit(entry, save, use_mirror, dimension, i)
-
-                        entry['fit_valid'] = valid
-
-                        # tell current scan to plot data...
-                        model.set('plots.trigger', 1, which='mirror')
-                        model.set('plots.trigger', 0, which='mirror')
-
-                        # params not saved warning occurred
-                        if save and not main_fit_saved:
-                            self.logger.warning("Main fit param was not saved.")
-
-
                         # callback
-                        if self.before_fit(model) != False:
+                        if self.before_fit(model) is not False:
 
                             # what's the correct data source?
                             #   When fitting only (no scan is performed) the fit is performed on data from the last
                             #   scan that ran, which is assumed to be in the 'current_scan' namespace.
                             #   Otherwise, the fit is performed on data in the model's namespace.
-                            use_mirror = model.mirror == True and self.fit_only
+                            use_mirror = model.mirror is True and self.fit_only
                             save = self.save_fit
 
                             # dummy values, these are only used in 2d scans
@@ -1061,28 +1036,56 @@ class Scan(HasEnvironment):
                             i = 0
 
                             # perform the fit
-                            self._logger.debug('performing fit on model \'{0}\''.format(entry['name']))
-                            fit_performed, valid, main_fit_saved, errormsg = self._fit(entry, model,save, use_mirror, dimension, i)
+                            fit_performed, valid, main_fit_saved, errormsg = self.looper.fit(entry, save, use_mirror, dimension, i)
 
                             entry['fit_valid'] = valid
 
                             # tell current scan to plot data...
-                            model.set('plots.trigger', 1, which='both')
-                            model.set('plots.trigger', 0, which='both')
+                            model.set('plots.trigger', 1, which='mirror')
+                            model.set('plots.trigger', 0, which='mirror')
 
                             # params not saved warning occurred
                             if save and not main_fit_saved:
-                                self.logger.warning("Fitted params not saved.")
+                                self.logger.warning("Main fit param was not saved.")
+
 
                             # callback
-                            self._main_fit_saved = main_fit_saved
-                            self._fit_valid = valid
-                            if fit_performed:
-                                self.after_fit(entry['fit'], valid, main_fit_saved, model)
+                            if self.before_fit(model) != False:
 
-                        # print the fitted parameters...
-                        if self.enable_reporting and fit_performed:
-                            self.report_fit(model)
+                                # what's the correct data source?
+                                #   When fitting only (no scan is performed) the fit is performed on data from the last
+                                #   scan that ran, which is assumed to be in the 'current_scan' namespace.
+                                #   Otherwise, the fit is performed on data in the model's namespace.
+                                use_mirror = model.mirror == True and self.fit_only
+                                save = self.save_fit
+
+                                # dummy values, these are only used in 2d scans
+                                dimension = 0
+                                i = 0
+
+                                # perform the fit
+                                self._logger.debug('performing fit on model \'{0}\''.format(entry['name']))
+                                fit_performed, valid, main_fit_saved, errormsg = self._fit(entry, model,save, use_mirror, dimension, i)
+
+                                entry['fit_valid'] = valid
+
+                                # tell current scan to plot data...
+                                model.set('plots.trigger', 1, which='both')
+                                model.set('plots.trigger', 0, which='both')
+
+                                # params not saved warning occurred
+                                if save and not main_fit_saved:
+                                    self.logger.warning("Fitted params not saved.")
+
+                                # callback
+                                self._main_fit_saved = main_fit_saved
+                                self._fit_valid = valid
+                                if fit_performed:
+                                    self.after_fit(entry['fit'], valid, main_fit_saved, model)
+
+                            # print the fitted parameters...
+                            if self.enable_reporting and fit_performed:
+                                self.report_fit(model)
 
     # interface: for extensions (required)
     def _write_datasets(self, entry):
