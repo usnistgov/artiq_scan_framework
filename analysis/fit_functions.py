@@ -468,6 +468,7 @@ class SincInv(FitFunction):
 
         return cls.autoguess_outputs(g, x_scale, bounds, hold, man_guess, man_bounds, man_scale)
 
+
 class Sinc2Inv(FitFunction):
     @classmethod
     def names(cls):
@@ -1072,54 +1073,6 @@ class KnifeEdgeFit(FitFunction):
             'P0': 0.01
         }
         return cls.autoguess_outputs(g, xsc, bounds, hold, man_guess, man_bounds, man_scale)
-
-
-class RabiSpectrum(FitFunction):
-    @classmethod
-    def names(cls):
-        return ['omega', 't', 'y0']
-
-    @staticmethod
-    def value(x, omega, t, y0):
-        return omega**2/(omega**2 + x**2) * np.sin(((omega**2 + x**2)**.5/2)*t)**2 + y0
-
-    @staticmethod
-    def jacobian(xdata, omega, t, y0):
-        xs = np.atleast_1d(xdata)
-        jacmat = np.zeros((xs.shape[0], 3))
-        for i, x in enumerate(xs):
-            # dy/domega
-            jacmat[i, 0] = omega * np.sin((t * sqrt(omega ** 2 + x ** 2)) / 2.) * \
-                ((omega ** 2 * t * np.cos((t * sqrt(omega ** 2 + x ** 2)) / 2)) / (omega ** 2 + x ** 2) ** 1.5 +
-                (2 * x ** 2 * np.sin((t * sqrt(omega ** 2 + x ** 2)) / 2)) / (omega ** 2 + x ** 2) ** 2)
-
-            # dy/dt
-            jacmat[i, 1] = (omega ** 2 * np.sin(t * sqrt(omega ** 2 + x ** 2))) / (2 * sqrt(omega ** 2 + x ** 2))
-
-            # dy/dy0
-            jacmat[i, 2] = 1
-        return jacmat
-
-    @classmethod
-    def autoguess(cls, x, y, hold={}, man_guess={}, man_bounds={},
-                  man_scale={}):
-        # auto guess
-        g = {
-            'omega': 2*np.pi/(20*us),
-            't': 10*us
-        }
-
-        # bounds
-        bounds = ([0, 0, 0], [np.inf, np.inf, np.inf])
-
-        # rough natural scale values
-        xsc = {}
-        xsc['omega'] = 2*np.pi/(20*us)
-        xsc['t'] = 10*us
-        xsc['y0'] = 1
-
-        return cls.autoguess_outputs(g, xsc, bounds, hold, man_guess,
-                                     man_bounds, man_scale)
 
 
 RamanFlopPreCalc = None
