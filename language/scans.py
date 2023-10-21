@@ -114,8 +114,8 @@ def mutate_stats(model, i_point, i_pass, poffset, meas_point, data):
 
 
 def mutate_datasets_calc(model, i_point, i_pass, meas_point, calculation):
-    calced_value = model.mutate_datasets_calc(i_point=i_point, i_pass=i_pass, point=meas_point, calculation=calculation)
-    return calced_value
+    calced_value, error = model.mutate_datasets_calc(i_point=i_point, i_pass=i_pass, point=meas_point, calculation=calculation)
+    return calced_value, error
 
 
 def get_fit_data(model, use_mirror):

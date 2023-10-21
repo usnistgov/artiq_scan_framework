@@ -168,6 +168,7 @@ class Loop1D(Loop):
             model = entry['model']
             mean, err = mutate_stats(model, i_point, i_pass, poffset,
                                        meas_point, data)                        # mutate stats datasets
+            print('loop mutate_plot', i_point, meas_point, mean)
             mutate_plot(model, i_point=i_point, x=meas_point, y=mean,           # mutate plot x/y datasets
                         error=err)
         if model:
@@ -179,9 +180,9 @@ class Loop1D(Loop):
             if self.scan.before_calculate(i_point, meas_point,
                                           entry['calculation']):                # user callback
                 model = entry['model']
-                calced_value = mutate_datasets_calc(model, i_point, i_pass,
+                calced_value, error = mutate_datasets_calc(model, i_point, i_pass,
                                                     meas_point,
-                                                    entry['calculation'])
+                                                    entry['calculation']) 
                 if 'mutate_plot' in entry and entry['mutate_plot']:
                     mutate_plot(model, i_point=i_point, x=meas_point, y=calced_value, error=None)
                     trigger_plot(model)
