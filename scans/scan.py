@@ -1103,7 +1103,6 @@ class Scan(HasEnvironment):
         the self._measure_results array. If you only have one value to return, do _measure_results[0]=self.measure(point). If you have multiple results for
         a single measurement, iterate through the array for each result, while only calling measure once, ideally passing _measure_results as an array to modify"""
         self._measure_results[0] = self.measure(point)
-        return self._measure_results[0]
 
     @portable
     def do_measure_nresults(self, point):

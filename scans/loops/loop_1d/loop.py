@@ -129,7 +129,8 @@ class Loop1D(Loop):
                     #self.scan.measurement = meas                                # legacy
                     self.scan.before_measure(meas_point, self.scan.measurement)                  # user callback
                     self.scan.lab_before_measure(meas_point, self.scan.measurement)              # user callback
-                    val = self.scan.do_measure(meas_point)                      # call the user's measure() method
+                    self.scan.do_measure(meas_point)                            # call the user's measure() method
+                    val = self.scan._measure_results[0]
                     self.data.store([i_meas, i_repeat], val)                    # store the value returned by measure() into the data store object
                     self.scan.after_measure(meas_point, self.scan.measurement)                   # user callback
                     self.scan.lab_after_measure(meas_point, self.scan.measurement)               # user callback
