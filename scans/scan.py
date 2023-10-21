@@ -1048,44 +1048,15 @@ class Scan(HasEnvironment):
                             if save and not main_fit_saved:
                                 self.logger.warning("Main fit param was not saved.")
 
-
-                            # callback
-                            if self.before_fit(model) != False:
-
-                                # what's the correct data source?
-                                #   When fitting only (no scan is performed) the fit is performed on data from the last
-                                #   scan that ran, which is assumed to be in the 'current_scan' namespace.
-                                #   Otherwise, the fit is performed on data in the model's namespace.
-                                use_mirror = model.mirror == True and self.fit_only
-                                save = self.save_fit
-
-                                # dummy values, these are only used in 2d scans
-                                dimension = 0
-                                i = 0
-
-                                # perform the fit
-                                self._logger.debug('performing fit on model \'{0}\''.format(entry['name']))
-                                fit_performed, valid, main_fit_saved, errormsg = self._fit(entry, model,save, use_mirror, dimension, i)
-
-                                entry['fit_valid'] = valid
-
-                                # tell current scan to plot data...
-                                model.set('plots.trigger', 1, which='both')
-                                model.set('plots.trigger', 0, which='both')
-
-                                # params not saved warning occurred
-                                if save and not main_fit_saved:
-                                    self.logger.warning("Fitted params not saved.")
-
-                                # callback
-                                self._main_fit_saved = main_fit_saved
-                                self._fit_valid = valid
-                                if fit_performed:
-                                    self.after_fit(entry['fit'], valid, main_fit_saved, model)
-
                             # print the fitted parameters...
                             if self.enable_reporting and fit_performed:
                                 self.report_fit(model)
+
+                            # callback
+                            self._main_fit_saved = main_fit_saved
+                            self._fit_valid = valid
+                            if fit_performed:
+                                self.after_fit(entry['fit'], valid, main_fit_saved, model)
 
     # interface: for extensions (required)
     def _write_datasets(self, entry):
@@ -1131,7 +1102,9 @@ class Scan(HasEnvironment):
         """Provides a way for subclasses to override the method signature of the measure method. You MUST return the result of the measuerment into 
         the self._measure_results array. If you only have one value to return, do _measure_results[0]=self.measure(point). If you have multiple results for
         a single measurement, iterate through the array for each result, while only calling measure once, ideally passing _measure_results as an array to modify"""
-        self._measure_results[0]=self.measure(point)
+        self._measure_results[0] = self.measure(point)
+        return self._measure_results[0]
+
     @portable
     def do_measure_nresults(self, point):
         """Provides a way for subclasses to override the method signature of the measure method. You MUST return the result of the measuerment into 
