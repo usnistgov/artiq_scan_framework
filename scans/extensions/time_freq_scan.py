@@ -125,12 +125,11 @@ class TimeFreqScan(Scan):
         # time scan
         if self.scan == 'time':
             pulse_time = point
-            return self.measure(pulse_time, self.frequency_center)
+            self._measure_results[0] = self.measure(pulse_time, self.frequency_center)
 
         # frequency scan
         if self.scan == 'frequency':
-            return self.measure(self.pulse_time, point)
-        return 0
+            self._measure_results[0] = self.measure(self.pulse_time, point)
 
     def report(self, location='both'):
         super().report(location)
