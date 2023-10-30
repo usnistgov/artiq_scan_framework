@@ -3,7 +3,7 @@ import numpy as np
 from time import time, sleep
 import inspect
 import cProfile, pstats
-from scan_framework.scans.data_logger import DataLogger
+from artiq_scan_framework.scans.data_logger import DataLogger
 
 
 # allows @portable methods that use delay_mu to compile
@@ -736,7 +736,7 @@ class Scan(HasEnvironment):
         """
         import logging
         self.logger = logging.getLogger(self._logger_name)
-        self._logger = logging.getLogger("scan_framework.scans.scan")
+        self._logger = logging.getLogger("artiq_scan_framework.scans.scan")
 
     # interface: for child class
     def report(self, location='both'):
@@ -1003,7 +1003,7 @@ class Scan(HasEnvironment):
         as  the y-value in the dimension 0 plot and the returned error will weight the final fit along dimension 0.
 
         :param model: The model which just performed a fit along the dimension 1 sub-scan.  :code:`model.fit` points to
-                      the :class:`Fit <scan_framework.analysis.curvefits.Fit>` object from the
+                      the :class:`Fit <artiq_scan_framework.analysis.curvefits.Fit>` object from the
                       :ref:`analysis <analysisapi>` package.
         :type model: ScanModel
         :returns: The calculated value and the error in the calculated value.
@@ -1136,7 +1136,7 @@ class Scan(HasEnvironment):
         called at the end of each scan point.
 
         :param model_instance: Instance of the scan model being registered
-        :type model_instance: :class:`scan_framework.models.scan_model.ScanModel`
+        :type model_instance: :class:`artiq_scan_framework.models.scan_model.ScanModel`
         :param measurement: The name of the measurement for which the model will calculate and save statistics.
                             When only a single measurement is performed by the scan, this can simply be set to True.
                             If not set to a string or to True, statistics will not be generated or saved. If set to
@@ -1648,7 +1648,7 @@ class Scan(HasEnvironment):
 
         Notes
             - :code:`model.fit` is used in this callback to access the
-              :class:`Fit <scan_framework.analysis.curvefits.Fit>` object containing the fitted parameters and other
+              :class:`Fit <artiq_scan_framework.analysis.curvefits.Fit>` object containing the fitted parameters and other
               useful information about the fit.
             - Always runs on the host.
             - Will not run if fit's are not performed for any reason
@@ -1730,7 +1730,7 @@ class Scan(HasEnvironment):
 
 
 class Scan1D(Scan):
-    """Extension of the :class:`~scan_framework.scans.scan.Scan` class for 1D scans.  All 1D scans should inherit from
+    """Extension of the :class:`~artiq_scan_framework.scans.scan.Scan` class for 1D scans.  All 1D scans should inherit from
     this class."""
 
     def __init__(self, managers_or_parent, *args, **kwargs):
@@ -1834,7 +1834,7 @@ class Scan1D(Scan):
 
 
 class Scan2D(Scan):
-    """Extension of the :class:`~scan_framework.scans.scan.Scan` class for 2D scans.  All 2D scans should inherit from
+    """Extension of the :class:`~artiq_scan_framework.scans.scan.Scan` class for 2D scans.  All 2D scans should inherit from
         this class."""
     hold_plot = False
 

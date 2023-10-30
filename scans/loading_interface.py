@@ -1,6 +1,6 @@
 from artiq.experiment import HasEnvironment
 from artiq.language import *
-from scan_framework.models.model import *
+from artiq_scan_framework.models.model import *
 
 
 # TODO: needs commenting

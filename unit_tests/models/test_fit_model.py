@@ -1,6 +1,6 @@
-from scan_framework.unit_tests.test_case import *
-from scan_framework.models.fit_model import *
-from scan_framework.analysis.curvefits import FitFunction
+from artiq_scan_framework.unit_tests.test_case import *
+from artiq_scan_framework.models.fit_model import *
+from artiq_scan_framework.analysis.curvefits import FitFunction
 
 
 # test validation of fit params

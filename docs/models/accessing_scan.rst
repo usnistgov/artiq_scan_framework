@@ -12,7 +12,7 @@ For example, the fit function to use for fitting could be set via a GUI argument
 .. code-block:: python
 
     from artiq.experiment import *
-    from scan_framework import *
+    from artiq_scan_framework import *
 
 
     class MyModel(ScanModel):

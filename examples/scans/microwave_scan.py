@@ -9,9 +9,9 @@
 
 
 from artiq.experiment import *
-from scan_framework.scans import *
-from scan_framework.models import *
-from scan_framework.analysis.curvefits import AtomLine, Sine
+from artiq_scan_framework.scans import *
+from artiq_scan_framework.models import *
+from artiq_scan_framework.analysis.curvefits import AtomLine, Sine
 
 
 class MicrowaveScan(Scan1D, TimeFreqScan, EnvExperiment):

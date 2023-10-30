@@ -7,7 +7,7 @@
 #   4. self.warming_up is set to true during warmup
 
 from artiq.experiment import *
-from scan_framework.scans import *
+from artiq_scan_framework.scans import *
 
 
 class WarmupPointsBasicExample(Scan1D, EnvExperiment):

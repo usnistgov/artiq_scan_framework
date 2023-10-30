@@ -1,6 +1,6 @@
 from artiq.experiment import *
-from scan_framework import *
-from scan_framework.analysis.curvefits import FitFunction
+from artiq_scan_framework import *
+from artiq_scan_framework.analysis.curvefits import FitFunction
 import numpy as np
 
 

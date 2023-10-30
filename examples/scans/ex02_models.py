@@ -3,7 +3,7 @@
 # How to register a scan model to calculate and plot mean values and standard errors.
 
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 # 1. Create a scan model.

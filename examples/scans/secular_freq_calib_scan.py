@@ -9,7 +9,7 @@
 
 
 from artiq.experiment import *
-import scan_framework.examples.scans.tickle_scan as ts
+import artiq_scan_framework.examples.scans.tickle_scan as ts
 
 
 class SecularFreqCalibScan(ts.TickleScan):

@@ -15,7 +15,7 @@ scan, simply inherit from the :class:`TimeScan<scan_framework.scans.extensions.T
 
 .. code-block:: python
 
-    from scan_framework.scans import *
+    from artiq_scan_framework.scans import *
 
 
     class MyTimeScan(Scan1D, TimeScan, EnvExperiment):
@@ -53,8 +53,8 @@ frequency scan, simply inherit from the :class:`FreqScan<scan_framework.scans.ex
 
 .. code-block:: python
 
-    from scan_framework.scans import *
-    from scan_framework.models import *
+    from artiq_scan_framework.scans import *
+    from artiq_scan_framework.models import *
 
 
     class MyFreqScan(Scan1D, FreqScan, EnvExperiment):
@@ -149,9 +149,9 @@ auto-tracking, see the example below.
 
 .. code-block:: python
 
-    from scan_framework.scans import *
-    from scan_framework.models import *
-    from scan_framework.analysis.curvefits import AtomLine, Sine
+    from artiq_scan_framework.scans import *
+    from artiq_scan_framework.models import *
+    from artiq_scan_framework.analysis.curvefits import AtomLine, Sine
     import random
 
 

@@ -4,7 +4,7 @@
 #
 # NOTE: Also create in the dashboard the applet for this experiment in scan_framework/examples/scans/ex05_applet.txt
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class Example5Scan(Scan1D, EnvExperiment):

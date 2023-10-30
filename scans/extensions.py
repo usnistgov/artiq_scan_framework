@@ -2,7 +2,7 @@
 
 from artiq.language.core import *
 from .scan import *
-from scan_framework.scans.loading_interface import *
+from artiq_scan_framework.scans.loading_interface import *
 from scipy.fftpack import fft
 
 

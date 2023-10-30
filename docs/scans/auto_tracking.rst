@@ -44,7 +44,7 @@ When working with models, :code:`_x_offset` can be determined automatically by t
 fitted value for a scan.  This is useful because the center value of an absolute scan range may change
 over time, such as in the case of atomic transition frequencies.  Using auto-tracking allows the scan to naturally
 follow any drifts in the value being fit as it is periodically run.  To use auto-tracking in a scan, first create
-a scan model that has the :attr:`main_fit <scan_framework.models.scan_model.ScanModel.main_fit>`
+a scan model that has the :attr:`main_fit <artiq_scan_framework.models.scan_model.ScanModel.main_fit>`
 attribute defined.  Then register the scan model with the :code:`auto_track` attribute set.
 
 .. code-block:: python
@@ -57,7 +57,7 @@ attribute defined.  Then register the scan model with the :code:`auto_track` att
 
 When :code:`auto_track='fit'` or :code:`auto_track'fitresults'` are set, the framework automatically offsets
 the scan points by the main fit of the scan.  If :code:`auto_track='fit'` is set, the most recently fitted
-value of :attr:`main_fit <scan_framework.models.scan_model.ScanModel.main fit>` is fetched from the datasets
+value of :attr:`main_fit <artiq_scan_framework.models.scan_model.ScanModel.main fit>` is fetched from the datasets
 (i.e. from a previous run of the scan) and used to offset the scan points, while setting :code:`auto_track='fitresults'`
 causes the fitted value that was just found by the scan to be used (which has not yet been saved to the datasets).
 
@@ -75,10 +75,10 @@ As an example, and a more advanced usage of the scan framework:
 
 .. code-block:: python
 
-    from scan_framework.scans import *
+    from artiq_scan_framework.scans import *
     import experiments.scans.tickle_scan as scan
     from lib.models.rf_resonator_model import *
-    from scan_framework.models import *
+    from artiq_scan_framework.models import *
 
 
     class RFResonatorScan(Scan1D, EnvExperiment):

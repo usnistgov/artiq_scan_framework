@@ -3,7 +3,7 @@
 # How to create and use scan arguments.  The effect of scan loop arguments are printed to the Log window in the
 # dashboard.
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class Example1Scan(Scan1D, EnvExperiment):

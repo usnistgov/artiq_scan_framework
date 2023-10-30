@@ -17,7 +17,7 @@ and helps avoid incorrect fit parameters from being saved and later used in an e
 philosophy of convention over configuration: datasets are stored for analysis and plotting in a standardize way which
 removes much of the data handling that needs to performed by the writer of a scan.   
 
-Please refer to https://stylus.ipages.nist.gov/scan_framework/ for the full scan framework documentation including 
+Please refer to https://pages.nist.gov/artiq_scan_framework/ for the full scan framework documentation including 
 many worked examples and a full API listing.  The following gives a broad overview of the most import aspects of 
 the scan framework.
 
@@ -67,17 +67,17 @@ installing git and run
 ```
     mkdir C:\src
     cd C:\src
-    git clone https://github.com/usnistgov/scan_framework
+    git clone https://github.com/usnistgov/artiq_scan_framework
     dir
-    rem you should see a folder name scan_framework which contains all source code for the framework
+    rem you should see a folder name artiq_scan_framework which contains all source code for the framework
 ```
 
-This will download all of the required source files for the framework to ```C:\src\scan_framework```.  You can also
-simply download the scan framework source directly from http://github.com/usnistgov/scan_framework and extract them 
+This will download all of the required source files for the framework to ```C:\src\artiq_scan_framework```.  You can also
+simply download the scan framework source directly from http://github.com/usnistgov/artiq_scan_framework and extract them 
 to a folder of your choosing if you do not wish to install git.  Installing git makes it easier to receive future updates 
 and bug fixes and is recommended.
 
-Next, add the directory that contains the folder named ```scan_framework``` to your 
+Next, add the directory that contains the folder named ```artiq_scan_framework``` to your 
 [PYTHONPATH](https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH) environment variable.
 For the Windows example above, [add an environment variable](https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html#GUID-DD6F9982-60D5-48F6-8270-A27EC53807D0) 
 with a variable name of ```PYTHONPATH``` and set it's value field to ```C:\src;```
@@ -110,7 +110,7 @@ Finally, create the ```current_scan``` applet for the scan framework in the ARTI
 navigate to the `Applets` tab, right click and select `New applet`.  Add the following source for the applet:
 
 ```
-$python -m scan_framework.applets.plot_xy current_scan.plots.y
+$python -m artiq_scan_framework.applets.plot_xy current_scan.plots.y
     --x current_scan.plots.x
     --fit current_scan.plots.fitline
     --title current_scan.plots.plot_title
@@ -157,10 +157,10 @@ basic to advanced and are meant to be followed in more or less chronological ord
 
 **Note:**
 To run an example, right click the `Explorer` tab in the dashboard and choose `Open file outside repository`.  
-Then navigate to the `directory containing scan framework source/scan_framework/examples/scans` folder and open and
+Then navigate to the `directory containing scan framework source/artiq_scan_framework/examples/scans` folder and open and
 the example scan.
 ---
-Additional real world examples are provided in `scan_framework/examples/scans` and `scan_framework/examples/models` 
+Additional real world examples are provided in `artiq_scan_framework/examples/scans` and `scan_framework/examples/models` 
 that illustrate how the scan class is used in a real lab setup.
 
 

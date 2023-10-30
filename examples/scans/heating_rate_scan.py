@@ -8,11 +8,11 @@
 
 # Include the scan_framework files.
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 # Include the model for this scan.
 # Source code is in examples/models/heating_rate.py.
-from scan_framework.examples.models.heating_rate import *
+from artiq_scan_framework.examples.models.heating_rate import *
 
 # Lab specific libraries not included in the scan_framework source.
 # Included for illustrative purposes.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.5
-import scan_framework.applets.plot as parent
+import artiq_scan_framework.applets.plot as parent
 import pyqtgraph
 import PyQt5
 import numpy as np

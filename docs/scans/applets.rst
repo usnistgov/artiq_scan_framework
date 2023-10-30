@@ -4,7 +4,7 @@ Applets
 =====================
 
 There are a few applets that need to be created so that scan data may be plotted.  Each applet uses one of the
-applet classes defined in the scan_framework/applets folder.  See the applets documentation for more information about
+applet classes defined in the artiq_scan_framework/applets folder.  See the applets documentation for more information about
 these applet classes.
 
 .. _current-scan-applet:

@@ -4,8 +4,8 @@ Running warmup points
 A set of warmup points can be run on the core device before a scan starts allowing equipment up to be brought up to
 a desired operating temperature before it is used to perform measurements in the scan.
 
-The default behavior of a scan is to execute the :meth:`measure(point) <scan_framework.scans.scan.Scan.measure>`
-interface method :attr:`self.nwarmup_points <scan_framework.scans.scan.Scan.nwarmup_points>`
+The default behavior of a scan is to execute the :meth:`measure(point) <artiq_scan_framework.scans.scan.Scan.measure>`
+interface method :attr:`self.nwarmup_points <artiq_scan_framework.scans.scan.Scan.nwarmup_points>`
 number of times for each registered measurement with the :code:`point` argument set to :code:`0.0`.
 
 :code:`self.warming_up` is set to :code:`True` immediately before warmup points are execute and is set to :code:`False`
@@ -21,9 +21,9 @@ measure method.
         else:
             # ... execute commands for the measurement
 
-If the :meth:`warmup() <scan_framework.scans.scan.Scan.warmup>` interface method is implemented
-:meth:`warmup(point) <scan_framework.scans.scan.Scan.warmup>` will be executed instead of
-:meth:`measure(point) <scan_framework.scans.scan.Scan.measure>`.  This allows warmup and measurement commands
+If the :meth:`warmup() <artiq_scan_framework.scans.scan.Scan.warmup>` interface method is implemented
+:meth:`warmup(point) <artiq_scan_framework.scans.scan.Scan.warmup>` will be executed instead of
+:meth:`measure(point) <artiq_scan_framework.scans.scan.Scan.measure>`.  This allows warmup and measurement commands
 to be separated and also results in faster execution of the :code:`measure()` method since it does not need to check
 :code:`self.warming_up` each time it is called during the execution of the scan.
 

@@ -6,7 +6,7 @@ Full API documentation for scans
 :mod:`scans.scan` module
 -----------------------------------
 
-.. automodule:: scan_framework.scans.scan
+.. automodule:: artiq_scan_framework.scans.scan
     :members:
     :special-members:
     :private-members:
@@ -16,7 +16,7 @@ Full API documentation for scans
 :mod:`scans.extensions` module
 -----------------------------------
 
-.. automodule:: scan_framework.scans.extensions
+.. automodule:: artiq_scan_framework.scans.extensions
     :members:
     :special-members:
     :private-members:
@@ -26,7 +26,7 @@ Full API documentation for scans
 :mod:`scans.loading_interface` module
 --------------------------------------
 
-.. automodule:: scan_framework.scans.loading_interface
+.. automodule:: artiq_scan_framework.scans.loading_interface
     :members:
     :special-members:
     :private-members:

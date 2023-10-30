@@ -6,7 +6,7 @@
 #
 # NOTE: Also create in the dashboard the applet for this experiment in scan_framework/examples/scans/ex06_applet.txt
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class Example6Scan(Scan1D, EnvExperiment):

@@ -2,7 +2,7 @@
 #
 # How to format the plot axes and title
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class Example13Scan(Scan1D, FreqScan, EnvExperiment):

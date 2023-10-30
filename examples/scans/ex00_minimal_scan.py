@@ -6,7 +6,7 @@
 from artiq.experiment import *
 
 # 1. Import all classes needed the scan framework.
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 # 2. Create a scan experiment.

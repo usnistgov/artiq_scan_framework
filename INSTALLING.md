@@ -13,11 +13,11 @@ First, create a conda environment with Python version 3.5 and ARTIQ version 3.7 
 Please see [Installing ARTIQ version 3.7](https://m-labs.hk/artiq/manual-release-3/installing.html) for more detailed
 information on installing ARTIQ.
 
-Next, clone the scan_framework repository into a folder that is in your PYTHONPATH and make sure 
-the top level folder containing the scan_framework source is named scan_framework.
+Next, clone the artiq_scan_framework repository into a folder that is in your PYTHONPATH and make sure 
+the top level folder containing the artiq_scan_framework source is named artiq_scan_framework.
 
 ```
-    git clone https://gitlab.nist.gov/gitlab/stylus/scan_framework.git /folder/on/pythonpath
+    git clone https://github.com/usnistgov/artiq_scan_framework.git /folder/on/pythonpath
 ```
     
 Next, add the applets listed in [applet_commands.txt](applet_commands.txt) under 

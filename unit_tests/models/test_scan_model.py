@@ -1,7 +1,7 @@
-from scan_framework.models.scan_model import *
-from scan_framework.scans.scan import Scan
-import scan_framework.analysis.curvefits as curvefits
-from scan_framework.unit_tests.test_case import *
+from artiq_scan_framework.models.scan_model import *
+from artiq_scan_framework.scans.scan import Scan
+import artiq_scan_framework.analysis.curvefits as curvefits
+from artiq_scan_framework.unit_tests.test_case import *
 import math
 import numpy as np
 

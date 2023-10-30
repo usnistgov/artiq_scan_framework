@@ -32,8 +32,8 @@ like:
 
 .. code-block:: python
 
-    from scan_framework.scans import *
-    from scan_framework.models import *
+    from artiq_scan_framework.scans import *
+    from artiq_scan_framework.models import *
     from lib.cooling import *
     from lib.detection import *
 

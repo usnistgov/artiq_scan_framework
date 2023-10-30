@@ -7,7 +7,7 @@ in a scan as it runs.  To view these histograms, create an applet for viewing th
 
 .. code-block:: console
 
-    $python -m scan_framework.applets.plot_hist current_hist.bins --x current_hist.bin_boundaries
+    $python -m artiq_scan_framework.applets.plot_hist current_hist.bins --x current_hist.bin_boundaries
     --x_units current_hist.x_units --x_label current_hist.x_label --plot_title current_hist.plot_title
 
 

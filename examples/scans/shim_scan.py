@@ -9,7 +9,7 @@
 
 
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 from lib.stylus_scan import *
 from lib.models.shim_model import *
 from lib.cooling import *

@@ -1,5 +1,5 @@
-from scan_framework.models.model import *
-from scan_framework.analysis.curvefits import *
+from artiq_scan_framework.models.model import *
+from artiq_scan_framework.analysis.curvefits import *
 import numpy as np
 from math import *
 

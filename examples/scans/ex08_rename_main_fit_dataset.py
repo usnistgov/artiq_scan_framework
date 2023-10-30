@@ -3,7 +3,7 @@
 # How to rename the main fit dataset containing the main fit of the scan
 
 from artiq.experiment import *
-from scan_framework import *
+from artiq_scan_framework import *
 
 
 class Example8Model(ScanModel):
