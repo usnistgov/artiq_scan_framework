@@ -187,25 +187,24 @@ class Scan2D(Scan):
 
         # settings in 'entry' always override default values
         args = {**defaults, **entry}
-
         # perform the fit
         fit_function = model.fit_function
         validate = args['validate']
         set = args['set']  # save all info about the fit (fitted params, etc) to the 'fits' namespace?
         save = args['save']  # save the main fit to the root namespace?
         return model.fit_data(
-            x_data=x_data,
-            y_data=y_data,
-            errors=errors,
-            fit_function=fit_function,
-            guess=guess,
-            i=i,
-            validate=validate,
-            set=set,
-            save=save,
-            man_bounds=model.man_bounds,
-            man_scale=model.man_scale
-        )
+                x_data=x_data,
+                y_data=y_data,
+                errors=errors,
+                fit_function=fit_function,
+                guess=guess,
+                i=i,
+                validate=validate,
+                set=set,
+                save=save,
+                man_bounds=model.man_bounds,
+                man_scale=model.man_scale
+            )
 
     def _offset_points(self, offset):
         self._points[:, :, 1] += offset

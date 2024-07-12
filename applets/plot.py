@@ -2,6 +2,9 @@
 import artiq.applets.simple as plot_xy_parent
 import pyqtgraph
 
+import pyqtgraph.exporters
+from PyQt5 import QtWidgets, QtGui
+
 
 class SimpleApplet(plot_xy_parent.SimpleApplet):
 
@@ -44,6 +47,13 @@ class Plot(pyqtgraph.PlotWidget):
         self.set_config(pyqtgraph)
         pyqtgraph.setConfigOptions(antialias=True)
         pyqtgraph.PlotWidget.__init__(self)
+        s = self.scene()
+        s.contextMenu[0]= pyqtgraph.QtGui.QAction(pyqtgraph.QtCore.QCoreApplication.translate("GraphicsScene","Export Dialog..."))
+        s.contextMenu[0].triggered.connect(s.showExportDialog)        
+        s.contextMenu.append(pyqtgraph.QtGui.QAction(pyqtgraph.QtCore.QCoreApplication.translate("GraphicsScene", "Copy Plot")))
+        s.contextMenu[1].triggered.connect(lambda: pyqtgraph.exporters.ImageExporter(s).export(copy=True))
+        copy_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+C'), self)
+        copy_shortcut.activated.connect(lambda: pyqtgraph.exporters.ImageExporter(s).export(copy=True))
 
     def set_config(self, pyqtgraph):
         pyqtgraph.setConfigOption('background', self.style['background']['color'])

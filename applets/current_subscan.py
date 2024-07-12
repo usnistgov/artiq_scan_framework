@@ -10,8 +10,8 @@ import os
 #list of all items to import given the namespaces you've passed. Items in one_time_imports will be imported from ns0.plots and items in every_curve_imports will be imported for every
 #namespace from ns0.plots,ns1.plots, etc. to import from a different area see generate_namespace_args for how the rid is imported (not located under plots) and _load again for importing rid
 #items are then either imported to self.item (for one time items) or self.items in a list of items for every scan for the n_curves that match first plot rid
-one_time_imports=['plot_title','x_label','x_units','x_scale','y_scale','y_label','y_units','fit_string','subtitle','subplot.i_plot'] #rid found in seperate area from plots, don't include in this list
-every_curve_imports=['x','y','error','fitline','trigger','fit_legend','data_legend'] #rid found in seperate area from plots, don't include in this list
+one_time_imports=['plot_title','x_label','x_units','x_scale','y_scale','y_label','y_units','fit_string','subtitle'] #rid found in seperate area from plots, don't include in this list
+every_curve_imports=['x','y','error','fitline','fit_legend','data_legend'] #rid,trigger found in seperate area from plots, don't include in this list
 
 class CurrentSubscanApplet(SimpleApplet):
     def __init__(self, main_widget_class, cmd_description=None,
@@ -42,16 +42,18 @@ class CurrentSubscanApplet(SimpleApplet):
         self.datasets = {getattr(self.args, arg.replace("-", "_"))
                          for arg in self.dataset_args}
     def generate_namespace_args(self):
-        #generate one time only namespace args from ns1, namely plot_title,x/ylabel/unit/scale,rid
+        #generate one time only namespace args from ns1, namely plot_title,x/ylabel/unit/scale,rid,subplot.i_plot
         #plot_items=['plot_title','x_label','x_units','x_scale','y_scale','y_label','y_units','fit_string','subtitle']
         plot_items=one_time_imports
         namespace=self.args.ns0
         for name in plot_items:
-            location=namespace+'.plots.'+name
+            location=namespace+'.plots.dim1.'+name
             self.dataset_args.add(name)
             setattr(self.args,name,location)
         self.dataset_args.add('rid')
         self.args.rid=namespace+'.rid'
+        self.dataset_args.add('i_plot')
+        self.args.i_plot=namespace+'.plots.subplot.i_plot'
         
         #generate args unique from all namespaces
         
@@ -64,13 +66,15 @@ class CurrentSubscanApplet(SimpleApplet):
             ns_string+='_'
             if namespace:
                 for name in plot_items:
-                    location=namespace+'.plots.'+name
+                    location=namespace+'.plots.dim1.'+name
                     name=ns_string+name
                     self.dataset_args.add(name) #add this as an argument to pull from
                     setattr(self.args,name,location) #add this as the location of whene that argument points to
                 #rid different location, don't prepend .plots
                 self.dataset_args.add(ns_string+'rid')
                 setattr(self.args,ns_string+'rid',namespace+'.rid')   
+                self.dataset_args.add(ns_string+'trigger')
+                setattr(self.args,ns_string+'trigger',namespace+'.plots.trigger')
                 self.n_namespaces=i+1
             else:
                 #reached max number of namespace args passed, stop for loop set n_namespaces for this instance of the applet
@@ -261,6 +265,7 @@ class XYPlot(parent.Plot):
         #self._load(data, ['plot_title', 'x_label', 'y_label', 'x_units', 'y_units'])
         self._load(data, ['x_scale','y_scale'], default=1)#reload these just with default 1 argument
         self._load(data,'rid',default=None)
+        self._load(data,'i_plot',default=0)
         
         #get number of curves to import by checking how many match first rid
         self.rids=[self._load_plots(data,'ns%i_rid'%i) for i in range(self.max_curves)] #list of rids gotten from self.nsi_rid
@@ -390,16 +395,16 @@ class XYPlot(parent.Plot):
             index+=1
         self.set_legend()
     def draw_series(self, i):
-        i_plot=self.subplot.i_plot
+        i_plot=self.i_plot
         x = self.xs[i][i_plot]
         y = self.ys[i][i_plot]
         fit=self.fitlines[i][i_plot]
         error=self.errors[i][i_plot]
         
         #get plot objects for index i
-        error_obj=self.error_objs[i][i_plot]
-        fit_obj=self.fit_objs[i][i_plot]
-        curve_obj=self.curve_objs[i][i_plot]
+        error_obj=self.error_objs[i]
+        fit_obj=self.fit_objs[i]
+        curve_obj=self.curve_objs[i]
 
         # don't draw if all values are nan 
         if not np.isnan(y).all():
@@ -467,37 +472,37 @@ class XYPlot(parent.Plot):
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.vb.mapSceneToView(pos)
             x_cursor = mousePoint.x()
-            x=self.xs[0]
-            index=0
-            if x_cursor > x[0] and x_cursor < x[-1]:
-                #cursor within bounds of data, get approximate index of x data 
-                for i in range(len(x)):
-                    if x[i]>x_cursor:
-                        #x_cursor definitely greater than x[0], find first x[i]>x_cursor
-                        if abs(x[i]-x_cursor)<abs(x[i-1]-x_cursor):
-                            index=i
-                        else:
-                            index=i-1
-                        break            
-            if x_cursor > x[-1]:
-                index=len(x)-1
-            self.set_cursor(index)
+            try:
+                x=self.xs[0]
+                index=(abs(x-x_cursor)).argmin()
+                self.set_cursor(index)
+            except:
+                pass
     def set_cursor(self,index):
         x=self.xs[0]
         ys=self.ys
         y=ys[0]
         self.cursor_text.setVisible(True)
         self.vLine.setVisible(True)
-        self.cursor_text.setText("x=%f,y=%f" %(x[index],y[index]))
+        
+        #code sets text of point at the point doing left or right based on most space on scan to left/right or above/below
+        self.cursor_text.setText("x=%f,y=%f" %(x[index],y[index]))#sets text to give location of point
         ###move cursor anchor point depending on if it's at bottom or end of scan
         first_pos=0
         second_pos=0
-        if index>len(x)/2:
+        mid=(x.max()+x.min())/2
+        if x[index]>mid:
             first_pos=1
         if y[index]<(max([max(ys[i]) for i in range(len(ys))])+min([min(ys[i]) for i in range(len(ys))]))/2:
             second_pos=1
-        anchor=(first_pos,second_pos)
-        self.cursor_text.setPos(x[index],y[index])
+        
+        #anchor=(first_pos,second_pos)#old version
+        #self.cursor_text.setPos(x[index],y[index])#old version
+        anchor=(first_pos,not second_pos)
+        if second_pos:
+            self.cursor_text.setPos(x[index],y.max())
+        else:
+            self.cursor_text.setPos(x[index],y.min())
         self.cursor_text.setAnchor(anchor)
         self.vLine.setPos(x[index])
     def clicked(self):

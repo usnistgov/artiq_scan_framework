@@ -361,10 +361,16 @@ class XYPlot(parent.Plot):
             x_axis.tickFont = axis_font
             # somehow tickTextOffset necessary to change tick font
             x_axis.setStyle(tickTextOffset=self.get_style('axes.tick_offset'))
+            #If you are reading this you probably are mad about autoSIPrefixing. 
+            #currently just disabling autosiprefixing stupidly still scales your data
+            #based on the current set of values on the plot. You must also set this autoSIPrefixScale
+            #to 1 to not have that happen, so if you like to tell your data what the x label/unit is 
+            #and give x scales and values you should do this, otherwise you should bow down to 
+            #what pyqtgraph wants and always pass SI unit values and enable AutSIPrefixing.
             x_axis.enableAutoSIPrefix(False)
+            x_axis.autoSIPrefixScale=1
             if self.x_label is not None:
                 self.setLabel('bottom', self.x_label, units=self.x_units, **self.get_style("axes.label"))
-                #self.fit_string='fit f0=1558.23KHz+/-142Hz'
                 if self.fit_string:
                     x_label_html=x_axis.labelString()
                     x_label_html+="<br><span style = 'font-size:10pt'>%s</span>" %self.fit_string
@@ -466,37 +472,49 @@ class XYPlot(parent.Plot):
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.vb.mapSceneToView(pos)
             x_cursor = mousePoint.x()
-            x=self.xs[0]
-            index=0
-            if x_cursor > x[0] and x_cursor < x[-1]:
-                #cursor within bounds of data, get approximate index of x data 
-                for i in range(len(x)):
-                    if x[i]>x_cursor:
-                        #x_cursor definitely greater than x[0], find first x[i]>x_cursor
-                        if abs(x[i]-x_cursor)<abs(x[i-1]-x_cursor):
-                            index=i
-                        else:
-                            index=i-1
-                        break            
-            if x_cursor > x[-1]:
-                index=len(x)-1
-            self.set_cursor(index)
+            try:
+                ymax=max(self.ys[0])
+                ymin=min(self.ys[0])
+                dif=ymax-ymin
+                if mousePoint.y()<(2*dif+ymin) and mousePoint.y()>(ymin-dif):
+                    #this sets boundary at twice the span of ydata to put a cursor on
+                    x=self.xs[0]
+                    index=(abs(x-x_cursor)).argmin()
+                    self.set_cursor(index)
+                else:
+                    #if this wasn't true then your mouse is probably way off the y scale and you need to resize your plot
+                    #trying to prevent the autoscaling flip out issue when you don't have plot correctly scaled, but the correct
+                    #way to do that is somehow check the size of the window and confirm putting the cursor text won't be too
+                    #big for the plot (not sure how to do that)
+                    self.cursor_text.setVisible(False)
+                    self.vLine.setVisible(False)
+            except:
+                pass
     def set_cursor(self,index):
         x=self.xs[0]
         ys=self.ys
         y=ys[0]
         self.cursor_text.setVisible(True)
         self.vLine.setVisible(True)
-        self.cursor_text.setText("x=%f,y=%f" %(x[index],y[index]))
+        
+        #code sets text of point at the point doing left or right based on most space on scan to left/right or above/below
+        self.cursor_text.setText("x=%f,y=%f" %(x[index],y[index]))#sets text to give location of point
         ###move cursor anchor point depending on if it's at bottom or end of scan
         first_pos=0
         second_pos=0
-        if index>len(x)/2:
+        mid=(x.max()+x.min())/2
+        if x[index]>mid:
             first_pos=1
         if y[index]<(max([max(ys[i]) for i in range(len(ys))])+min([min(ys[i]) for i in range(len(ys))]))/2:
             second_pos=1
-        anchor=(first_pos,second_pos)
-        self.cursor_text.setPos(x[index],y[index])
+        
+        #anchor=(first_pos,second_pos)#old version
+        #self.cursor_text.setPos(x[index],y[index])#old version
+        anchor=(first_pos,not second_pos)
+        if second_pos:
+            self.cursor_text.setPos(x[index],y.max())
+        else:
+            self.cursor_text.setPos(x[index],y.min())
         self.cursor_text.setAnchor(anchor)
         self.vLine.setPos(x[index])
     def clicked(self):

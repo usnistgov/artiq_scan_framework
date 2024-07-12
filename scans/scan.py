@@ -393,15 +393,15 @@ class Scan(HasEnvironment):
         # -- loop over the scan points
         while self._idx < npoints - 1:
             # lookup the scan point (point) and the scan point index (i_point) at the current loop index (idx)
-            point = points[self._idx]
-            self._i_point = i_points[self._idx]
+            point = points[int(self._idx)]
+            self._i_point = i_points[int(self._idx)]
 
             # repeat measurement on scan point
             # first two arguments are point because point (value in the scan points array) is assumed to be the same as measure point (value you would like to
             # pass to the measure method). This is different for a continuous scan  that uses the first point as the number of scan points run, and the second as
             # the value that the measure function should use.
             self._repeat_loop(point, point, self._i_point, self._i_pass, nrepeats, nmeasurements, measurements, poffset, ncalcs,
-                               last_point=False, last_pass=last_pass)
+                                last_point=False, last_pass=last_pass)
             self._idx += 1
 
         # last scan point is special (optimization)
@@ -967,7 +967,7 @@ class Scan(HasEnvironment):
             # for every registered model...
             for entry in self._model_registry:
                 # registered fit models
-                if entry['fit']:
+                if entry['fit'] and entry['dimension']!=1:
                     model = entry['model']
                     if hasattr(model,"fit_models"):
                         ###if hasattr fit_models this is a multiresult model and will loop through all fit models in that multiresult model
@@ -987,8 +987,11 @@ class Scan(HasEnvironment):
                             save = self.save_fit
     
                             # dummy values, these are only used in 2d scans
-                            dimension = 0
-                            i = 0
+                            try:
+                                dimension = entry['dimension']
+                            except:
+                                dimension=0
+                            i = None
     
                             # perform the fit
                             self._logger.debug('performing fit on model \'{0}\''.format(entry['name']))

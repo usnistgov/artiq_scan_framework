@@ -225,11 +225,11 @@ class Model(HasEnvironment):
 
         # set the main dataset
         if which == 'both' or which == 'main':
-            self.set_dataset(self.key(key), value, broadcast=broadcast, persist=persist, save=save)
+            self.set_dataset(self.key(key), value, broadcast=broadcast, persist=persist, archive=save)
 
         # set the mirror dataset
         if mirror or (self.mirror and (which in ['both', 'mirror'])):
-            self.set_dataset(self.key(key, mirror=True), value, broadcast=True, persist=True, save=True)
+            self.set_dataset(self.key(key, mirror=True), value, broadcast=True, persist=True, archive=True)
 
     def get_default(self, key, archive=False):
         """Get the dataset that contains default values for the dataset specified by key.

@@ -461,6 +461,7 @@ class ScanModel(Model):
         # data
         self.init('plots.dim1.x', shape, varname='dim1_x', init_local=True)
         self.init('plots.dim1.y', shape, varname='dim1_y', init_local=True)
+        self.init('plots.dim1.error',shape,varname='dim1_error',init_local=True)
         self.init('plots.dim1.fitline', shape, varname='dim1_fitline', init_local=True)
         self.init('plots.dim1.fitline_fine', shape, varname='dim1_fitline_fine', init_local=True)
         self.init('plots.dim1.x_fine', shape, varname='dim1_x_fine', init_local=True)
@@ -681,6 +682,8 @@ class ScanModel(Model):
             i = ((i_point[0], i_point[0]+1), (i_point[1], i_point[1]+1))
             self.mutate('plots.dim%i.x' % dim, i, x, which=which)
             self.mutate('plots.dim%i.y' % dim, i, y, which=which)
+            if error != None:
+                self.mutate('plots.dim%i.error' % dim, i, error, which=which)
 
     def get_plot_data(self, mirror):
         """Returns the plots.x and plots.y datasets (always dimension 0)
@@ -1011,7 +1014,10 @@ class ScanModel(Model):
                         fit_val=self.fit.fitresults[self.main_fit_param]
                         fit_err=self.fit.fitresults[self.main_fit_param+'_err']
                         fit_err_str=f'{fit_err:.2}'
-                        n_dec=2-floor(log10(fit_err))
+                        try:
+                            n_dec=2-floor(log10(fit_err))
+                        except:
+                            n_dec=2
                         fit_val_str=str(round(fit_val*10**n_dec)/10**n_dec)
                         self.fit_string="fit "+self.main_fit_param+":"+fit_val_str+'+/-'+fit_err_str
                 self.set('plots.fit_string',self.fit_string)
