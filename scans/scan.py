@@ -159,7 +159,7 @@ class Scan(HasEnvironment):
         # this variable when the scan resumes.
         self._idx = np.int64(0)
         self._i_pass = np.int64(0)
-        self._i_measurement = np.int64(0)
+        self._i_measurement = np.int32(0)
 
         super().__init__(managers_or_parent, *args, **kwargs)
 
@@ -386,6 +386,7 @@ class Scan(HasEnvironment):
             self.warming_up = True
             for wupoint in warmup_points:
                 for i_measurement in range(nmeasurements):
+                    self._i_measurement=i_measurement
                     self.measurement = measurements[i_measurement]
                     self.warmup(wupoint)
             self.warming_up = False
@@ -437,6 +438,7 @@ class Scan(HasEnvironment):
         for i_repeat in range(nrepeats):
             # iterate over measurements
             for i_measurement in range(nmeasurements):
+                self._i_measurement=i_measurement
                 # so other methods know what the current measurement is
                 self.measurement = measurements[i_measurement]
 
@@ -505,7 +507,6 @@ class Scan(HasEnvironment):
             self.do_fit = False
             self.save_fit = False
             self.fit_only = False
-
             if hasattr(self, 'fit_options'):
                 if self.fit_options == 'No Fits':
                     self.do_fit = False

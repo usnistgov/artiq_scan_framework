@@ -134,15 +134,32 @@ class Scan2D(Scan):
                     # --- Mutate Dimension 0 Plot ---
 
                     # get the name of the fitted parameter that will be plotted
-                    param, error = self.calculate_dim0(dim1_model)
+                    param=None
+                    error=None
+                    try:
+                        param, error = self.calculate_dim0(dim1_model)
+                    except:
+                        #this didn't have a method
+                        param=None
+                        error=None
 
                     # find the dimension 0 model
                     for entry2 in self._model_registry:
                         if entry2['dimension'] == 0:
                             dim0_model = entry2['model']
-
+                            if param == None:
+                                try:
+                                    #calculate what to plot for the dim0 model using the dim1 model result that has the fit
+                                    param,error = dim0_model.calculate_dim0(dim1_model)
+                                except:
+                                    print('didnt find dim0_model calculation for model', entry2)
                             # mutate the dimension 0 plot
                             dim0_model.mutate_plot(i_point=i_point, x=point[0], y=param, error=error, dim=0)
+                            param=None
+                            # --- Redraw Plots ---
+                            # tell the current_scan applet to redraw itself
+                            dim0_model.set('plots.trigger', 1, which='mirror')
+                            dim0_model.set('plots.trigger', 0, which='mirror')
 
             # --- Redraw Plots ---
             # tell the current_scan applet to redraw itself
