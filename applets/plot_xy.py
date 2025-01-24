@@ -205,7 +205,14 @@ class XYPlot(plot.Plot):
         x_axis.tickFont = axis_font
         # somehow tickTextOffset necessary to change tick font
         x_axis.setStyle(tickTextOffset=self.get_style('axes.tick_offset'))
+        #If you are reading this you probably are mad about autoSIPrefixing. 
+        #currently just disabling autosiprefixing stupidly still scales your data
+        #based on the current set of values on the plot. You must also set this autoSIPrefixScale
+        #to 1 to not have that happen, so if you like to tell your data what the x label/unit is 
+        #and give x scales and values you should do this, otherwise you should bow down to 
+        #what pyqtgraph wants and always pass SI unit values and enable AutSIPrefixing.
         x_axis.enableAutoSIPrefix(False)
+        x_axis.autoSIPrefixScale=1
         if self.x_label is not None:
             self.setLabel('bottom', self.x_label, units=self.x_units, **self.get_style("axes.label"))
 

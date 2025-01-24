@@ -429,8 +429,9 @@ class Scan(HasEnvironment):
         # dynamically offset the scan point
         measure_point = self.offset_point(i_point, measure_point)
         
-        # callback
+        # callbacks
         self.set_scan_point(i_point, measure_point)
+        self.run_trackers_core()
 
         # iterate over repeats
 
@@ -1150,22 +1151,22 @@ class Scan(HasEnvironment):
                 self.setattr_argument('continuous_scan',BooleanValue(**continuous_scan),group='Continuous Scan')#, tooltip="make this a continuous scan.")
             # continuous_points (Integer): number of points to save to stats datasets. Points are overriden after this replacing oldest point taken
             if continuous_points != False:
-                for k, v in {'default': 1000, 'ndecimals': 0, 'step': 1}.items():
+                for k, v in {'default': 300, 'ndecimals': 0, 'step': 1}.items():
                     continuous_points.setdefault(k, v)
                 self.setattr_argument('continuous_points',NumberValue(**continuous_points),group='Continuous Scan')#, tooltip="number of points to save to stats datasets. Points are overriden after this replacing oldest point taken.")
             # continuous_plot (Integer): number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.
             if continuous_plot != False:
-                for k, v in {'default': 50, 'ndecimals': 0, 'step': 1}.items():
+                for k, v in {'default': 300, 'ndecimals': 0, 'step': 1}.items():
                     continuous_plot.setdefault(k, v)
                 self.setattr_argument('continuous_plot',NumberValue(**continuous_plot),group='Continuous Scan')#, tooltip = "number of points to plot, plotted points scroll to the right as more are plotted, replacing the oldest point.")
             # continuous_measure_point (Float): point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this
             if continuous_measure_point != False:
-                for k, v in {'default': 0.0}.items():
+                for k, v in {'default': 0.0,'ndecimals':6}.items():
                     continuous_measure_point.setdefault(k, v)
                 self.setattr_argument('continuous_measure_point',NumberValue(**continuous_measure_point),group='Continuous Scan')#, tooltip = "point value to be passed to the measure() method. Offset_points and self._x_offset are compatible with this")
             # continuous_save (Boolean): Save points to external file when datasets will be overriden. Currently not implemented
             if continuous_save != False:
-                for k, v in {'default': False}.items():
+                for k, v in {'default': True}.items():
                     continuous_save.setdefault(k, v)
                 self.setattr_argument('continuous_save',BooleanValue(**continuous_save),group='Continuous Scan')#, tooltip = "Save points to external file when datasets will be overriden. Currently not implemented")
         if self.enable_fitting and fit_options != False:
@@ -1189,7 +1190,7 @@ class Scan(HasEnvironment):
                         self.setattr_argument(key,
                                               FitGuess(default=1.0,
                                                        use_default=True,
-                                                       ndecimals=1,
+                                                       ndecimals=6,
                                                        step=0.001,
                                                        fit_param=fit_param,
                                                        param_index=None))
@@ -1511,6 +1512,14 @@ class Scan(HasEnvironment):
             - Runs before the 'before_measure' callback.
         """
         pass
+    @portable
+    def run_trackers_core(self):
+        """User callback
+        
+        Callback after set_scan_point to run trackers, 3 point probe type repeats that calibrate something and feed it back periodically before scan points
+        """
+        pass
+    
 
     # callback: for child class
     @portable
