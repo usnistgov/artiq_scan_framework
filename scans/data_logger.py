@@ -42,3 +42,13 @@ class DataLogger:
                 resize_shape[0]+=dataset_i #increase first index by number of previous data points
                 previous_data.resize(tuple(resize_shape))
             previous_data[dataset_i:dataset_i+data_i]=data #set previous data array at new chunk entries to incoming data
+    def initialize_static_data(self,data,name):
+        #fill datasets that are set one time
+        with h5py.File(self.filep,'a') as f:
+            dataset=f['datasets']
+            try:
+                shape=data.shape
+            except:
+                shape=()
+            ds=dataset.create_dataset(name,shape)
+            ds=data

@@ -180,9 +180,8 @@ class XYPlot(parent.Plot):
     def data_changed(self, data, mods):
         """Data changed handler.  load, reshape, validate, clean, and then plot the new data."""
         if self.load(data) is not False:
-            self.reshape()
             try:
-                pass
+                self.reshape()
             except ValueError:
                 print("Error reshaping")
                 pass
@@ -293,7 +292,8 @@ class XYPlot(parent.Plot):
                 self.legend_fit_labels=['' for i in range(self.max_curves)]
                 
         #load datasets for all curves with matching rid
-        plot_items=['x','y','fitline','error','fit_legend','data_legend']
+        #plot_items=['x','y','fitline','error','fit_legend','data_legend']
+        plot_items=every_curve_imports
         for item in plot_items:
             setattr(self,item+'s',[self._load_plots(data,'ns%i_'%i+item) for i in range(self.n_curves)]) #import self.xs,ys,fitlines etc give in plot_items, each a list of data (or none) for n_curves
         
