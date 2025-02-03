@@ -50,5 +50,4 @@ class DataLogger:
                 shape=data.shape
             except:
                 shape=()
-            ds=dataset.create_dataset(name,shape)
-            ds=data
+            ds=dataset.create_dataset(name,shape,data=data)
